@@ -1,13 +1,13 @@
 package readers
 
 import (
-	"bytes"
+	. "michelprogram/photon-parser/parser"
 
 	"golang.org/x/exp/constraints"
 )
 
-func readArray[T constraints.Integer | constraints.Float](reader *bytes.Reader) ([]T, error) {
-	size, err := readPrimitive[uint32](reader)
+func readArray[T constraints.Integer | constraints.Float](reader *Reader) ([]T, error) {
+	size, err := ReadPrimitive[uint32](reader)
 
 	if err != nil{
 		return nil, err
@@ -17,7 +17,7 @@ func readArray[T constraints.Integer | constraints.Float](reader *bytes.Reader) 
 	var i uint32 = 0
 
 	for i = 0; i < size; i++{
-		input, err := readPrimitive[T](reader)
+		input, err := ReadPrimitive[T](reader)
   		if err != nil {
    			return nil, err
     	}
@@ -26,16 +26,16 @@ func readArray[T constraints.Integer | constraints.Float](reader *bytes.Reader) 
     return val, nil
 }
 
-func ReadInt8Array(reader *bytes.Reader) ([]int8, error){
+func ReadInt8Array(reader *Reader) ([]int8, error){
 	return readArray[int8](reader)
 }
 
-func ReadInt32Array(reader *bytes.Reader) ([]int32, error){
+func ReadInt32Array(reader *Reader) ([]int32, error){
 	return readArray[int32](reader)
 }
 
-func ReadStringArray(reader *bytes.Reader) ([]string, error){
-	size, err := readPrimitive[uint32](reader)
+func ReadStringArray(reader *Reader) ([]string, error){
+	size, err := ReadPrimitive[uint32](reader)
 
 	if err != nil{
 		return nil, err
@@ -54,15 +54,15 @@ func ReadStringArray(reader *bytes.Reader) ([]string, error){
     return val, nil
 }
 
-func ReadArray(reader *bytes.Reader)([]any, error){
+func ReadArray(reader *Reader)([]any, error){
 
-	size, err := readPrimitive[uint16](reader)
+	size, err := ReadPrimitive[uint16](reader)
 
 	if err != nil{
 		return nil, err
 	}
 
-	ttype, err := readPrimitive[Type](reader)
+	ttype, err := ReadPrimitive[Type](reader)
 
 	if err != nil{
 		return nil, err

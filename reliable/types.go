@@ -1,6 +1,6 @@
 package reliable
 
-import "michelprogram/photon-parser/photon/parameters"
+import "michelprogram/photon-parser/parameters"
 
 const HEADER_SIZE = 5
 

@@ -3,17 +3,17 @@ package readers
 type Type uint8
 
 const (
-	Unknown Type = 0x00
-	NilType Type = 0x2a
-	DictionaryType Type = 0x44
+	UnknownType Type = 0x00// Done
+	NilType Type = 0x2a// Done
+	DictionaryType Type = 0x44// Done
 	StringArrayType Type = 0x61 // Done
 	Int8Type Type = 0x62 //Done
 	Custom Type = 0x63
-	DoubleType Type = 0x64
+	DoubleType Type = 0x64 //Done
 	EventDateType Type = 0x65
 	Float32Type Type = 0x66 //Done
 	Float64Type Type = 0x67 //Done
-	HashTableType Type  = 0x68
+	HashTableType Type  = 0x68 //Done
 	Int32Type Type = 0x69 //Done
 	Int16Type Type = 0x6b //Done
 	Int64Type Type = 0x6c //Done

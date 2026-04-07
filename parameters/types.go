@@ -2,7 +2,7 @@ package parameters
 
 import (
 	"fmt"
-	"michelprogram/photon-parser/photon/parameters/readers"
+	"michelprogram/photon-parser/parameters/readers"
 )
 
 type Header struct {

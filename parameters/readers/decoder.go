@@ -1,12 +1,13 @@
 package readers
 
 import (
-	"bytes"
+	. "michelprogram/photon-parser/parser"
 )
 
-func Decode(reader *bytes.Reader, ttype Type) (any, error){
+func Decode(reader *Reader, ttype Type) (any, error){
 	switch ttype {
 		default:
+        	//return nil, fmt.Errorf("unsupported type: 0x%02x", ttype)
 		case Int8Type:
 			return ReadInt8(reader)
 		case Int16Type:
@@ -31,6 +32,13 @@ func Decode(reader *bytes.Reader, ttype Type) (any, error){
 			return ReadArray(reader)
 		case StringArrayType:
 			return ReadStringArray(reader)
+		case DictionaryType:
+			return ReadDictionnary(reader)
+		case HashTableType:
+			return ReadHashtable(reader)
+		case NilType:
+		case UnknownType:
+			return nil, nil
 	}
 
 	return "",nil

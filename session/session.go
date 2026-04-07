@@ -1,20 +1,20 @@
 package session
 
 import (
-	"bytes"
-	"encoding/binary"
-	"michelprogram/photon-parser/photon/command"
+	"michelprogram/photon-parser/command"
+	"michelprogram/photon-parser/parser"
 )
 
+func Parse(data []byte) (*Session, error) {
+    return ParseFromReader(parser.NewReader(data))
+}
 
-func Parse(packet []byte) (*Session, error) {
+func ParseFromReader(r *parser.Reader) (*Session, error) {
 	res := Session{}
-	reader := bytes.NewReader(packet)
 
-	var header Header
 	var i uint8 = 0
 
-	err := binary.Read(reader, binary.BigEndian, &header)
+	header, err := parser.ReadHeader[Header](r)
 	if err != nil {
 		return nil, err
 	}
@@ -22,13 +22,13 @@ func Parse(packet []byte) (*Session, error) {
 	res.Commands = make([]*command.Command, header.CommandCount)
 
 	for i = 0; i < header.CommandCount; i++ {
-		cmd, err := command.Parse(reader)
+		cmd, err := command.ParseFromReader(r)
 		if err != nil{
 			return nil, err
 		}
 		res.Commands[i] = cmd
 	}
-	
+
 	res.PeerID = header.PeerID
 	res.CommandCount = header.CommandCount
 	res.Timestamp = header.Timestamp

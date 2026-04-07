@@ -1,6 +1,6 @@
 package session
 
-import "michelprogram/photon-parser/photon/command"
+import "michelprogram/photon-parser/command"
 
 type Header struct{
 	PeerID       uint16

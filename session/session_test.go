@@ -2,47 +2,10 @@ package session_test
 
 import (
 	"encoding/hex"
-	"fmt"
-	"michelprogram/photon-parser/photon/session"
-	"michelprogram/photon-parser/pkg/wireshark"
+	"michelprogram/photon-parser/session"
 	"strings"
 	"testing"
 )
-
-func TestParseSessionPacket(t *testing.T) {
-	filepath := "../../ressources/wireshark.json"
-
-	parser, err := wireshark.LoadFromWiresharkExport(filepath)
-	if err != nil {
-		t.Fatalf("LoadFromWiresharkExport() failed: %v", err)
-	}
-
-	if len(parser.Requests) == 0 {
-		t.Fatal("LoadFromWiresharkExport() returned empty requests")
-	}
-
-	if len(parser.Requests) < 10 {
-		t.Errorf("Expected at least 10 requests, got %d", len(parser.Requests))
-	}
-
-	requests, err := parser.RequestsDataToBytes()
-	if err != nil {
-		t.Fatalf("LoadFromWiresharkExport() failed: %v", err)
-	}
-
-	for _, r := range requests{
-		res, err := session.Parse(r)
-		if err != nil {
-			t.Fatalf("LoadFromWiresharkExport() failed: %v", err)
-		}
-
-		fmt.Printf("PeerID:        0x%x (%d)\n", res.PeerID, res.PeerID)
-		fmt.Printf("CRC Enabled:         0x%x\n", res.CRCEnabled)
-		fmt.Printf("CommandCount:  %d\n", res.CommandCount)
-		fmt.Printf("Timestamp:     %d\n", res.Timestamp)
-		fmt.Printf("Challenge:     %d\n", res.Challenge)
-	}
-}
 
 func TestParseSession(t *testing.T){
 

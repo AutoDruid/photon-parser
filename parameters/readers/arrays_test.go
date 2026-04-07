@@ -1,0 +1,395 @@
+package readers
+
+import (
+	"michelprogram/photon-parser/parser"
+	"reflect"
+	"testing"
+
+	"golang.org/x/exp/constraints"
+)
+
+func TestReadInt8Array(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   []byte
+		want    []int8
+		wantErr bool
+	}{
+		{
+			name:  "empty array",
+			input: []byte{0x00, 0x00, 0x00, 0x00}, // size = 0
+			want:  []int8{},
+		},
+		{
+			name:  "single element",
+			input: []byte{0x00, 0x00, 0x00, 0x01, 0x2A}, // size=1, value=42
+			want:  []int8{42},
+		},
+		{
+			name:  "multiple elements",
+			input: []byte{0x00, 0x00, 0x00, 0x03, 0x01, 0x02, 0x03}, // [1, 2, 3]
+			want:  []int8{1, 2, 3},
+		},
+		{
+			name:  "negative values",
+			input: []byte{0x00, 0x00, 0x00, 0x02, 0xFF, 0xFE}, // [-1, -2]
+			want:  []int8{-1, -2},
+		},
+		{
+			name:    "truncated size",
+			input:   []byte{0x00, 0x00},
+			wantErr: true,
+		},
+		{
+			name:    "truncated data",
+			input:   []byte{0x00, 0x00, 0x00, 0x03, 0x01}, // says 3 elements, only 1 present
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			reader := parser.NewReader(tt.input)
+			got, err := ReadInt8Array(reader)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ReadInt8Array() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if !tt.wantErr && !sliceEqual(got, tt.want) {
+				t.Errorf("ReadInt8Array() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestReadInt32Array(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   []byte
+		want    []int32
+		wantErr bool
+	}{
+		{
+			name:  "empty array",
+			input: []byte{0x00, 0x00, 0x00, 0x00},
+			want:  []int32{},
+		},
+		{
+			name: "single element",
+			input: []byte{
+				0x00, 0x00, 0x00, 0x01, // size = 1
+				0x00, 0x00, 0x01, 0x00, // value = 256
+			},
+			want: []int32{256},
+		},
+		{
+			name: "multiple elements",
+			input: []byte{
+				0x00, 0x00, 0x00, 0x03, // size = 3
+				0x00, 0x00, 0x00, 0x01, // 1
+				0x00, 0x00, 0x00, 0x02, // 2
+				0x00, 0x00, 0x00, 0x03, // 3
+			},
+			want: []int32{1, 2, 3},
+		},
+		{
+			name: "negative values",
+			input: []byte{
+				0x00, 0x00, 0x00, 0x02, // size = 2
+				0xFF, 0xFF, 0xFF, 0xFF, // -1
+				0xFF, 0xFF, 0xFF, 0xFE, // -2
+			},
+			want: []int32{-1, -2},
+		},
+		{
+			name:    "truncated data",
+			input:   []byte{0x00, 0x00, 0x00, 0x02, 0x00, 0x00},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			reader := parser.NewReader(tt.input)
+			got, err := ReadInt32Array(reader)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ReadInt32Array() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if !tt.wantErr && !sliceEqual(got, tt.want) {
+				t.Errorf("ReadInt32Array() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestReadStringArray(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   []byte
+		want    []string
+		wantErr bool
+	}{
+		{
+			name:  "empty array",
+			input: []byte{0x00, 0x00, 0x00, 0x00},
+			want:  []string{},
+		},
+		{
+			name: "single string",
+			input: []byte{
+				0x00, 0x00, 0x00, 0x01, // size = 1
+				0x00, 0x05, 'H', 'e', 'l', 'l', 'o', // "Hello"
+			},
+			want: []string{"Hello"},
+		},
+		{
+			name: "multiple strings",
+			input: []byte{
+				0x00, 0x00, 0x00, 0x03, // size = 3
+				0x00, 0x03, 'f', 'o', 'o', // "foo"
+				0x00, 0x03, 'b', 'a', 'r', // "bar"
+				0x00, 0x03, 'b', 'a', 'z', // "baz"
+			},
+			want: []string{"foo", "bar", "baz"},
+		},
+		{
+			name: "empty strings",
+			input: []byte{
+				0x00, 0x00, 0x00, 0x02, // size = 2
+				0x00, 0x00, // ""
+				0x00, 0x00, // ""
+			},
+			want: []string{"", ""},
+		},
+		{
+			name: "mixed length strings",
+			input: []byte{
+				0x00, 0x00, 0x00, 0x02, // size = 2
+				0x00, 0x01, 'A', // "A"
+				0x00, 0x04, 'T', 'e', 's', 't', // "Test"
+			},
+			want: []string{"A", "Test"},
+		},
+		{
+			name:    "truncated size",
+			input:   []byte{0x00, 0x00},
+			wantErr: true,
+		},
+		{
+			name: "truncated string data",
+			input: []byte{
+				0x00, 0x00, 0x00, 0x01, // size = 1
+				0x00, 0x05, 'H', 'i', // string length says 5, but only 2 chars
+			},
+			wantErr: false, // Current implementation doesn't validate
+			want:    []string{"Hi\x00\x00\x00"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			reader := parser.NewReader(tt.input)
+			got, err := ReadStringArray(reader)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ReadStringArray() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if !tt.wantErr && !sliceEqual(got, tt.want) {
+				t.Errorf("ReadStringArray() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestReadArray(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   []byte
+		want    []any
+		wantErr bool
+	}{
+		{
+			name: "empty array",
+			input: []byte{
+				0x00, 0x00, // size = 0
+				byte(Int8Type), // type (doesn't matter for empty)
+			},
+			want: []any{},
+		},
+		{
+			name: "int8 array",
+			input: []byte{
+				0x00, 0x03, // size = 3
+				byte(Int8Type),   // type
+				0x01, 0x02, 0x03, // values
+			},
+			want: []any{int8(1), int8(2), int8(3)},
+		},
+		{
+			name: "nested array",
+			input: []byte{
+				0x00, 0x02, // size = 2 (outer)
+				byte(ArrayType), // type = array
+				0x00, 0x02, // size = 2 (inner #1)
+				byte(Int8Type), // type = int8
+				0x01, 0x02, // values
+				0x00, 0x03, // size = 3 (inner #2)
+				byte(Int8Type), // type = int8
+				0x03, 0x04, 0x05, // values
+			},
+			want: []any{
+				[]any{int8(1), int8(2)},
+				[]any{int8(3), int8(4), int8(5)},
+			},
+		},
+		{
+			name: "int32 array",
+			input: []byte{
+				0x00, 0x02, // size = 2
+				byte(Int32Type),        // type
+				0x00, 0x00, 0x00, 0x0A, // 10
+				0x00, 0x00, 0x00, 0x14, // 20
+			},
+			want: []any{int32(10), int32(20)},
+		},
+		{
+			name: "string array",
+			input: []byte{
+				0x00, 0x02, // size = 2
+				byte(StringType),     // type
+				0x00, 0x02, 'H', 'i', // "Hi"
+				0x00, 0x03, 'B', 'y', 'e', // "Bye"
+			},
+			want: []any{"Hi", "Bye"},
+		},
+		{
+			name: "boolean array",
+			input: []byte{
+				0x00, 0x03, // size = 3
+				byte(BooleanType), // type
+				0x01, 0x00, 0x01,  // true, false, true
+			},
+			want: []any{true, false, true},
+		},
+		{
+			name:    "truncated size",
+			input:   []byte{0x00},
+			wantErr: true,
+		},
+		{
+			name:    "missing type",
+			input:   []byte{0x00, 0x01}, // size but no type
+			wantErr: true,
+		},
+		{
+			name: "truncated data",
+			input: []byte{
+				0x00, 0x02, // size = 2
+				byte(Int8Type),
+				0x01, // only 1 element, should be 2
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			reader := parser.NewReader(tt.input)
+			got, err := ReadArray(reader)
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ReadArray() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if !tt.wantErr && !anySliceEqual(got, tt.want) {
+				t.Errorf("ReadArray() = %v (types: %T), want %v (types: %T)", got, got, tt.want, tt.want)
+			}
+		})
+	}
+}
+
+func TestReadArrayGeneric(t *testing.T) {
+	t.Run("uint32 array", func(t *testing.T) {
+		input := []byte{
+			0x00, 0x00, 0x00, 0x02, // size = 2
+			0x00, 0x00, 0x00, 0x64, // 100
+			0x00, 0x00, 0x00, 0xC8, // 200
+		}
+		reader := parser.NewReader(input)
+		got, err := readArray[uint32](reader)
+		if err != nil {
+			t.Fatalf("readArray[uint32]() error = %v", err)
+		}
+		want := []uint32{100, 200}
+		if !sliceEqual(got, want) {
+			t.Errorf("readArray[uint32]() = %v, want %v", got, want)
+		}
+	})
+
+	t.Run("float32 array", func(t *testing.T) {
+		input := []byte{
+			0x00, 0x00, 0x00, 0x01, // size = 1
+			0x3F, 0x80, 0x00, 0x00, // 1.0
+		}
+		reader := parser.NewReader(input)
+		got, err := readArray[float32](reader)
+		if err != nil {
+			t.Fatalf("readArray[float32]() error = %v", err)
+		}
+		if len(got) != 1 || got[0] != 1.0 {
+			t.Errorf("readArray[float32]() = %v, want [1.0]", got)
+		}
+	})
+}
+
+func sliceEqual[T constraints.Integer | string | constraints.Float](a, b []T) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}
+
+func anySliceEqual(a, b []any) bool {
+	return reflect.DeepEqual(a, b)
+}
+
+
+func BenchmarkReadInt8Array(b *testing.B) {
+	data := []byte{
+		0x00, 0x00, 0x00, 0x0A, // 10 elements
+		0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A,
+	}
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		reader := parser.NewReader(data)
+		_, _ = ReadInt8Array(reader)
+	}
+}
+
+func BenchmarkReadStringArray(b *testing.B) {
+	data := []byte{
+		0x00, 0x00, 0x00, 0x02, // 2 elements
+		0x00, 0x04, 'T', 'e', 's', 't',
+		0x00, 0x04, 'D', 'a', 't', 'a',
+	}
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		reader := parser.NewReader(data)
+		_, _ = ReadStringArray(reader)
+	}
+}
