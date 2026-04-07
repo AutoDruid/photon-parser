@@ -6,10 +6,10 @@ import (
 )
 
 func Parse(data []byte) (*Command, error) {
-    return ParseFromReader(parser.NewReader(data))
+	return ParseFromReader(parser.NewReader(data))
 }
 
-func ParseFromReader(r *parser.Reader) (*Command, error){
+func ParseFromReader(r *parser.Reader) (*Command, error) {
 	header, err := parser.ReadHeader[Header](r)
 	if err != nil {
 		return nil, err
@@ -21,7 +21,7 @@ func ParseFromReader(r *parser.Reader) (*Command, error){
 
 	payload, err := r.ReadBytes(int(header.Length - HEADER_SIZE))
 
-	if  err != nil {
+	if err != nil {
 		return nil, err
 	}
 
@@ -35,5 +35,5 @@ func ParseFromReader(r *parser.Reader) (*Command, error){
 	cmd.ReliableSequenceNumber = header.ReliableSequenceNumber
 	cmd.Data = payload
 
-	return cmd,nil
+	return cmd, nil
 }

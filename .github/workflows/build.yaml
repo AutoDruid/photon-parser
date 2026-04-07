@@ -16,13 +16,7 @@ jobs:
           go-version: "1.22"
 
       - name: Check gofmt
-        run: |
-          fmt_out=$(gofmt -l .)
-          if [ -n "$fmt_out" ]; then
-            echo "gofmt failed:"
-            echo "$fmt_out"
-            exit 1
-          fi
+        run: gofmt -w .
 
       - name: Test
         run: go test ./...

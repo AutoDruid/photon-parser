@@ -5,10 +5,10 @@ import (
 )
 
 func Parse(data []byte) (*Reliable, error) {
-    return ParseFromReader(parser.NewReader(data))
+	return ParseFromReader(parser.NewReader(data))
 }
 
-func ParseFromReader(r *parser.Reader) (*Reliable, error){
+func ParseFromReader(r *parser.Reader) (*Reliable, error) {
 
 	res := &Reliable{}
 
@@ -22,5 +22,5 @@ func ParseFromReader(r *parser.Reader) (*Reliable, error){
 	res.EventCode = header.EventCode
 	res.ParameterCount = header.ParameterCount
 
-	return res,nil
+	return res, nil
 }

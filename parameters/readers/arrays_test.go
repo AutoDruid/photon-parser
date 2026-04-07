@@ -237,11 +237,11 @@ func TestReadArray(t *testing.T) {
 			input: []byte{
 				0x00, 0x02, // size = 2 (outer)
 				byte(ArrayType), // type = array
-				0x00, 0x02, // size = 2 (inner #1)
+				0x00, 0x02,      // size = 2 (inner #1)
 				byte(Int8Type), // type = int8
-				0x01, 0x02, // values
+				0x01, 0x02,     // values
 				0x00, 0x03, // size = 3 (inner #2)
-				byte(Int8Type), // type = int8
+				byte(Int8Type),   // type = int8
 				0x03, 0x04, 0x05, // values
 			},
 			want: []any{
@@ -365,7 +365,6 @@ func sliceEqual[T constraints.Integer | string | constraints.Float](a, b []T) bo
 func anySliceEqual(a, b []any) bool {
 	return reflect.DeepEqual(a, b)
 }
-
 
 func BenchmarkReadInt8Array(b *testing.B) {
 	data := []byte{

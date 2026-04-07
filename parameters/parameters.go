@@ -5,7 +5,7 @@ import (
 	"michelprogram/photon-parser/parser"
 )
 
-func Parse(r *parser.Reader) (*Parameters, error){
+func Parse(r *parser.Reader) (*Parameters, error) {
 	res := &Parameters{}
 
 	header, err := parser.ReadHeader[Header](r)
@@ -13,7 +13,7 @@ func Parse(r *parser.Reader) (*Parameters, error){
 		return nil, err
 	}
 
-	value, err := readers.Decode(r, header.Type);
+	value, err := readers.Decode(r, header.Type)
 
 	if err != nil {
 		return nil, err
@@ -22,5 +22,5 @@ func Parse(r *parser.Reader) (*Parameters, error){
 	res.Header = *header
 	res.Value = value
 
-	return res,nil
+	return res, nil
 }

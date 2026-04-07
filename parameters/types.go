@@ -6,16 +6,16 @@ import (
 )
 
 type Header struct {
-	ID uint8
+	ID   uint8
 	Type readers.Type
 }
 
-type Parameters struct{
+type Parameters struct {
 	Header
 
 	Value interface{}
 }
 
-func (p Parameters) String() string{
+func (p Parameters) String() string {
 	return fmt.Sprintf("ID: %d\nType: %d\nValue: %v\n", p.ID, p.Type, p.Value)
 }

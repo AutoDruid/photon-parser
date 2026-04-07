@@ -6,7 +6,7 @@ import (
 )
 
 func Parse(data []byte) (*Session, error) {
-    return ParseFromReader(parser.NewReader(data))
+	return ParseFromReader(parser.NewReader(data))
 }
 
 func ParseFromReader(r *parser.Reader) (*Session, error) {
@@ -23,7 +23,7 @@ func ParseFromReader(r *parser.Reader) (*Session, error) {
 
 	for i = 0; i < header.CommandCount; i++ {
 		cmd, err := command.ParseFromReader(r)
-		if err != nil{
+		if err != nil {
 			return nil, err
 		}
 		res.Commands[i] = cmd

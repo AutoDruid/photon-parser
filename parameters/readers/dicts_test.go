@@ -44,7 +44,7 @@ func TestReadDictionnary(t *testing.T) {
 				byte(readers.StringType), byte(readers.BooleanType),
 				0x00, 0x02, // size = 2
 				0x00, 0x01, 'a', // key = "a"
-				0x01, // value = true
+				0x01,                 // value = true
 				0x00, 0x02, 'b', 'b', // key = "bb"
 				0x00, // value = false
 			},
@@ -111,13 +111,13 @@ func TestReadHashtable(t *testing.T) {
 			input: []byte{
 				0x00, 0x02, // size = 2
 				byte(readers.Int32Type), // key type
-				0x00, 0x00, 0x00, 0x01, // key = 1
+				0x00, 0x00, 0x00, 0x01,  // key = 1
 				byte(readers.StringType), // value type
-				0x00, 0x02, 'h', 'i', // value = "hi"
+				0x00, 0x02, 'h', 'i',     // value = "hi"
 				byte(readers.StringType), // key type
-				0x00, 0x01, 'k', // key = "k"
+				0x00, 0x01, 'k',          // key = "k"
 				byte(readers.BooleanType), // value type
-				0x01, // value = true
+				0x01,                      // value = true
 			},
 			want: map[any]any{
 				int32(1): "hi",

@@ -2,7 +2,7 @@ package session
 
 import "michelprogram/photon-parser/command"
 
-type Header struct{
+type Header struct {
 	PeerID       uint16
 	CRCEnabled   uint8
 	CommandCount uint8
