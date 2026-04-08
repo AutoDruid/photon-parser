@@ -26,7 +26,9 @@ import (
 //	    fmt.Printf("  Param %d: %v\n", param.ID, param.Value)
 //	}
 func Parse(data []byte) (*Reliable, error) {
-	return ParseFromReader(parser.NewReader(data))
+	r := parser.NewReaderFromPool(data)
+	defer parser.ReleaseReader(r)
+	return ParseFromReader(r)
 }
 
 // ParseFromReader parses a Photon reliable message from a parser.Reader.
@@ -48,10 +50,7 @@ func ParseFromReader(r *parser.Reader) (*Reliable, error) {
 		return nil, err
 	}
 
-	res.Signature = header.Signature
-	res.Type = header.Type
-	res.EventCode = header.EventCode
-	res.ParameterCount = header.ParameterCount
+	res.Header = *header
 	res.Parameters = make([]*parameters.Parameters, header.ParameterCount)
 
 	for i := uint16(0); i < res.ParameterCount; i++ {

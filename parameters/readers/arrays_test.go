@@ -4,8 +4,6 @@ import (
 	"michelprogram/photon-parser/parser"
 	"reflect"
 	"testing"
-
-	"golang.org/x/exp/constraints"
 )
 
 func TestReadInt8Array(t *testing.T) {
@@ -349,7 +347,7 @@ func TestReadArrayGeneric(t *testing.T) {
 	})
 }
 
-func sliceEqual[T constraints.Integer | string | constraints.Float](a, b []T) bool {
+func sliceEqual[T comparable](a, b []T) bool {
 	if len(a) != len(b) {
 		return false
 	}

@@ -23,7 +23,9 @@ import (
 //	}
 //	fmt.Printf("Session has %d commands\n", len(session.Commands))
 func Parse(data []byte) (*Session, error) {
-	return ParseFromReader(parser.NewReader(data))
+	r := parser.NewReaderFromPool(data)
+	defer parser.ReleaseReader(r)
+	return ParseFromReader(r)
 }
 
 // ParseFromReader parses a Photon session packet from a parser.Reader.
@@ -50,11 +52,7 @@ func ParseFromReader(r *parser.Reader) (*Session, error) {
 		res.Commands[i] = cmd
 	}
 
-	res.PeerID = header.PeerID
-	res.CommandCount = header.CommandCount
-	res.Timestamp = header.Timestamp
-	res.Challenge = header.Challenge
-	res.CRCEnabled = header.CRCEnabled
+	res.Header = *header
 
 	return &res, nil
 }

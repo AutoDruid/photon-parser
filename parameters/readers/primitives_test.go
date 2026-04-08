@@ -455,6 +455,7 @@ func TestReadPrimitiveGeneric(t *testing.T) {
 
 func BenchmarkReadInt32(b *testing.B) {
 	data := []byte{0x00, 0x00, 0x01, 0x00}
+	b.ReportAllocs()
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
@@ -465,10 +466,23 @@ func BenchmarkReadInt32(b *testing.B) {
 
 func BenchmarkReadString(b *testing.B) {
 	data := []byte{0x00, 0x05, 'H', 'e', 'l', 'l', 'o'}
+	b.ReportAllocs()
 	b.ResetTimer()
 
 	for i := 0; i < b.N; i++ {
 		reader := NewReader(data)
 		_, _ = ReadString(reader)
+	}
+}
+
+func BenchmarkReadStringPooledReader(b *testing.B) {
+	data := []byte{0x00, 0x05, 'H', 'e', 'l', 'l', 'o'}
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		reader := NewReaderFromPool(data)
+		_, _ = ReadString(reader)
+		ReleaseReader(reader)
 	}
 }

@@ -27,7 +27,7 @@ func Decode(reader *parser.Reader, ttype Type) (any, error) {
 		return ReadInt64(reader)
 	case Float32Type:
 		return ReadFloat32(reader)
-	case Float64Type:
+	case Float64Type, DoubleType:
 		return ReadFloat64(reader)
 	case StringType:
 		return ReadString(reader)

@@ -4,7 +4,18 @@ import (
 	"fmt"
 	"io"
 	"michelprogram/photon-parser/parser"
+	"sync"
 )
+
+// stringBufPool holds reusable byte slices used as temporaries in ReadString.
+// ReadString converts the slice to a string immediately (copying the bytes),
+// so the pooled buffer is safe to reuse right after string conversion.
+var stringBufPool = sync.Pool{
+	New: func() any {
+		b := make([]byte, 64)
+		return &b
+	},
+}
 
 // ReadInt8 reads an 8-bit signed integer from the reader.
 // Returns an error if fewer than 1 byte is available.
@@ -60,12 +71,21 @@ func ReadString(reader *parser.Reader) (string, error) {
 		return "", nil
 	}
 
-	buff := make([]byte, size)
-	if _, err := io.ReadFull(reader, buff); err != nil {
+	bufp := stringBufPool.Get().(*[]byte)
+	buf := *bufp
+	if cap(buf) < int(size) {
+		buf = make([]byte, size)
+	}
+	buf = buf[:size]
+
+	if _, err := io.ReadFull(reader, buf); err != nil {
+		stringBufPool.Put(bufp)
 		return "", fmt.Errorf("failed to read string: %w", err)
 	}
-	return string(buff), nil
-
+	s := string(buf)
+	*bufp = buf
+	stringBufPool.Put(bufp)
+	return s, nil
 }
 
 // ReadBoolean reads a boolean value from the reader.

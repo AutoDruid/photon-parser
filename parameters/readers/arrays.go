@@ -2,14 +2,12 @@ package readers
 
 import (
 	"michelprogram/photon-parser/parser"
-
-	"golang.org/x/exp/constraints"
 )
 
 // readPrimitiveArray is a generic helper that reads an array of primitive numeric types.
 // Format: uint32 size (big-endian) followed by size elements of type T.
 // This is used internally by ReadInt8Array, ReadInt32Array, etc.
-func readPrimitiveArray[T constraints.Integer | constraints.Float](reader *parser.Reader) ([]T, error) {
+func readPrimitiveArray[T parser.Number](reader *parser.Reader) ([]T, error) {
 	size, err := parser.ReadPrimitive[uint32](reader)
 
 	if err != nil {

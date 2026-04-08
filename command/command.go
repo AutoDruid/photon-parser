@@ -2,8 +2,20 @@ package command
 
 import (
 	"fmt"
+	"io"
 	"michelprogram/photon-parser/parser"
+	"sync"
 )
+
+// payloadBufPool holds reusable byte slices used as read buffers for command
+// payloads. After reading, the bytes are copied into a permanent slice so the
+// pooled buffer can be safely returned immediately.
+var payloadBufPool = sync.Pool{
+	New: func() any {
+		b := make([]byte, 512)
+		return &b
+	},
+}
 
 // Parse parses a Photon command from a byte slice.
 // This is a convenience wrapper around ParseFromReader.
@@ -25,7 +37,9 @@ import (
 //	    // Process reliable message
 //	}
 func Parse(data []byte) (*Command, error) {
-	return ParseFromReader(parser.NewReader(data))
+	r := parser.NewReaderFromPool(data)
+	defer parser.ReleaseReader(r)
+	return ParseFromReader(r)
 }
 
 // ParseFromReader parses a Photon command from a parser.Reader.
@@ -50,20 +64,29 @@ func ParseFromReader(r *parser.Reader) (*Command, error) {
 		return nil, fmt.Errorf("command length %d smaller than header size %d", header.Length, HEADER_SIZE)
 	}
 
-	payload, err := r.ReadBytes(int(header.Length - HEADER_SIZE))
+	payloadLen := int(header.Length - HEADER_SIZE)
 
-	if err != nil {
-		return nil, err
+	// Acquire a pooled buffer, grow if needed, then read the payload.
+	bufp := payloadBufPool.Get().(*[]byte)
+	buf := *bufp
+	if cap(buf) < payloadLen {
+		buf = make([]byte, payloadLen)
+	}
+	buf = buf[:payloadLen]
+
+	if _, err := io.ReadFull(r, buf); err != nil {
+		payloadBufPool.Put(bufp)
+		return nil, fmt.Errorf("failed to read %d bytes: %w", payloadLen, err)
 	}
 
-	cmd := &Command{}
+	// Copy into a permanent slice so cmd.Data outlives the pooled buffer.
+	payload := make([]byte, payloadLen)
+	copy(payload, buf)
+	*bufp = buf
+	payloadBufPool.Put(bufp)
 
-	cmd.Type = header.Type
-	cmd.ChannelID = header.ChannelID
-	cmd.Flags = header.Flags
-	cmd.ReservedByte = header.ReservedByte
-	cmd.Length = header.Length
-	cmd.ReliableSequenceNumber = header.ReliableSequenceNumber
+	cmd := &Command{}
+	cmd.Header = *header
 	cmd.Data = payload
 
 	return cmd, nil
