@@ -203,25 +203,6 @@ go test ./parameters/readers -bench=. -benchmem
 - **Bot Development**: Parse game events for automation (educational purposes)
 - **Security Research**: Analyze network protocol security
 
-## Supported Photon Command Types
-
-- `0x01` - Acknowledge
-- `0x02` - Connect
-- `0x03` - VerifyConnect
-- `0x04` - Disconnect
-- `0x05` - Ping
-- `0x06` - SendReliable
-- `0x07` - SendUnreliable
-- `0x08` - SendReliableFragment
-
-## Supported Reliable Message Types
-
-- `0x02` - OperationRequest
-- `0x03` - OtherOperationResponse
-- `0x04` - EventData
-- `0x06` - ExchangeKeys
-- `0x07` - OperationResponse
-
 ## License
 
 See LICENSE file for details.

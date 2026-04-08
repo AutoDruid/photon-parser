@@ -186,8 +186,7 @@ func TestReadStringArray(t *testing.T) {
 				0x00, 0x00, 0x00, 0x01, // size = 1
 				0x00, 0x05, 'H', 'i', // string length says 5, but only 2 chars
 			},
-			wantErr: false, // Current implementation doesn't validate
-			want:    []string{"Hi\x00\x00\x00"},
+			wantErr: true,
 		},
 	}
 
@@ -324,7 +323,7 @@ func TestReadArrayGeneric(t *testing.T) {
 			0x00, 0x00, 0x00, 0xC8, // 200
 		}
 		reader := parser.NewReader(input)
-		got, err := readArray[uint32](reader)
+		got, err := readPrimitiveArray[uint32](reader)
 		if err != nil {
 			t.Fatalf("readArray[uint32]() error = %v", err)
 		}
@@ -340,7 +339,7 @@ func TestReadArrayGeneric(t *testing.T) {
 			0x3F, 0x80, 0x00, 0x00, // 1.0
 		}
 		reader := parser.NewReader(input)
-		got, err := readArray[float32](reader)
+		got, err := readPrimitiveArray[float32](reader)
 		if err != nil {
 			t.Fatalf("readArray[float32]() error = %v", err)
 		}
