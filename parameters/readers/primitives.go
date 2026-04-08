@@ -2,48 +2,77 @@ package readers
 
 import (
 	"fmt"
-	. "michelprogram/photon-parser/parser"
+	"io"
+	"michelprogram/photon-parser/parser"
 )
 
-func ReadInt8(reader *Reader) (int8, error) {
-	return ReadPrimitive[int8](reader)
+// ReadInt8 reads an 8-bit signed integer from the reader.
+// Returns an error if fewer than 1 byte is available.
+func ReadInt8(reader *parser.Reader) (int8, error) {
+	return parser.ReadPrimitive[int8](reader)
 }
 
-func ReadInt16(reader *Reader) (int16, error) {
-	return ReadPrimitive[int16](reader)
+// ReadInt16 reads a 16-bit signed integer from the reader in big-endian format.
+// Returns an error if fewer than 2 bytes are available.
+func ReadInt16(reader *parser.Reader) (int16, error) {
+	return parser.ReadPrimitive[int16](reader)
 }
 
-func ReadInt32(reader *Reader) (int32, error) {
-	return ReadPrimitive[int32](reader)
+// ReadInt32 reads a 32-bit signed integer from the reader in big-endian format.
+// Returns an error if fewer than 4 bytes are available.
+func ReadInt32(reader *parser.Reader) (int32, error) {
+	return parser.ReadPrimitive[int32](reader)
 }
 
-func ReadInt64(reader *Reader) (int64, error) {
-	return ReadPrimitive[int64](reader)
+// ReadInt64 reads a 64-bit signed integer from the reader in big-endian format.
+// Returns an error if fewer than 8 bytes are available.
+func ReadInt64(reader *parser.Reader) (int64, error) {
+	return parser.ReadPrimitive[int64](reader)
 }
 
-func ReadFloat32(reader *Reader) (float32, error) {
-	return ReadPrimitive[float32](reader)
+// ReadFloat32 reads a 32-bit floating point number from the reader in big-endian format.
+// Returns an error if fewer than 4 bytes are available.
+func ReadFloat32(reader *parser.Reader) (float32, error) {
+	return parser.ReadPrimitive[float32](reader)
 }
 
-func ReadFloat64(reader *Reader) (float64, error) {
-	return ReadPrimitive[float64](reader)
+// ReadFloat64 reads a 64-bit floating point number from the reader in big-endian format.
+// Returns an error if fewer than 8 bytes are available.
+func ReadFloat64(reader *parser.Reader) (float64, error) {
+	return parser.ReadPrimitive[float64](reader)
 }
 
-func ReadString(reader *Reader) (string, error) {
+// ReadString reads a Photon Protocol16 string from the reader.
+// Format: uint16 length (big-endian) followed by UTF-8 bytes.
+// Returns an empty string if length is 0.
+// Returns an error if the declared length cannot be fully read.
+//
+// Example wire format for "hello":
+//
+//	0x00 0x05 'h' 'e' 'l' 'l' 'o'
+func ReadString(reader *parser.Reader) (string, error) {
 	size, err := ReadInt16(reader)
 	if err != nil {
 		return "", err
 	}
 
+	if size == 0 {
+		return "", nil
+	}
+
 	buff := make([]byte, size)
-
-	reader.Read(buff)
-
+	if _, err := io.ReadFull(reader, buff); err != nil {
+		return "", fmt.Errorf("failed to read string: %w", err)
+	}
 	return string(buff), nil
+
 }
 
-func ReadBoolean(readers *Reader) (bool, error) {
-	value, err := ReadPrimitive[uint8](readers)
+// ReadBoolean reads a boolean value from the reader.
+// Format: single byte (0x00 = false, 0x01 = true).
+// Returns an error if the value is not 0x00 or 0x01, or if no byte is available.
+func ReadBoolean(readers *parser.Reader) (bool, error) {
+	value, err := parser.ReadPrimitive[uint8](readers)
 
 	if err != nil {
 		return false, err
@@ -55,5 +84,5 @@ func ReadBoolean(readers *Reader) (bool, error) {
 		return true, nil
 	}
 
-	return false, fmt.Errorf("Invalid value for boolean of %d", value)
+	return false, fmt.Errorf("invalid value for boolean: %d (expected 0 or 1)", value)
 }

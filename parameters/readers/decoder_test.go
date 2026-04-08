@@ -111,7 +111,7 @@ func TestDecode(t *testing.T) {
 			name:  "generic array (int32s)",
 			ttype: ArrayType,
 			input: []byte{
-				0x00, 0x00, 0x00, 0x02, // size = 2 (uint32)
+				0x00, 0x02, // size = 2 (uint32)
 				byte(Int32Type),        // element type
 				0x00, 0x00, 0x00, 0x64, // 100
 				0x00, 0x00, 0x00, 0xC8, // 200
@@ -156,7 +156,7 @@ func TestDecode(t *testing.T) {
 			name:  "unknown type",
 			ttype: Type(0xFF), // Invalid type
 			input: []byte{0x01, 0x02, 0x03},
-			want:  nil,
+			wantErr:  true,
 		},
 	}
 

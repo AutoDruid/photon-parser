@@ -357,8 +357,7 @@ func TestReadString(t *testing.T) {
 		{
 			name:    "truncated string",
 			input:   []byte{0x00, 0x05, 'H', 'i'}, // length says 5, but only 2 bytes
-			wantErr: false,                        // Note: Current implementation doesn't check Read result
-			want:    "Hi\x00\x00\x00",             // Will read zeros
+			wantErr: true,
 		},
 	}
 

@@ -1,13 +1,22 @@
 package readers
 
 import (
-	. "michelprogram/photon-parser/parser"
+	"fmt"
+	"michelprogram/photon-parser/parser"
 )
 
-func Decode(reader *Reader, ttype Type) (any, error) {
+// Decode reads a value of the specified Photon Protocol16 type from the reader.
+// It dispatches to the appropriate type-specific reader based on ttype.
+// Returns the decoded value as any, or an error if the type is unsupported
+// or if reading fails.
+//
+// Supported types include all primitives (int8, int16, int32, int64, float32, float64,
+// string, boolean), arrays, dictionaries, and hashtables.
+//
+// For NilType and UnknownType, returns nil without error.
+// For unsupported type codes, returns an error.
+func Decode(reader *parser.Reader, ttype Type) (any, error) {
 	switch ttype {
-	default:
-		//return nil, fmt.Errorf("unsupported type: 0x%02x", ttype)
 	case Int8Type:
 		return ReadInt8(reader)
 	case Int16Type:
@@ -33,13 +42,12 @@ func Decode(reader *Reader, ttype Type) (any, error) {
 	case StringArrayType:
 		return ReadStringArray(reader)
 	case DictionaryType:
-		return ReadDictionnary(reader)
+		return ReadDictionary(reader)
 	case HashTableType:
-		return ReadHashtable(reader)
-	case NilType:
-	case UnknownType:
+		return ReadHashTable(reader)
+	case NilType, UnknownType:
 		return nil, nil
+	default:
+		return nil, fmt.Errorf("unsupported type: 0x%02x", ttype)
 	}
-
-	return "", nil
 }

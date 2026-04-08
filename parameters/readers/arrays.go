@@ -1,23 +1,25 @@
 package readers
 
 import (
-	. "michelprogram/photon-parser/parser"
+	"michelprogram/photon-parser/parser"
 
 	"golang.org/x/exp/constraints"
 )
 
-func readArray[T constraints.Integer | constraints.Float](reader *Reader) ([]T, error) {
-	size, err := ReadPrimitive[uint32](reader)
+// readPrimitiveArray is a generic helper that reads an array of primitive numeric types.
+// Format: uint32 size (big-endian) followed by size elements of type T.
+// This is used internally by ReadInt8Array, ReadInt32Array, etc.
+func readPrimitiveArray[T constraints.Integer | constraints.Float](reader *parser.Reader) ([]T, error) {
+	size, err := parser.ReadPrimitive[uint32](reader)
 
 	if err != nil {
 		return nil, err
 	}
 
 	val := make([]T, size)
-	var i uint32 = 0
 
-	for i = 0; i < size; i++ {
-		input, err := ReadPrimitive[T](reader)
+	for i := uint32(0); i < size; i++ {
+		input, err := parser.ReadPrimitive[T](reader)
 		if err != nil {
 			return nil, err
 		}
@@ -26,25 +28,33 @@ func readArray[T constraints.Integer | constraints.Float](reader *Reader) ([]T, 
 	return val, nil
 }
 
-func ReadInt8Array(reader *Reader) ([]int8, error) {
-	return readArray[int8](reader)
+// ReadInt8Array reads an array of 8-bit signed integers from the reader.
+// Format: uint32 size followed by size int8 values.
+// Returns an error if the array cannot be fully read.
+func ReadInt8Array(reader *parser.Reader) ([]int8, error) {
+	return readPrimitiveArray[int8](reader)
 }
 
-func ReadInt32Array(reader *Reader) ([]int32, error) {
-	return readArray[int32](reader)
+// ReadInt32Array reads an array of 32-bit signed integers from the reader.
+// Format: uint32 size followed by size int32 values (each in big-endian).
+// Returns an error if the array cannot be fully read.
+func ReadInt32Array(reader *parser.Reader) ([]int32, error) {
+	return readPrimitiveArray[int32](reader)
 }
 
-func ReadStringArray(reader *Reader) ([]string, error) {
-	size, err := ReadPrimitive[uint32](reader)
+// ReadStringArray reads an array of strings from the reader.
+// Format: uint32 size followed by size Protocol16 strings (each with uint16 length prefix).
+// Returns an error if the array cannot be fully read.
+func ReadStringArray(reader *parser.Reader) ([]string, error) {
+	size, err := parser.ReadPrimitive[uint32](reader)
 
 	if err != nil {
 		return nil, err
 	}
 
 	val := make([]string, size)
-	var i uint32 = 0
 
-	for i = 0; i < size; i++ {
+	for i := uint32(0); i < size; i++ {
 		input, err := ReadString(reader)
 		if err != nil {
 			return nil, err
@@ -54,24 +64,34 @@ func ReadStringArray(reader *Reader) ([]string, error) {
 	return val, nil
 }
 
-func ReadArray(reader *Reader) ([]any, error) {
+// ReadArray reads a generic typed array from the reader.
+// Format: uint32 size, Type byte, then size elements of that type.
+// All elements in the array have the same type.
+// Returns a slice of any containing the decoded elements.
+//
+// Example wire format for []int32{100, 200}:
+//
+//	0x00 0x00 0x00 0x02  // size = 2 (uint32)
+//	0x69                 // type = Int32Type
+//	0x00 0x00 0x00 0x64  // 100
+//	0x00 0x00 0x00 0xC8  // 200
+func ReadArray(reader *parser.Reader) ([]any, error) {
 
-	size, err := ReadPrimitive[uint16](reader)
+	size, err := parser.ReadPrimitive[uint32](reader)
 
 	if err != nil {
 		return nil, err
 	}
 
-	ttype, err := ReadPrimitive[Type](reader)
+	ttype, err := parser.ReadPrimitive[Type](reader)
 
 	if err != nil {
 		return nil, err
 	}
 
 	val := make([]any, size)
-	var i uint16 = 0
 
-	for i = 0; i < size; i++ {
+	for i := uint32(0); i < size; i++ {
 		input, err := Decode(reader, ttype)
 		if err != nil {
 			return nil, err
