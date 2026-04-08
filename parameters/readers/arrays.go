@@ -65,19 +65,19 @@ func ReadStringArray(reader *parser.Reader) ([]string, error) {
 }
 
 // ReadArray reads a generic typed array from the reader.
-// Format: uint32 size, Type byte, then size elements of that type.
+// Format: uint16 size, Type byte, then size elements of that type.
 // All elements in the array have the same type.
 // Returns a slice of any containing the decoded elements.
 //
 // Example wire format for []int32{100, 200}:
 //
-//	0x00 0x00 0x00 0x02  // size = 2 (uint32)
+//	0x00 0x02  // size = 2 (uint16)
 //	0x69                 // type = Int32Type
 //	0x00 0x00 0x00 0x64  // 100
 //	0x00 0x00 0x00 0xC8  // 200
 func ReadArray(reader *parser.Reader) ([]any, error) {
 
-	size, err := parser.ReadPrimitive[uint32](reader)
+	size, err := parser.ReadPrimitive[uint16](reader)
 
 	if err != nil {
 		return nil, err
@@ -91,7 +91,7 @@ func ReadArray(reader *parser.Reader) ([]any, error) {
 
 	val := make([]any, size)
 
-	for i := uint32(0); i < size; i++ {
+	for i := uint16(0); i < size; i++ {
 		input, err := Decode(reader, ttype)
 		if err != nil {
 			return nil, err
