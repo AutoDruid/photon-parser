@@ -1,8 +1,9 @@
-package readers
+package parameters_test
 
 import (
 	"math"
-	"michelprogram/photon-parser/parser"
+	. "michelprogram/photon-parser/internal/parameters"
+	"michelprogram/photon-parser/internal/reader"
 	"reflect"
 	"testing"
 )
@@ -153,17 +154,19 @@ func TestDecode(t *testing.T) {
 
 		// Unknown type should return empty string and nil error (per current implementation)
 		{
-			name:  "unknown type",
-			ttype: Type(0xFF), // Invalid type
-			input: []byte{0x01, 0x02, 0x03},
-			wantErr:  true,
+			name:    "unknown type",
+			ttype:   Type(0xFF), // Invalid type
+			input:   []byte{0x01, 0x02, 0x03},
+			wantErr: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reader := parser.NewReader(tt.input)
-			got, err := Decode(reader, tt.ttype)
+			fullInput := append([]byte{0x00, byte(tt.ttype)}, tt.input...)
+			reader := reader.NewReader(fullInput)
+			param := Parameters{}
+			err := param.Parse(reader)
 
 			if tt.wantErr {
 				if err == nil {
@@ -177,8 +180,8 @@ func TestDecode(t *testing.T) {
 				return
 			}
 
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("Decode() = %v (type: %T), want %v (type: %T)", got, got, tt.want, tt.want)
+			if !reflect.DeepEqual(param.Value, tt.want) {
+				t.Errorf("Decode() = %v (type: %T), want %v (type: %T)", param.Value, param.Value, tt.want, tt.want)
 			}
 		})
 	}
@@ -196,16 +199,20 @@ func TestDecodeAllTypes(t *testing.T) {
 		Float64Type:     {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
 		StringType:      {0x00, 0x00}, // empty string
 		BooleanType:     {0x00},
-		Int8ArrayType:   {0x00, 0x00, 0x00, 0x00},                 // empty array (uint32 size)
-		Int32ArrayType:  {0x00, 0x00, 0x00, 0x00},                 // empty array (uint32 size)
-		StringArrayType: {0x00, 0x00, 0x00, 0x00},                 // empty array (uint32 size)
-		ArrayType:       {0x00, 0x00, 0x00, 0x00, byte(Int8Type)}, // empty array with type (uint32 size)
+		Int8ArrayType:   {0x00, 0x00, 0x00, 0x00},     // empty array (uint32 size)
+		Int32ArrayType:  {0x00, 0x00, 0x00, 0x00},     // empty array (uint32 size)
+		StringArrayType: {0x00, 0x00, 0x00, 0x00},     // empty array (uint32 size)
+		ArrayType:       {0x00, 0x00, byte(Int8Type)}, // uint16 count 0 + element type
 	}
 
 	for ttype, input := range typeSamples {
 		t.Run(string(rune(ttype)), func(t *testing.T) {
-			reader := parser.NewReader(input)
-			_, err := Decode(reader, ttype)
+
+			fullInput := append([]byte{0x00, byte(ttype)}, input...)
+			reader := reader.NewReader(fullInput)
+			param := Parameters{}
+			err := param.Parse(reader)
+
 			if err != nil {
 				t.Errorf("Decode() failed for type 0x%02x: %v", ttype, err)
 			}
@@ -216,37 +223,32 @@ func TestDecodeAllTypes(t *testing.T) {
 func TestDecodeReaderPosition(t *testing.T) {
 	// Create buffer with multiple values: int8(42), int16(1000)
 	input := []byte{
-		0x2A,       // int8: 42
-		0x03, 0xE8, // int16: 1000
+		0x00, byte(Int8Type), 0x2A,
+		0x00, byte(Int16Type), 0x03, 0xE8,
 	}
-	reader := parser.NewReader(input)
+	reader := reader.NewReader(input)
+	param := Parameters{}
 
 	// Read first value (int8)
-	val1, err := Decode(reader, Int8Type)
+	err := param.Parse(reader)
 	if err != nil {
 		t.Fatalf("First Decode() failed: %v", err)
 	}
-	if val1 != int8(42) {
-		t.Errorf("First value = %v, want 42", val1)
+	if param.Value != int8(42) {
+		t.Errorf("First value = %v, want 42", param.Value)
 	}
 
-	// Reader should now be at position 1
-	if reader.Len() != 2 {
-		t.Errorf("After first read, %d bytes remaining, want 2", reader.Len())
+	if reader.Cursor != 3 {
+		t.Errorf("After first read, %d bytes remaining, want 3", reader.Cursor)
 	}
 
 	// Read second value (int16)
-	val2, err := Decode(reader, Int16Type)
+	err = param.Parse(reader)
 	if err != nil {
 		t.Fatalf("Second Decode() failed: %v", err)
 	}
-	if val2 != int16(1000) {
-		t.Errorf("Second value = %v, want 1000", val2)
-	}
-
-	// Reader should now be exhausted
-	if reader.Len() != 0 {
-		t.Errorf("After second read, %d bytes remaining, want 0", reader.Len())
+	if param.Value != int16(1000) {
+		t.Errorf("Second value = %v, want 1000", param.Value)
 	}
 }
 
@@ -258,8 +260,9 @@ func TestDecodeEmptyReader(t *testing.T) {
 
 	for _, ttype := range types {
 		t.Run(string(rune(ttype)), func(t *testing.T) {
-			reader := parser.NewReader([]byte{})
-			_, err := Decode(reader, ttype)
+			reader := reader.NewReader([]byte{})
+			param := Parameters{}
+			err := param.Parse(reader)
 			if err == nil {
 				t.Errorf("Decode() with empty reader should fail for type 0x%02x", ttype)
 			}
@@ -310,9 +313,11 @@ func BenchmarkDecode(b *testing.B) {
 	for _, bm := range benchmarks {
 		b.Run(bm.name, func(b *testing.B) {
 			b.ReportAllocs()
+			fullInput := append([]byte{0x00, byte(bm.ttype)}, bm.input...)
+			r := reader.NewReader(fullInput)
+			param := Parameters{}
 			for i := 0; i < b.N; i++ {
-				reader := parser.NewReader(bm.input)
-				_, err := Decode(reader, bm.ttype)
+				err := param.Parse(r)
 				if err != nil {
 					b.Fatal(err)
 				}

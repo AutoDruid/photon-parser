@@ -1,8 +1,8 @@
-package readers
+package reader_test
 
 import (
 	"math"
-	. "michelprogram/photon-parser/parser"
+	"michelprogram/photon-parser/internal/reader"
 	"testing"
 )
 
@@ -42,8 +42,8 @@ func TestReadInt8(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reader := NewReader(tt.input)
-			got, err := ReadInt8(reader)
+			r := reader.NewReader(tt.input)
+			got, err := r.ReadInt8()
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadInt8() error = %v, wantErr %v", err, tt.wantErr)
@@ -52,6 +52,35 @@ func TestReadInt8(t *testing.T) {
 
 			if !tt.wantErr && got != tt.want {
 				t.Errorf("ReadInt8() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestReadUInt8(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   []byte
+		want    uint8
+		wantErr bool
+	}{
+		{name: "zero", input: []byte{0x00}, want: 0},
+		{name: "max", input: []byte{0xFF}, want: 255},
+		{name: "mid", input: []byte{0x42}, want: 0x42},
+		{name: "truncated", input: []byte{}, wantErr: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := reader.NewReader(tt.input)
+			got, err := r.ReadUInt8()
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ReadUInt8() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr && got != tt.want {
+				t.Errorf("ReadUInt8() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -98,8 +127,8 @@ func TestReadInt16(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reader := NewReader(tt.input)
-			got, err := ReadInt16(reader)
+			r := reader.NewReader(tt.input)
+			got, err := r.ReadInt16()
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadInt16() error = %v, wantErr %v", err, tt.wantErr)
@@ -108,6 +137,36 @@ func TestReadInt16(t *testing.T) {
 
 			if !tt.wantErr && got != tt.want {
 				t.Errorf("ReadInt16() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestReadUInt16(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   []byte
+		want    uint16
+		wantErr bool
+	}{
+		{name: "zero", input: []byte{0x00, 0x00}, want: 0},
+		{name: "256", input: []byte{0x01, 0x00}, want: 256},
+		{name: "max", input: []byte{0xFF, 0xFF}, want: 65535},
+		{name: "truncated single byte", input: []byte{0x00}, wantErr: true},
+		{name: "empty", input: []byte{}, wantErr: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := reader.NewReader(tt.input)
+			got, err := r.ReadUInt16()
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ReadUInt16() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr && got != tt.want {
+				t.Errorf("ReadUInt16() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -149,8 +208,8 @@ func TestReadInt32(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reader := NewReader(tt.input)
-			got, err := ReadInt32(reader)
+			r := reader.NewReader(tt.input)
+			got, err := r.ReadInt32()
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadInt32() error = %v, wantErr %v", err, tt.wantErr)
@@ -159,6 +218,35 @@ func TestReadInt32(t *testing.T) {
 
 			if !tt.wantErr && got != tt.want {
 				t.Errorf("ReadInt32() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestReadUInt32(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   []byte
+		want    uint32
+		wantErr bool
+	}{
+		{name: "zero", input: []byte{0x00, 0x00, 0x00, 0x00}, want: 0},
+		{name: "256", input: []byte{0x00, 0x00, 0x01, 0x00}, want: 256},
+		{name: "max", input: []byte{0xFF, 0xFF, 0xFF, 0xFF}, want: 4294967295},
+		{name: "truncated", input: []byte{0x00, 0x00}, wantErr: true},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := reader.NewReader(tt.input)
+			got, err := r.ReadUInt32()
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ReadUInt32() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr && got != tt.want {
+				t.Errorf("ReadUInt32() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -200,8 +288,8 @@ func TestReadInt64(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reader := NewReader(tt.input)
-			got, err := ReadInt64(reader)
+			r := reader.NewReader(tt.input)
+			got, err := r.ReadInt64()
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadInt64() error = %v, wantErr %v", err, tt.wantErr)
@@ -210,6 +298,51 @@ func TestReadInt64(t *testing.T) {
 
 			if !tt.wantErr && got != tt.want {
 				t.Errorf("ReadInt64() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestReadUInt64(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   []byte
+		want    uint64
+		wantErr bool
+	}{
+		{
+			name:  "zero",
+			input: []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+			want:  0,
+		},
+		{
+			name:  "256",
+			input: []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00},
+			want:  256,
+		},
+		{
+			name:  "max",
+			input: []byte{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF},
+			want:  18446744073709551615,
+		},
+		{
+			name:    "truncated",
+			input:   []byte{0x00, 0x00, 0x00, 0x00},
+			wantErr: true,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := reader.NewReader(tt.input)
+			got, err := r.ReadUInt64()
+
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ReadUInt64() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !tt.wantErr && got != tt.want {
+				t.Errorf("ReadUInt64() = %v, want %v", got, tt.want)
 			}
 		})
 	}
@@ -251,8 +384,8 @@ func TestReadFloat32(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reader := NewReader(tt.input)
-			got, err := ReadFloat32(reader)
+			r := reader.NewReader(tt.input)
+			got, err := r.ReadFloat32()
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadFloat32() error = %v, wantErr %v", err, tt.wantErr)
@@ -300,8 +433,8 @@ func TestReadFloat64(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reader := NewReader(tt.input)
-			got, err := ReadFloat64(reader)
+			r := reader.NewReader(tt.input)
+			got, err := r.ReadFloat64()
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadFloat64() error = %v, wantErr %v", err, tt.wantErr)
@@ -312,67 +445,6 @@ func TestReadFloat64(t *testing.T) {
 				if math.Abs(got-tt.want) > 0.0000001 {
 					t.Errorf("ReadFloat64() = %v, want %v", got, tt.want)
 				}
-			}
-		})
-	}
-}
-
-func TestReadString(t *testing.T) {
-	tests := []struct {
-		name    string
-		input   []byte
-		want    string
-		wantErr bool
-	}{
-		{
-			name:  "empty string",
-			input: []byte{0x00, 0x00}, // length = 0
-			want:  "",
-		},
-		{
-			name:  "short string",
-			input: []byte{0x00, 0x05, 'H', 'e', 'l', 'l', 'o'}, // length = 5
-			want:  "Hello",
-		},
-		{
-			name:  "single char",
-			input: []byte{0x00, 0x01, 'A'}, // length = 1
-			want:  "A",
-		},
-		{
-			name:  "unicode string",
-			input: []byte{0x00, 0x06, 0xE4, 0xB8, 0xAD, 0xE6, 0x96, 0x87}, // "中文" in UTF-8
-			want:  "中文",
-		},
-		{
-			name:    "missing length",
-			input:   []byte{},
-			wantErr: true,
-		},
-		{
-			name:    "truncated length",
-			input:   []byte{0x00},
-			wantErr: true,
-		},
-		{
-			name:    "truncated string",
-			input:   []byte{0x00, 0x05, 'H', 'i'}, // length says 5, but only 2 bytes
-			wantErr: true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			reader := NewReader(tt.input)
-			got, err := ReadString(reader)
-
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ReadString() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-
-			if !tt.wantErr && got != tt.want {
-				t.Errorf("ReadString() = %q, want %q", got, tt.want)
 			}
 		})
 	}
@@ -414,8 +486,8 @@ func TestReadBoolean(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reader := NewReader(tt.input)
-			got, err := ReadBoolean(reader)
+			r := reader.NewReader(tt.input)
+			got, err := r.ReadBoolean()
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadBoolean() error = %v, wantErr %v", err, tt.wantErr)
@@ -429,46 +501,59 @@ func TestReadBoolean(t *testing.T) {
 	}
 }
 
-func TestReadPrimitiveGeneric(t *testing.T) {
-	t.Run("uint8", func(t *testing.T) {
-		reader := NewReader([]byte{0xFF})
-		got, err := ReadPrimitive[uint8](reader)
-		if err != nil {
-			t.Fatalf("readPrimitive[uint8]() error = %v", err)
-		}
-		if got != 255 {
-			t.Errorf("readPrimitive[uint8]() = %v, want 255", got)
-		}
-	})
-
-	t.Run("uint32", func(t *testing.T) {
-		reader := NewReader([]byte{0x00, 0x00, 0x01, 0x00})
-		got, err := ReadPrimitive[uint32](reader)
-		if err != nil {
-			t.Fatalf("readPrimitive[uint32]() error = %v", err)
-		}
-		if got != 256 {
-			t.Errorf("readPrimitive[uint32]() = %v, want 256", got)
-		}
-	})
-}
-
-func BenchmarkReadInt32(b *testing.B) {
-	data := []byte{0x00, 0x00, 0x01, 0x00}
-	b.ResetTimer()
-
-	for i := 0; i < b.N; i++ {
-		reader := NewReader(data)
-		_, _ = ReadInt32(reader)
+func TestReadString(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   []byte
+		size int
+		want    string
+		wantErr bool
+	}{
+		{
+			name:  "empty string",
+			input: []byte{},
+			size: 0,
+			want:  "",
+		},
+		{
+			name:  "short string",
+			input: []byte{'H', 'e', 'l', 'l', 'o'}, // length = 5
+			size: 5,
+			want:  "Hello",
+		},
+		{
+			name:  "single char",
+			input: []byte{'A'}, // length = 1
+			size: 1,
+			want:  "A",
+		},
+		{
+			name:  "unicode string",
+			input: []byte{0xE4, 0xB8, 0xAD, 0xE6, 0x96, 0x87}, // "中文" in UTF-8
+			size: 6,
+			want:  "中文",
+		},
+		{
+			name:    "truncated string",
+			input:   []byte{'H', 'i'}, // length says 5, but only 2 bytes
+			size: 5,
+			wantErr: true,
+		},
 	}
-}
 
-func BenchmarkReadString(b *testing.B) {
-	data := []byte{0x00, 0x05, 'H', 'e', 'l', 'l', 'o'}
-	b.ResetTimer()
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := reader.NewReader(tt.input)
+			got, err := r.ReadString(tt.size)
 
-	for i := 0; i < b.N; i++ {
-		reader := NewReader(data)
-		_, _ = ReadString(reader)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ReadString() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+
+			if !tt.wantErr && got != tt.want {
+				t.Errorf("ReadString() = %q, want %q", got, tt.want)
+			}
+		})
 	}
 }

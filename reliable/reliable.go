@@ -5,6 +5,16 @@ import (
 	"michelprogram/photon-parser/parser"
 )
 
+type Ping struct{}
+func ParsePing() (*Ping, error) {
+	return &Ping{}, nil
+}
+
+type Acknowledge struct{}
+func ParseAcknowledge() (*Acknowledge, error) {
+	return &Acknowledge{}, nil
+}
+
 // Parse parses a Photon reliable message from a byte slice.
 // This is a convenience wrapper around ParseFromReader.
 //
@@ -48,10 +58,21 @@ func ParseFromReader(r *parser.Reader) (*Reliable, error) {
 		return nil, err
 	}
 
+<<<<<<< Updated upstream
 	res.Signature = header.Signature
 	res.Type = header.Type
 	res.EventCode = header.EventCode
 	res.ParameterCount = header.ParameterCount
+=======
+	if header.Signature != 0xF3 {
+        return nil, fmt.Errorf("encrypted or unknown packet, signature: 0x%02x", header.Signature)
+    }
+
+	res.Signature = header.Signature
+	res.Type = header.Type
+	res.EventCode = header.EventCode
+	res.ParameterCount = header.ParameterCount
+>>>>>>> Stashed changes
 	res.Parameters = make([]*parameters.Parameters, header.ParameterCount)
 
 	for i := uint16(0); i < res.ParameterCount; i++ {

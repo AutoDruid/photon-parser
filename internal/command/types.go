@@ -3,6 +3,7 @@
 // messages, establishing connections, etc.
 package command
 
+import "michelprogram/photon-parser/internal/reader"
 // Type represents a Photon Protocol command type.
 type Type uint8
 
@@ -25,12 +26,12 @@ const HEADER_SIZE = 12
 // Header represents the command header containing command metadata.
 // This header appears at the start of every command within a session.
 type Header struct {
-	Type                   Type   // Command type (see Type constants)
-	ChannelID              uint8  // Channel identifier for message ordering
-	Flags                  uint8  // Command flags (implementation-specific)
-	ReservedByte           uint8  // Reserved for future use
-	Length                 uint32 // Total length of command including header
-	ReliableSequenceNumber uint32 // Sequence number for reliable delivery
+	Type                   Type   `json:"type"`                     // Command type (see Type constants)
+	ChannelID              uint8  `json:"channel_id"`               // Channel identifier for message ordering
+	Flags                  uint8  `json:"flags"`                    // Command flags (implementation-specific)
+	ReservedByte           uint8  `json:"reserved_byte"`            // Reserved for future use
+	Length                 uint32 `json:"length"`                   // Total length of command including header
+	ReliableSequenceNumber uint32 `json:"reliable_sequence_number"` // Sequence number for reliable delivery
 }
 
 // Command represents a complete Photon command with its header and payload data.
@@ -39,5 +40,10 @@ type Header struct {
 type Command struct {
 	Header
 
-	Data []byte // Command payload (interpretation depends on Type)
+	Payload reader.Payload `json:"payload"` // Command payload (interpretation depends on Type)
+}
+
+type UnknownPayload struct {
+	Raw  []byte
+	Kind Type
 }

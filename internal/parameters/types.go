@@ -1,6 +1,6 @@
 // Package readers provides Protocol16 type readers for Photon Protocol parameters.
 // It handles all Photon data types including primitives, arrays, and dictionaries.
-package readers
+package parameters
 
 // Type represents a Photon Protocol16 type code.
 // Each type code indicates how the following bytes should be interpreted.
