@@ -1,11 +1,10 @@
-package readers_test
+package parameters_test
 
 import (
+	. "michelprogram/photon-parser/internal/parameters"
+	"michelprogram/photon-parser/internal/reader"
 	"reflect"
 	"testing"
-
-	"michelprogram/photon-parser/parameters/readers"
-	"michelprogram/photon-parser/parser"
 )
 
 func TestReadDictionnary(t *testing.T) {
@@ -18,7 +17,8 @@ func TestReadDictionnary(t *testing.T) {
 		{
 			name: "int32 to int32 dictionary",
 			input: []byte{
-				byte(readers.Int32Type), byte(readers.Int32Type), // keyType, valueType
+				0x00, 0x44,
+				byte(Int32Type), byte(Int32Type), // keyType, valueType
 				0x00, 0x02, // size = 2
 				0x00, 0x00, 0x00, 0x01, // key = 1
 				0x00, 0x00, 0x28, 0xC1, // value = 10433
@@ -33,7 +33,8 @@ func TestReadDictionnary(t *testing.T) {
 		{
 			name: "empty dictionary",
 			input: []byte{
-				byte(readers.Int32Type), byte(readers.Int32Type),
+				0x00, 0x44,
+				byte(Int32Type), byte(Int32Type),
 				0x00, 0x00, // size = 0
 			},
 			want: map[any]any{},
@@ -41,7 +42,8 @@ func TestReadDictionnary(t *testing.T) {
 		{
 			name: "string to boolean dictionary",
 			input: []byte{
-				byte(readers.StringType), byte(readers.BooleanType),
+				0x00, 0x44,
+				byte(StringType), byte(BooleanType),
 				0x00, 0x02, // size = 2
 				0x00, 0x01, 'a', // key = "a"
 				0x01,                 // value = true
@@ -55,18 +57,19 @@ func TestReadDictionnary(t *testing.T) {
 		},
 		{
 			name:    "truncated key type",
-			input:   []byte{},
+			input:   []byte{0x00, 0x44},
 			wantErr: true,
 		},
 		{
 			name:    "missing value type",
-			input:   []byte{byte(readers.Int32Type)},
+			input:   []byte{0x00, 0x44, byte(Int32Type)},
 			wantErr: true,
 		},
 		{
 			name: "truncated size",
 			input: []byte{
-				byte(readers.Int32Type), byte(readers.Int32Type),
+				0x00, 0x44,
+				byte(Int32Type), byte(Int32Type),
 				0x00, // size needs 2 bytes
 			},
 			wantErr: true,
@@ -74,7 +77,8 @@ func TestReadDictionnary(t *testing.T) {
 		{
 			name: "truncated data",
 			input: []byte{
-				byte(readers.Int32Type), byte(readers.Int32Type),
+				0x00, 0x44,
+				byte(Int32Type), byte(Int32Type),
 				0x00, 0x01, // size = 1
 				0x00, 0x00, 0x00, 0x01, // key = 1 (value missing)
 			},
@@ -84,16 +88,17 @@ func TestReadDictionnary(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reader := parser.NewReader(tt.input)
-			got, err := readers.ReadDictionary(reader)
+			reader := reader.NewReader(tt.input)
+			p := &Parameters{}
+			err := p.Parse(reader)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadDictionary() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
-			if !tt.wantErr && !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ReadDictionary() = %v, want %v", got, tt.want)
+			if !tt.wantErr && !reflect.DeepEqual(p.Value, tt.want) {
+				t.Errorf("ReadDictionary() = %v, want %v", p.Value, tt.want)
 			}
 		})
 	}
@@ -109,15 +114,16 @@ func TestReadHashtable(t *testing.T) {
 		{
 			name: "mixed key/value types",
 			input: []byte{
+				0x00, 0x68,
 				0x00, 0x02, // size = 2
-				byte(readers.Int32Type), // key type
-				0x00, 0x00, 0x00, 0x01,  // key = 1
-				byte(readers.StringType), // value type
-				0x00, 0x02, 'h', 'i',     // value = "hi"
-				byte(readers.StringType), // key type
-				0x00, 0x01, 'k',          // key = "k"
-				byte(readers.BooleanType), // value type
-				0x01,                      // value = true
+				byte(Int32Type),        // key type
+				0x00, 0x00, 0x00, 0x01, // key = 1
+				byte(StringType),     // value type
+				0x00, 0x02, 'h', 'i', // value = "hi"
+				byte(StringType), // key type
+				0x00, 0x01, 'k',  // key = "k"
+				byte(BooleanType), // value type
+				0x01,              // value = true
 			},
 			want: map[any]any{
 				int32(1): "hi",
@@ -126,14 +132,15 @@ func TestReadHashtable(t *testing.T) {
 		},
 		{
 			name:    "truncated size",
-			input:   []byte{0x00},
+			input:   []byte{0x00, 0x68, 0x00},
 			wantErr: true,
 		},
 		{
 			name: "truncated data",
 			input: []byte{
+				0x00, 0x68,
 				0x00, 0x01, // size = 1
-				byte(readers.Int32Type),
+				byte(Int32Type),
 				0x00, 0x00, 0x00, 0x01, // key = 1 (value type/value missing)
 			},
 			wantErr: true,
@@ -142,16 +149,17 @@ func TestReadHashtable(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reader := parser.NewReader(tt.input)
-			got, err := readers.ReadHashTable(reader)
+			reader := reader.NewReader(tt.input)
+			p := &Parameters{}
+			err := p.Parse(reader)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadHashTable() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
-			if !tt.wantErr && !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("ReadHashTable() = %v, want %v", got, tt.want)
+			if !tt.wantErr && !reflect.DeepEqual(p.Value, tt.want) {
+				t.Errorf("ReadHashTable() = %v, want %v", p.Value, tt.want)
 			}
 		})
 	}

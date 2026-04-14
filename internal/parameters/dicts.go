@@ -1,8 +1,6 @@
-package readers
+package parameters
 
-import (
-	"michelprogram/photon-parser/parser"
-)
+import "michelprogram/photon-parser/internal/reader"
 
 // ReadDictionary reads a Photon Protocol16 dictionary with uniform key and value types.
 // Format: Type byte (key type), Type byte (value type), uint16 size,
@@ -17,22 +15,19 @@ import (
 //	0x00 0x05 'h' 'e' 'l' 'l' 'o'  // value: "hello"
 //
 // Returns an error if the dictionary cannot be fully read.
-func ReadDictionary(reader *parser.Reader) (map[any]any, error) {
+func (p Parameters) readDictionary(r *reader.Reader) (map[any]any, error) {
 
-	keyType, err := parser.ReadPrimitive[Type](reader)
-
+	keyType, err := r.ReadUInt8()
 	if err != nil {
 		return nil, err
 	}
 
-	valueType, err := parser.ReadPrimitive[Type](reader)
-
+	valueType, err := r.ReadUInt8()
 	if err != nil {
 		return nil, err
 	}
 
-	size, err := parser.ReadPrimitive[uint16](reader)
-
+	size, err := r.ReadUInt16()
 	if err != nil {
 		return nil, err
 	}
@@ -40,12 +35,12 @@ func ReadDictionary(reader *parser.Reader) (map[any]any, error) {
 	res := make(map[any]any, size)
 
 	for i := uint16(0); i < size; i++ {
-		key, err := Decode(reader, keyType)
+		key, err := p.decode(r, Type(keyType))
 		if err != nil {
 			return nil, err
 		}
 
-		value, err := Decode(reader, valueType)
+		value, err := p.decode(r, Type(valueType))
 		if err != nil {
 			return nil, err
 		}
@@ -77,28 +72,28 @@ func ReadDictionary(reader *parser.Reader) (map[any]any, error) {
 //	0x01                 // entry 2 value: true
 //
 // Returns an error if the hashtable cannot be fully read.
-func ReadHashTable(reader *parser.Reader) (map[any]any, error) {
-	size, err := parser.ReadPrimitive[uint16](reader)
+func (p Parameters) readHashTable(r *reader.Reader) (map[any]any, error) {
+	size, err := r.ReadUInt16()
 	if err != nil {
 		return nil, err
 	}
 
 	res := make(map[any]any, int(size))
 	for i := uint16(0); i < size; i++ {
-		keyType, err := parser.ReadPrimitive[Type](reader)
+		keyType, err := r.ReadUInt8()
 		if err != nil {
 			return nil, err
 		}
-		key, err := Decode(reader, keyType)
+		key, err := p.decode(r, Type(keyType))
 		if err != nil {
 			return nil, err
 		}
 
-		valueType, err := parser.ReadPrimitive[Type](reader)
+		valueType, err := r.ReadUInt8()
 		if err != nil {
 			return nil, err
 		}
-		value, err := Decode(reader, valueType)
+		value, err := p.decode(r, Type(valueType))
 		if err != nil {
 			return nil, err
 		}
