@@ -6,7 +6,12 @@ import (
 	"michelprogram/photon-parser/internal/command/ping"
 	"michelprogram/photon-parser/internal/command/sendReliable"
 	"michelprogram/photon-parser/internal/reader"
+	"michelprogram/photon-parser/internal/types"
 )
+
+type Command struct {
+	types.Command
+}
 
 var _ reader.Parseable = (*Command)(nil)
 
@@ -28,38 +33,54 @@ func (c *Command) Parse(r *reader.Reader) error {
 		return err
 	}
 
-	if header.Length < HEADER_SIZE {
-		return fmt.Errorf("command length %d smaller than header size %d", header.Length, HEADER_SIZE)
+	if header.Length < types.COMMAND_HEADER_SIZE {
+		return fmt.Errorf(
+			"command length %d smaller than header size %d",
+			header.Length,
+			types.COMMAND_HEADER_SIZE,
+		)
 	}
 
-	c.Header = header
+	c.CommandHeader = header
 	parsed, err := c.parsePayload(header.Type, r)
 	if err != nil {
-		rest, _ := r.ReadBytes(int(header.Length - HEADER_SIZE))
+		rest, _ := r.ReadBytes(int(header.Length - types.COMMAND_HEADER_SIZE))
 		// don't fatal — just store raw for encrypted packets
-		c.Payload = UnknownPayload{Raw: rest, Kind: header.Type}
-	}else{
-
+		c.Payload = types.UnknownPayload{Raw: rest, Kind: header.Type}
 	}
+
 	c.Payload = parsed
+
+	c.emit(r)
 
 	return nil
 }
 
-func (c Command) parsePayload(t Type, r *reader.Reader) (reader.Payload, error) {
+func (c Command) emit(r *reader.Reader) {
+	if r.SyncHooks.OnCommand != nil {
+		r.SyncHooks.OnCommand(c.Command)
+	}
+	if r.AsyncHooks.OnCommand != nil {
+		select {
+		case r.AsyncHooks.OnCommand <- c.Command:
+		default: // don't block parser
+		}
+	}
+}
+func (c Command) parsePayload(t types.CommandType, r *reader.Reader) (types.Payload, error) {
 	switch t {
-	case SendReliable:
+	case types.SendReliableCommand:
 		sd := sendReliable.Reliable{}
 		err := sd.Parse(r)
 		if err != nil {
 			return nil, err
 		}
 		return sd, nil
-	case Ping:
+	case types.PingCommand:
 		ping := &ping.Ping{}
 		ping.Parse(r)
 		return ping, nil
-	case Acknowledge:
+	case types.AcknowledgeCommand:
 		acknowledge := &acknowledge.Acknowledge{}
 		acknowledge.Parse(r)
 		return acknowledge, nil
@@ -68,40 +89,40 @@ func (c Command) parsePayload(t Type, r *reader.Reader) (reader.Payload, error) 
 	}
 }
 
-func (s *Command) parseHeader(r *reader.Reader) (Header, error) {
+func (s *Command) parseHeader(r *reader.Reader) (types.CommandHeader, error) {
 	var err error
-	var header Header
+	var header types.CommandHeader
 
 	b, err := r.ReadUInt8()
 	if err != nil {
-		return Header{}, err
+		return types.CommandHeader{}, err
 	}
 
-	header.Type = Type(b)
+	header.Type = types.CommandType(b)
 
 	header.ChannelID, err = r.ReadUInt8()
 	if err != nil {
-		return Header{}, err
+		return types.CommandHeader{}, err
 	}
 
 	header.Flags, err = r.ReadUInt8()
 	if err != nil {
-		return Header{}, err
+		return types.CommandHeader{}, err
 	}
 
 	header.ReservedByte, err = r.ReadUInt8()
 	if err != nil {
-		return Header{}, err
+		return types.CommandHeader{}, err
 	}
 
 	header.Length, err = r.ReadUInt32()
 	if err != nil {
-		return Header{}, err
+		return types.CommandHeader{}, err
 	}
 
 	header.ReliableSequenceNumber, err = r.ReadUInt32()
 	if err != nil {
-		return Header{}, err
+		return types.CommandHeader{}, err
 	}
 
 	return header, nil

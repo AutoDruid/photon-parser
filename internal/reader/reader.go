@@ -244,3 +244,15 @@ func (r *Reader) ReadBytes(n int) ([]byte, error) {
 	r.Cursor += n
 	return buff, nil
 }
+
+func (r *Reader) CloseAsyncHooks() {
+	if r.AsyncHooks.OnSession != nil {
+		close(r.AsyncHooks.OnSession)
+	}
+}
+
+func (r *Reader) Reset(data []byte) {
+	r.Buffer = data
+	r.Cursor = 0
+	r.Max = len(data)
+}

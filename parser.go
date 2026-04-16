@@ -1,30 +1,57 @@
 package photonparser
 
-import "michelprogram/photon-parser/internal/session"
+import (
+	"michelprogram/photon-parser/internal/reader"
+	"michelprogram/photon-parser/internal/session"
+)
 
-type Parser struct{}
-
-func NewParser() *Parser {
-	return &Parser{}
+type Parser struct {
+	reader *reader.Reader
 }
 
-func (p *Parser) ParsePacket(data []byte) (*session.Session, error) {
+func NewParser() *Parser {
+	return &Parser{
+		reader: reader.NewReader(nil),
+	}
+}
 
-	reader := NewReader(data)
+func (p *Parser) ParsePacket(data []byte) (*Session, error) {
+
+	p.reader.Reset(data)
 
 	sess := session.Session{}
-	err := sess.Parse(reader)
+	err := sess.Parse(p.reader)
 	if err != nil {
 		return nil, err
 	}
 
-	return &sess, nil
+	return &sess.Session, nil
 }
 
-/* type EventHandler func(Event)
-type RequestHandler func(Request)
-type ResponseHandler func(Response)
-func (p *Parser) OnEvent(handler EventHandler)
-func (p *Parser) OnRequest(handler RequestHandler)
-func (p *Parser) OnResponse(handler ResponseHandler)
-func (p *Parser) RegisterCustomType(code byte, decoder CustomDecoder) */
+func (p *Parser) OnSessionSync(fn func(Session)) {
+	p.reader.SyncHooks.OnSession = fn
+}
+
+func (p *Parser) OnSessionAsync() <-chan Session {
+	if p.reader.AsyncHooks.OnSession == nil {
+		ch := make(chan Session, 1024)
+		p.reader.AsyncHooks.OnSession = ch
+	}
+	return p.reader.AsyncHooks.OnSession
+}
+
+func (p *Parser) OnCommandSync(fn func(Command)) {
+	p.reader.SyncHooks.OnCommand = fn
+}
+
+func (p *Parser) OnCommandAsync() <-chan Command {
+	if p.reader.AsyncHooks.OnCommand == nil {
+		ch := make(chan Command, 1024)
+		p.reader.AsyncHooks.OnCommand = ch
+	}
+	return p.reader.AsyncHooks.OnCommand
+}
+
+func (p *Parser) Close() {
+	p.reader.CloseAsyncHooks()
+}

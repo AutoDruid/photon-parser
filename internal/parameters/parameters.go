@@ -3,24 +3,14 @@ package parameters
 import (
 	"fmt"
 	"michelprogram/photon-parser/internal/reader"
+	"michelprogram/photon-parser/internal/types"
 )
 
-// Header represents the parameter header containing the parameter ID and type.
-// This appears at the beginning of each serialized parameter.
-type Header struct {
-	ID   uint8 // Parameter identifier (application-specific)
-	Type Type  // Protocol16 type code indicating how to decode the value
+type Parameter struct {
+	types.Parameter
 }
 
-// Parameters represents a complete Photon Protocol parameter with its header and decoded value.
-// The Value field contains the decoded data according to the Type specified in the Header.
-type Parameters struct {
-	Header
-
-	Value interface{} // Decoded value, type depends on Header.Type
-}
-
-var _ reader.Parseable = (*Parameters)(nil)
+var _ reader.Parseable = (*Parameter)(nil)
 
 // Parse reads a complete parameter from the reader.
 // Format: Header (1 byte ID + 1 byte Type), followed by the typed value.
@@ -39,7 +29,7 @@ var _ reader.Parseable = (*Parameters)(nil)
 //	    return err
 //	}
 //	fmt.Printf("Parameter %d has value: %v\n", param.ID, param.Value)
-func (p *Parameters) Parse(r *reader.Reader) error {
+func (p *Parameter) Parse(r *reader.Reader) error {
 
 	header, err := p.parseHeader(r)
 	if err != nil {
@@ -52,27 +42,43 @@ func (p *Parameters) Parse(r *reader.Reader) error {
 		return err
 	}
 
-	p.Header = header
+	p.ParameterHeader = header
 	p.Value = value
 
 	return nil
 }
 
-func (p *Parameters) parseHeader(r *reader.Reader) (Header, error) {
+func (p Parameter) emit(r *reader.Reader) {
+
+	if r.SyncHooks.OnParameter != nil {
+		r.SyncHooks.OnParameter(p.Parameter)
+	}
+
+	if r.AsyncHooks.OnParameter == nil {
+		return
+	}
+
+	select {
+	case r.AsyncHooks.OnParameter <- p.Parameter:
+	default:
+	}
+}
+
+func (p *Parameter) parseHeader(r *reader.Reader) (types.ParameterHeader, error) {
 	var err error
-	var header Header
+	var header types.ParameterHeader
 
 	header.ID, err = r.ReadUInt8()
 	if err != nil {
-		return Header{}, err
+		return types.ParameterHeader{}, err
 	}
 
 	b, err := r.ReadUInt8()
 	if err != nil {
-		return Header{}, err
+		return types.ParameterHeader{}, err
 	}
 
-	header.Type = Type(b)
+	header.Type = types.ParameterType(b)
 
 	return header, nil
 }
@@ -87,37 +93,37 @@ func (p *Parameters) parseHeader(r *reader.Reader) (Header, error) {
 //
 // For NilType and UnknownType, returns nil without error.
 // For unsupported type codes, returns an error.
-func (p Parameters) decode(reader *reader.Reader, ttype Type) (any, error) {
+func (p Parameter) decode(reader *reader.Reader, ttype types.ParameterType) (any, error) {
 	switch ttype {
-	case Int8Type:
+	case types.Int8Type:
 		return reader.ReadInt8()
-	case Int16Type:
+	case types.Int16Type:
 		return reader.ReadInt16()
-	case Int32Type:
+	case types.Int32Type:
 		return reader.ReadInt32()
-	case Int64Type:
+	case types.Int64Type:
 		return reader.ReadInt64()
-	case Float32Type:
+	case types.Float32Type:
 		return reader.ReadFloat32()
-	case Float64Type:
+	case types.Float64Type:
 		return reader.ReadFloat64()
-	case StringType:
+	case types.StringType:
 		return p.readString(reader)
-	case BooleanType:
+	case types.BooleanType:
 		return reader.ReadBoolean()
-	case Int8ArrayType:
+	case types.Int8ArrayType:
 		return p.readInt8Array(reader)
-	case Int32ArrayType:
+	case types.Int32ArrayType:
 		return p.readInt32Array(reader)
-	case ArrayType:
+	case types.ArrayType:
 		return p.readArray(reader)
-	case StringArrayType:
+	case types.StringArrayType:
 		return p.readStringArray(reader)
-	case DictionaryType:
+	case types.DictionaryType:
 		return p.readDictionary(reader)
-	case HashTableType:
+	case types.HashTableType:
 		return p.readHashTable(reader)
-	case NilType, UnknownType:
+	case types.NilType, types.UnknownType:
 		return nil, nil
 	default:
 		return nil, fmt.Errorf("unsupported type: 0x%02x", ttype)
@@ -126,6 +132,6 @@ func (p Parameters) decode(reader *reader.Reader, ttype Type) (any, error) {
 
 // String returns a human-readable representation of the parameter.
 // Format: "ID: <id>\nType: <type>\nValue: <value>\n"
-func (p Parameters) String() string {
+func (p Parameter) String() string {
 	return fmt.Sprintf("ID: %d\nType: %d\nValue: %v\n", p.ID, p.Type, p.Value)
 }

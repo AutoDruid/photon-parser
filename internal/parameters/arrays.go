@@ -2,12 +2,13 @@ package parameters
 
 import (
 	"michelprogram/photon-parser/internal/reader"
+	"michelprogram/photon-parser/internal/types"
 )
 
 // ReadInt8Array reads an array of 8-bit signed integers from the reader.
 // Format: uint32 size followed by size int8 values.
 // Returns an error if the array cannot be fully read.
-func (p Parameters) readInt8Array(r *reader.Reader) ([]int8, error) {
+func (p Parameter) readInt8Array(r *reader.Reader) ([]int8, error) {
 	size, err := r.ReadUInt32()
 	if err != nil {
 		return nil, err
@@ -28,7 +29,7 @@ func (p Parameters) readInt8Array(r *reader.Reader) ([]int8, error) {
 // ReadInt32Array reads an array of 32-bit signed integers from the reader.
 // Format: uint32 size followed by size int32 values (each in big-endian).
 // Returns an error if the array cannot be fully read.
-func (p Parameters) readInt32Array(r *reader.Reader) ([]int32, error) {
+func (p Parameter) readInt32Array(r *reader.Reader) ([]int32, error) {
 	size, err := r.ReadUInt32()
 	if err != nil {
 		return nil, err
@@ -49,7 +50,7 @@ func (p Parameters) readInt32Array(r *reader.Reader) ([]int32, error) {
 // ReadStringArray reads an array of strings from the reader.
 // Format: uint32 size followed by size Protocol16 strings (each with uint16 length prefix).
 // Returns an error if the array cannot be fully read.
-func (p Parameters) readStringArray(r *reader.Reader) ([]string, error) {
+func (p Parameter) readStringArray(r *reader.Reader) ([]string, error) {
 	size, err := r.ReadUInt32()
 	if err != nil {
 		return nil, err
@@ -78,7 +79,7 @@ func (p Parameters) readStringArray(r *reader.Reader) ([]string, error) {
 //	0x69                 // type = Int32Type
 //	0x00 0x00 0x00 0x64  // 100
 //	0x00 0x00 0x00 0xC8  // 200
-func (p Parameters) readArray(r *reader.Reader) ([]any, error) {
+func (p Parameter) readArray(r *reader.Reader) ([]any, error) {
 
 	size, err := r.ReadUInt16()
 	if err != nil {
@@ -93,7 +94,7 @@ func (p Parameters) readArray(r *reader.Reader) ([]any, error) {
 	val := make([]any, size)
 
 	for i := uint16(0); i < size; i++ {
-		input, err := p.decode(r, Type(ttype))
+		input, err := p.decode(r, types.ParameterType(ttype))
 		if err != nil {
 			return nil, err
 		}

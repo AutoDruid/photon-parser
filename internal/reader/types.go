@@ -1,15 +1,17 @@
 package reader
 
+import "michelprogram/photon-parser/internal/types"
+
 type Parseable interface {
 	Parse(r *Reader) error
 }
-
-type Payload interface{}
-
 type Reader struct {
 	Buffer []byte
 	Max    int
 	Cursor int
+
+	types.SyncHooks
+	types.AsyncHooks
 }
 
 const (

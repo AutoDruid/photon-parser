@@ -7,24 +7,11 @@ import (
 	"fmt"
 	"michelprogram/photon-parser/internal/command"
 	"michelprogram/photon-parser/internal/reader"
+	"michelprogram/photon-parser/internal/types"
 )
 
-// Header represents the Photon session header containing peer and timing information.
-// This header appears at the start of every Photon packet.
-type Header struct {
-	PeerID       uint16 `json:"peer_id"`       // Peer identifier for this connection
-	CRCEnabled   uint8  `json:"crc_enabled"`   // CRC checksum flag (0 = disabled, 1 = enabled)
-	CommandCount uint8  `json:"command_count"` // Number of commands following this header
-	Timestamp    uint32 `json:"timestamp"`     // Timestamp in milliseconds
-	Challenge    int32  `json:"challenge"`     // Challenge value for connection verification
-}
-
-// Session represents a complete Photon session packet with its header and commands.
-// A session packet can contain multiple commands that will be processed sequentially.
 type Session struct {
-	Header
-
-	Commands []*command.Command // Slice of commands contained in this session
+	types.Session
 }
 
 var _ reader.Parseable = (*Session)(nil)
@@ -41,7 +28,7 @@ func (s *Session) Parse(r *reader.Reader) error {
 		return err
 	}
 
-	s.Commands = make([]*command.Command, header.CommandCount)
+	s.Commands = make([]*types.Command, header.CommandCount)
 
 	for i := uint8(0); i < header.CommandCount; i++ {
 		cmd := &command.Command{}
@@ -49,41 +36,59 @@ func (s *Session) Parse(r *reader.Reader) error {
 		if err != nil {
 			return err
 		}
-		s.Commands[i] = cmd
+		s.Commands[i] = &cmd.Command
 	}
 
 	s.Header = header
 
+	s.emit(r)
+
 	return nil
 }
 
-func (s *Session) parseHeader(r *reader.Reader) (Header, error) {
+func (s Session) emit(r *reader.Reader) {
+
+	if r.SyncHooks.OnSession != nil {
+		r.SyncHooks.OnSession(s.Session)
+	}
+
+	if r.AsyncHooks.OnSession == nil {
+		return
+	}
+
+	select {
+	case r.AsyncHooks.OnSession <- s.Session:
+	default:
+	}
+}
+
+func (s *Session) parseHeader(r *reader.Reader) (types.Header, error) {
 	var err error
-	var header Header
+	var header types.Header
 
 	header.PeerID, err = r.ReadUInt16()
 	if err != nil {
-		return Header{}, err
+		return types.Header{}, err
 	}
 
 	header.CRCEnabled, err = r.ReadUInt8()
 	if err != nil {
-		return Header{}, err
+		return types.Header{}, err
 	}
 
 	header.CommandCount, err = r.ReadUInt8()
 	if err != nil {
-		return Header{}, err
+		return types.Header{}, err
 	}
 
 	header.Timestamp, err = r.ReadUInt32()
 	if err != nil {
-		return Header{}, err
+		return types.Header{}, err
 	}
 
 	header.Challenge, err = r.ReadInt32()
 	if err != nil {
-		return Header{}, err
+		return types.Header{}, err
 	}
 
 	return header, nil
