@@ -249,6 +249,16 @@ func (r *Reader) CloseAsyncHooks() {
 	if r.AsyncHooks.OnSession != nil {
 		close(r.AsyncHooks.OnSession)
 	}
+
+	if r.AsyncHooks.OnCommand != nil {
+ 		close(r.AsyncHooks.OnCommand)
+ 		r.AsyncHooks.OnCommand = nil
+ 	}
+
+ 	if r.AsyncHooks.OnParameter != nil {
+ 		close(r.AsyncHooks.OnParameter)
+ 		r.AsyncHooks.OnParameter = nil
+ 	}
 }
 
 func (r *Reader) Reset(data []byte) {

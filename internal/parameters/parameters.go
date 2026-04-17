@@ -44,6 +44,8 @@ func (p *Parameter) Parse(r *reader.Reader) error {
 
 	p.ParameterHeader = header
 	p.Value = value
+	
+	p.emit(r)
 
 	return nil
 }

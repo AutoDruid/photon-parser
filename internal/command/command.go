@@ -44,12 +44,14 @@ func (c *Command) Parse(r *reader.Reader) error {
 	c.CommandHeader = header
 	parsed, err := c.parsePayload(header.Type, r)
 	if err != nil {
+		//TODO Check on error if cursor position still sync
 		rest, _ := r.ReadBytes(int(header.Length - types.COMMAND_HEADER_SIZE))
 		// don't fatal — just store raw for encrypted packets
 		c.Payload = types.UnknownPayload{Raw: rest, Kind: header.Type}
+	}else{
+		c.Payload = parsed
 	}
 
-	c.Payload = parsed
 
 	c.emit(r)
 
