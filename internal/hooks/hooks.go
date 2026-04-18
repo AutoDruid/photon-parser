@@ -8,8 +8,14 @@ type Hooks struct {
 }
 
 func ensureChan[T types.Hookable](slot *chan T, size uint16) <-chan T {
+	var minSize uint16 = 1
+
+	if minSize != 0 {
+		minSize = size
+	}
+
 	if *slot == nil {
-		*slot = make(chan T, size)
+		*slot = make(chan T, minSize)
 	}
 	return *slot
 }
