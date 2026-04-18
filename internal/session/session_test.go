@@ -2,6 +2,7 @@ package session_test
 
 import (
 	"encoding/hex"
+	v16 "michelprogram/photon-parser/internal/parameters/v16"
 	"michelprogram/photon-parser/internal/reader"
 	"michelprogram/photon-parser/internal/session"
 	"strings"
@@ -17,7 +18,9 @@ func TestParseSession(t *testing.T) {
 	}
 
 	sess := &session.Session{}
-	r := reader.NewReader(cleared)
+	r := reader.NewReader(cleared, reader.Options{
+		ParameterParser: &v16.Parameter{},
+	})
 
 	err = sess.Parse(r)
 	if err != nil {
@@ -56,7 +59,9 @@ func BenchmarkParseSession(b *testing.B) {
 	s := &session.Session{}
 
 	for b.Loop() {
-		r := reader.NewReader(payload)
+		r := reader.NewReader(payload, reader.Options{
+			ParameterParser: &v16.Parameter{},
+		})
 		err := s.Parse(r)
 		if err != nil {
 			b.Fatalf("LoadFromWiresharkExport() failed: %v", err)

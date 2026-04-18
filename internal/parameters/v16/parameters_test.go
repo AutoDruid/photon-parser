@@ -1,8 +1,8 @@
-package parameters_test
+package v16_test
 
 import (
 	"math"
-	. "michelprogram/photon-parser/internal/parameters"
+	. "michelprogram/photon-parser/internal/parameters/v16"
 	"michelprogram/photon-parser/internal/reader"
 	"michelprogram/photon-parser/internal/types"
 	"reflect"
@@ -165,7 +165,9 @@ func TestDecode(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			fullInput := append([]byte{0x00, byte(tt.ttype)}, tt.input...)
-			reader := reader.NewReader(fullInput)
+			reader := reader.NewReader(fullInput, reader.Options{
+				ParameterParser: &Parameter{},
+			})
 			param := Parameter{}
 			err := param.Parse(reader)
 
@@ -192,25 +194,27 @@ func TestDecode(t *testing.T) {
 func TestDecodeAllTypes(t *testing.T) {
 	// Map of all types to sample valid input
 	typeSamples := map[types.ParameterType][]byte{
-		types.Int8Type:    {0x01},
-		types.Int16Type:   {0x00, 0x01},
-		types.Int32Type:   {0x00, 0x00, 0x00, 0x01},
-		types.Int64Type:   {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01},
-		types.Float32Type: {0x00, 0x00, 0x00, 0x00},
-		types.Float64Type: {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-		types.StringType:        {0x00, 0x00}, // empty string
-		types.BooleanType:       {0x00},
-		types.Int8ArrayType:     {0x00, 0x00, 0x00, 0x00},           // empty array (uint32 size)
-		types.Int32ArrayType:    {0x00, 0x00, 0x00, 0x00},           // empty array (uint32 size)
-		types.StringArrayType:   {0x00, 0x00, 0x00, 0x00},           // empty array (uint32 size)
-		types.ArrayType:         {0x00, 0x00, byte(types.Int8Type)}, // uint16 count 0 + element type
+		types.Int8Type:        {0x01},
+		types.Int16Type:       {0x00, 0x01},
+		types.Int32Type:       {0x00, 0x00, 0x00, 0x01},
+		types.Int64Type:       {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01},
+		types.Float32Type:     {0x00, 0x00, 0x00, 0x00},
+		types.Float64Type:     {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+		types.StringType:      {0x00, 0x00}, // empty string
+		types.BooleanType:     {0x00},
+		types.Int8ArrayType:   {0x00, 0x00, 0x00, 0x00},           // empty array (uint32 size)
+		types.Int32ArrayType:  {0x00, 0x00, 0x00, 0x00},           // empty array (uint32 size)
+		types.StringArrayType: {0x00, 0x00, 0x00, 0x00},           // empty array (uint32 size)
+		types.ArrayType:       {0x00, 0x00, byte(types.Int8Type)}, // uint16 count 0 + element type
 	}
 
 	for ttype, input := range typeSamples {
 		t.Run(string(rune(ttype)), func(t *testing.T) {
 
 			fullInput := append([]byte{0x00, byte(ttype)}, input...)
-			reader := reader.NewReader(fullInput)
+			reader := reader.NewReader(fullInput, reader.Options{
+				ParameterParser: &Parameter{},
+			})
 			param := Parameter{}
 			err := param.Parse(reader)
 
@@ -227,7 +231,9 @@ func TestDecodeReaderPosition(t *testing.T) {
 		0x00, byte(types.Int8Type), 0x2A,
 		0x00, byte(types.Int16Type), 0x03, 0xE8,
 	}
-	reader := reader.NewReader(input)
+	reader := reader.NewReader(input, reader.Options{
+		ParameterParser: &Parameter{},
+	})
 	param := Parameter{}
 
 	// Read first value (int8)
@@ -261,7 +267,9 @@ func TestDecodeEmptyReader(t *testing.T) {
 
 	for _, ttype := range types {
 		t.Run(string(rune(ttype)), func(t *testing.T) {
-			reader := reader.NewReader([]byte{})
+			reader := reader.NewReader([]byte{}, reader.Options{
+				ParameterParser: &Parameter{},
+			})
 			param := Parameter{}
 			err := param.Parse(reader)
 			if err == nil {
@@ -315,7 +323,9 @@ func BenchmarkDecode(b *testing.B) {
 		b.Run(bm.name, func(b *testing.B) {
 			b.ReportAllocs()
 			fullInput := append([]byte{0x00, byte(bm.ttype)}, bm.input...)
-			r := reader.NewReader(fullInput)
+			r := reader.NewReader(fullInput, reader.Options{
+				ParameterParser: &Parameter{},
+			})
 			param := Parameter{}
 			for i := 0; i < b.N; i++ {
 				err := param.Parse(r)

@@ -4,10 +4,18 @@ import (
 	"fmt"
 	"math"
 	"michelprogram/photon-parser/internal/hooks"
+	"michelprogram/photon-parser/internal/types"
 )
 
 type Parseable interface {
 	Parse(r *Reader) error
+}
+
+// ParameterParser is implemented by each protocol-version parameters package
+// (v16, v18, ...). It is wired once at Parser construction so the hot path
+// has no version branches.
+type ParameterParser interface {
+	Parse(r *Reader, out *types.Parameter) error
 }
 
 const (
@@ -19,21 +27,31 @@ const (
 	FLOAT64_SIZE = 8
 )
 
+type Options struct {
+	ParameterParser
+}
+
 type Reader struct {
 	Buffer []byte
 	Max    int
 	Cursor int
 
 	hooks.Hooks
+	Options
 }
 
-func NewReader(data []byte) *Reader {
+func NewReader(data []byte, options Options) *Reader {
 	return &Reader{
-		Buffer: data,
-		Max:    len(data),
-		Cursor: 0,
-		Hooks:  hooks.Hooks{},
+		Buffer:  data,
+		Max:     len(data),
+		Cursor:  0,
+		Hooks:   hooks.Hooks{},
+		Options: options,
 	}
+}
+
+func (r *Reader) SetParameterParser(parser ParameterParser) {
+	r.ParameterParser = parser
 }
 
 // ReadInt8 reads an 8-bit signed integer from the reader.

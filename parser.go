@@ -1,6 +1,8 @@
 package photonparser
 
 import (
+	v16 "michelprogram/photon-parser/internal/parameters/v16"
+	v18 "michelprogram/photon-parser/internal/parameters/v18"
 	"michelprogram/photon-parser/internal/reader"
 	"michelprogram/photon-parser/internal/session"
 	"michelprogram/photon-parser/internal/types"
@@ -10,9 +12,19 @@ type Parser struct {
 	reader *reader.Reader
 }
 
-func NewParser() *Parser {
+func NewParserV16() *Parser {
 	return &Parser{
-		reader: reader.NewReader(nil),
+		reader: reader.NewReader(nil, reader.Options{
+			ParameterParser: &v16.Parameter{},
+		}),
+	}
+}
+
+func NewParserV18() *Parser {
+	return &Parser{
+		reader: reader.NewReader(nil, reader.Options{
+			ParameterParser: &v18.Parameter{},
+		}),
 	}
 }
 

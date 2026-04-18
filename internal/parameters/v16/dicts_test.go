@@ -1,7 +1,7 @@
-package parameters_test
+package v16_test
 
 import (
-	. "michelprogram/photon-parser/internal/parameters"
+	. "michelprogram/photon-parser/internal/parameters/v16"
 	"michelprogram/photon-parser/internal/reader"
 	"michelprogram/photon-parser/internal/types"
 	"reflect"
@@ -89,7 +89,9 @@ func TestReadDictionnary(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reader := reader.NewReader(tt.input)
+			reader := reader.NewReader(tt.input, reader.Options{
+				ParameterParser: &Parameter{},
+			})
 			p := &Parameter{}
 			err := p.Parse(reader)
 
@@ -117,14 +119,14 @@ func TestReadHashtable(t *testing.T) {
 			input: []byte{
 				0x00, 0x68,
 				0x00, 0x02, // size = 2
-				byte(types.Int32Type),        // key type
+				byte(types.Int32Type),  // key type
 				0x00, 0x00, 0x00, 0x01, // key = 1
-				byte(types.StringType),     // value type
-				0x00, 0x02, 'h', 'i', // value = "hi"
+				byte(types.StringType), // value type
+				0x00, 0x02, 'h', 'i',   // value = "hi"
 				byte(types.StringType), // key type
-				0x00, 0x01, 'k',  // key = "k"
+				0x00, 0x01, 'k',        // key = "k"
 				byte(types.BooleanType), // value type
-				0x01,              // value = true
+				0x01,                    // value = true
 			},
 			want: map[any]any{
 				int32(1): "hi",
@@ -150,7 +152,9 @@ func TestReadHashtable(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reader := reader.NewReader(tt.input)
+			reader := reader.NewReader(tt.input, reader.Options{
+				ParameterParser: &Parameter{},
+			})
 			p := &Parameter{}
 			err := p.Parse(reader)
 

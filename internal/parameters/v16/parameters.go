@@ -1,4 +1,4 @@
-package parameters
+package v16
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ type Parameter struct {
 	types.Parameter
 }
 
-var _ reader.Parseable = (*Parameter)(nil)
+var _ reader.ParameterParser = (*Parameter)(nil)
 
 // Parse reads a complete parameter from the reader.
 // Format: Header (1 byte ID + 1 byte Type), followed by the typed value.
@@ -29,7 +29,7 @@ var _ reader.Parseable = (*Parameter)(nil)
 //	    return err
 //	}
 //	fmt.Printf("Parameter %d has value: %v\n", param.ID, param.Value)
-func (p *Parameter) Parse(r *reader.Reader) error {
+func (p *Parameter) Parse(r *reader.Reader, out *types.Parameter) error {
 
 	header, err := p.parseHeader(r)
 	if err != nil {
@@ -42,9 +42,9 @@ func (p *Parameter) Parse(r *reader.Reader) error {
 		return err
 	}
 
-	p.ParameterHeader = header
-	p.Value = value
-	
+	out.ParameterHeader = header
+	out.Value = value
+
 	p.emit(r)
 
 	return nil

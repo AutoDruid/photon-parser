@@ -2,6 +2,7 @@ package reader_test
 
 import (
 	"math"
+	v16 "michelprogram/photon-parser/internal/parameters/v16"
 	"michelprogram/photon-parser/internal/reader"
 	"testing"
 )
@@ -42,7 +43,9 @@ func TestReadInt8(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := reader.NewReader(tt.input)
+			r := reader.NewReader(tt.input, reader.Options{
+				ParameterParser: &v16.Parameter{},
+			})
 			got, err := r.ReadInt8()
 
 			if (err != nil) != tt.wantErr {
@@ -72,7 +75,9 @@ func TestReadUInt8(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := reader.NewReader(tt.input)
+			r := reader.NewReader(tt.input, reader.Options{
+				ParameterParser: &v16.Parameter{},
+			})
 			got, err := r.ReadUInt8()
 
 			if (err != nil) != tt.wantErr {
@@ -127,7 +132,9 @@ func TestReadInt16(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := reader.NewReader(tt.input)
+			r := reader.NewReader(tt.input, reader.Options{
+				ParameterParser: &v16.Parameter{},
+			})
 			got, err := r.ReadInt16()
 
 			if (err != nil) != tt.wantErr {
@@ -158,7 +165,9 @@ func TestReadUInt16(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := reader.NewReader(tt.input)
+			r := reader.NewReader(tt.input, reader.Options{
+				ParameterParser: &v16.Parameter{},
+			})
 			got, err := r.ReadUInt16()
 
 			if (err != nil) != tt.wantErr {
@@ -208,7 +217,9 @@ func TestReadInt32(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := reader.NewReader(tt.input)
+			r := reader.NewReader(tt.input, reader.Options{
+				ParameterParser: &v16.Parameter{},
+			})
 			got, err := r.ReadInt32()
 
 			if (err != nil) != tt.wantErr {
@@ -238,7 +249,9 @@ func TestReadUInt32(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := reader.NewReader(tt.input)
+			r := reader.NewReader(tt.input, reader.Options{
+				ParameterParser: &v16.Parameter{},
+			})
 			got, err := r.ReadUInt32()
 
 			if (err != nil) != tt.wantErr {
@@ -288,7 +301,9 @@ func TestReadInt64(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := reader.NewReader(tt.input)
+			r := reader.NewReader(tt.input, reader.Options{
+				ParameterParser: &v16.Parameter{},
+			})
 			got, err := r.ReadInt64()
 
 			if (err != nil) != tt.wantErr {
@@ -334,7 +349,9 @@ func TestReadUInt64(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := reader.NewReader(tt.input)
+			r := reader.NewReader(tt.input, reader.Options{
+				ParameterParser: &v16.Parameter{},
+			})
 			got, err := r.ReadUInt64()
 
 			if (err != nil) != tt.wantErr {
@@ -384,7 +401,9 @@ func TestReadFloat32(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := reader.NewReader(tt.input)
+			r := reader.NewReader(tt.input, reader.Options{
+				ParameterParser: &v16.Parameter{},
+			})
 			got, err := r.ReadFloat32()
 
 			if (err != nil) != tt.wantErr {
@@ -433,7 +452,9 @@ func TestReadFloat64(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := reader.NewReader(tt.input)
+			r := reader.NewReader(tt.input, reader.Options{
+				ParameterParser: &v16.Parameter{},
+			})
 			got, err := r.ReadFloat64()
 
 			if (err != nil) != tt.wantErr {
@@ -486,7 +507,9 @@ func TestReadBoolean(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := reader.NewReader(tt.input)
+			r := reader.NewReader(tt.input, reader.Options{
+				ParameterParser: &v16.Parameter{},
+			})
 			got, err := r.ReadBoolean()
 
 			if (err != nil) != tt.wantErr {
@@ -505,45 +528,47 @@ func TestReadString(t *testing.T) {
 	tests := []struct {
 		name    string
 		input   []byte
-		size int
+		size    int
 		want    string
 		wantErr bool
 	}{
 		{
 			name:  "empty string",
 			input: []byte{},
-			size: 0,
+			size:  0,
 			want:  "",
 		},
 		{
 			name:  "short string",
 			input: []byte{'H', 'e', 'l', 'l', 'o'}, // length = 5
-			size: 5,
+			size:  5,
 			want:  "Hello",
 		},
 		{
 			name:  "single char",
 			input: []byte{'A'}, // length = 1
-			size: 1,
+			size:  1,
 			want:  "A",
 		},
 		{
 			name:  "unicode string",
 			input: []byte{0xE4, 0xB8, 0xAD, 0xE6, 0x96, 0x87}, // "中文" in UTF-8
-			size: 6,
+			size:  6,
 			want:  "中文",
 		},
 		{
 			name:    "truncated string",
 			input:   []byte{'H', 'i'}, // length says 5, but only 2 bytes
-			size: 5,
+			size:    5,
 			wantErr: true,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := reader.NewReader(tt.input)
+			r := reader.NewReader(tt.input, reader.Options{
+				ParameterParser: &v16.Parameter{},
+			})
 			got, err := r.ReadString(tt.size)
 
 			if (err != nil) != tt.wantErr {

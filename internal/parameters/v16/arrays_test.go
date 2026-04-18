@@ -1,7 +1,7 @@
-package parameters_test
+package v16_test
 
 import (
-	. "michelprogram/photon-parser/internal/parameters"
+	. "michelprogram/photon-parser/internal/parameters/v16"
 	"michelprogram/photon-parser/internal/reader"
 	"michelprogram/photon-parser/internal/types"
 	"reflect"
@@ -49,7 +49,9 @@ func TestReadInt8Array(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reader := reader.NewReader(tt.input)
+			reader := reader.NewReader(tt.input, reader.Options{
+				ParameterParser: &Parameter{},
+			})
 			p := &Parameter{}
 			err := p.Parse(reader)
 
@@ -117,7 +119,9 @@ func TestReadInt32Array(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			reader := reader.NewReader(tt.input)
+			reader := reader.NewReader(tt.input, reader.Options{
+				ParameterParser: &Parameter{},
+			})
 			p := &Parameter{}
 			err := p.Parse(reader)
 
@@ -203,7 +207,9 @@ func TestReadStringArray(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reader := reader.NewReader(tt.input)
+			reader := reader.NewReader(tt.input, reader.Options{
+				ParameterParser: &Parameter{},
+			})
 			p := &Parameter{}
 			err := p.Parse(reader)
 
@@ -240,8 +246,8 @@ func TestReadArray(t *testing.T) {
 			input: []byte{
 				0x00, 0x79,
 				0x00, 0x03, // size = 3
-				byte(types.Int8Type),   // type
-				0x01, 0x02, 0x03, // values
+				byte(types.Int8Type), // type
+				0x01, 0x02, 0x03,     // values
 			},
 			want: []any{int8(1), int8(2), int8(3)},
 		},
@@ -251,12 +257,12 @@ func TestReadArray(t *testing.T) {
 				0x00, 0x79,
 				0x00, 0x02, // size = 2 (outer)
 				byte(types.ArrayType), // type = array
-				0x00, 0x02,      // size = 2 (inner #1)
+				0x00, 0x02,            // size = 2 (inner #1)
 				byte(types.Int8Type), // type = int8
-				0x01, 0x02,     // values
+				0x01, 0x02,           // values
 				0x00, 0x03, // size = 3 (inner #2)
-				byte(types.Int8Type),   // type = int8
-				0x03, 0x04, 0x05, // values
+				byte(types.Int8Type), // type = int8
+				0x03, 0x04, 0x05,     // values
 			},
 			want: []any{
 				[]any{int8(1), int8(2)},
@@ -268,7 +274,7 @@ func TestReadArray(t *testing.T) {
 			input: []byte{
 				0x00, 0x79,
 				0x00, 0x02, // size = 2
-				byte(types.Int32Type),        // type
+				byte(types.Int32Type),  // type
 				0x00, 0x00, 0x00, 0x0A, // 10
 				0x00, 0x00, 0x00, 0x14, // 20
 			},
@@ -279,8 +285,8 @@ func TestReadArray(t *testing.T) {
 			input: []byte{
 				0x00, 0x79,
 				0x00, 0x02, // size = 2
-				byte(types.StringType),     // type
-				0x00, 0x02, 'H', 'i', // "Hi"
+				byte(types.StringType), // type
+				0x00, 0x02, 'H', 'i',   // "Hi"
 				0x00, 0x03, 'B', 'y', 'e', // "Bye"
 			},
 			want: []any{"Hi", "Bye"},
@@ -291,7 +297,7 @@ func TestReadArray(t *testing.T) {
 				0x00, 0x79,
 				0x00, 0x03, // size = 3
 				byte(types.BooleanType), // type
-				0x01, 0x00, 0x01,  // true, false, true
+				0x01, 0x00, 0x01,        // true, false, true
 			},
 			want: []any{true, false, true},
 		},
@@ -319,7 +325,9 @@ func TestReadArray(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reader := reader.NewReader(tt.input)
+			reader := reader.NewReader(tt.input, reader.Options{
+				ParameterParser: &Parameter{},
+			})
 			p := &Parameter{}
 			err := p.Parse(reader)
 
@@ -344,7 +352,9 @@ func TestReadArrayGeneric(t *testing.T) {
 			0x00, 0x00, 0x00, 0x64, // 100
 			0x00, 0x00, 0x00, 0xC8, // 200
 		}
-		reader := reader.NewReader(input)
+		reader := reader.NewReader(input, reader.Options{
+			ParameterParser: &Parameter{},
+		})
 		p := &Parameter{}
 		err := p.Parse(reader)
 
@@ -377,7 +387,9 @@ func TestReadArrayGeneric(t *testing.T) {
 			0x66,                   // Float32Type
 			0x3f, 0x80, 0x00, 0x00, // 1.0 BE
 		}
-		reader := reader.NewReader(input)
+		reader := reader.NewReader(input, reader.Options{
+			ParameterParser: &Parameter{},
+		})
 		p := &Parameter{}
 		err := p.Parse(reader)
 		if err != nil {
@@ -410,7 +422,9 @@ func BenchmarkReadInt8Array(b *testing.B) {
 		0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A,
 	}
 	b.ResetTimer()
-	reader := reader.NewReader(data)
+	reader := reader.NewReader(data, reader.Options{
+		ParameterParser: &Parameter{},
+	})
 	p := &Parameter{}
 
 	for i := 0; i < b.N; i++ {
@@ -429,7 +443,9 @@ func BenchmarkReadStringArray(b *testing.B) {
 		0x00, 0x04, 'D', 'a', 't', 'a',
 	}
 	b.ResetTimer()
-	reader := reader.NewReader(data)
+	reader := reader.NewReader(data, reader.Options{
+		ParameterParser: &Parameter{},
+	})
 	p := &Parameter{}
 
 	for i := 0; i < b.N; i++ {
