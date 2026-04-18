@@ -2,8 +2,9 @@ package sendReliable
 
 import (
 	"fmt"
-	"michelprogram/photon-parser/internal/reader"
 	"michelprogram/photon-parser/internal/parameters"
+	"michelprogram/photon-parser/internal/reader"
+	"michelprogram/photon-parser/internal/types"
 )
 
 // HEADER_SIZE is the size in bytes of a reliable message header (5 bytes).
@@ -36,7 +37,7 @@ type Header struct {
 // parameter has an ID, type, and value.
 type Reliable struct {
 	Header
-	Parameters []parameters.Parameters // Slice of decoded parameters
+	Parameters []types.Parameter // Slice of decoded parameters
 }
 
 var _ reader.Parseable = (*Reliable)(nil)
@@ -52,7 +53,7 @@ var _ reader.Parseable = (*Reliable)(nil)
 // Returns a Reliable struct with all fields populated including the Parameters slice,
 // or an error if any part of parsing fails.
 func (r *Reliable) Parse(reader *reader.Reader) error {
-	var param parameters.Parameters
+	var param parameters.Parameter
 	header, err := r.parseHeader(reader)
 	if err != nil {
 		return err
@@ -64,15 +65,15 @@ func (r *Reliable) Parse(reader *reader.Reader) error {
 
 	r.Header = header
 
-	r.Parameters = make([]parameters.Parameters, header.ParameterCount)
+	r.Parameters = make([]types.Parameter, header.ParameterCount)
 
 	for i := uint16(0); i < r.ParameterCount; i++ {
-		param = parameters.Parameters{}
+		param = parameters.Parameter{}
 		err := param.Parse(reader)
 		if err != nil {
 			return err
 		}
-		r.Parameters[i] = param
+		r.Parameters[i] = param.Parameter
 	}
 
 	return nil

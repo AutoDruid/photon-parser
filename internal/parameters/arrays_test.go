@@ -3,6 +3,7 @@ package parameters_test
 import (
 	. "michelprogram/photon-parser/internal/parameters"
 	"michelprogram/photon-parser/internal/reader"
+	"michelprogram/photon-parser/internal/types"
 	"reflect"
 	"testing"
 )
@@ -49,7 +50,7 @@ func TestReadInt8Array(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			reader := reader.NewReader(tt.input)
-			p := &Parameters{}
+			p := &Parameter{}
 			err := p.Parse(reader)
 
 			if (err != nil) != tt.wantErr {
@@ -117,7 +118,7 @@ func TestReadInt32Array(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 
 			reader := reader.NewReader(tt.input)
-			p := &Parameters{}
+			p := &Parameter{}
 			err := p.Parse(reader)
 
 			if (err != nil) != tt.wantErr {
@@ -203,7 +204,7 @@ func TestReadStringArray(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			reader := reader.NewReader(tt.input)
-			p := &Parameters{}
+			p := &Parameter{}
 			err := p.Parse(reader)
 
 			if (err != nil) != tt.wantErr {
@@ -230,7 +231,7 @@ func TestReadArray(t *testing.T) {
 			input: []byte{
 				0x00, 0x79,
 				0x00, 0x00, // size = 0
-				byte(Int8Type), // type (doesn't matter for empty)
+				byte(types.Int8Type), // type (doesn't matter for empty)
 			},
 			want: []any{},
 		},
@@ -239,7 +240,7 @@ func TestReadArray(t *testing.T) {
 			input: []byte{
 				0x00, 0x79,
 				0x00, 0x03, // size = 3
-				byte(Int8Type),   // type
+				byte(types.Int8Type),   // type
 				0x01, 0x02, 0x03, // values
 			},
 			want: []any{int8(1), int8(2), int8(3)},
@@ -249,12 +250,12 @@ func TestReadArray(t *testing.T) {
 			input: []byte{
 				0x00, 0x79,
 				0x00, 0x02, // size = 2 (outer)
-				byte(ArrayType), // type = array
+				byte(types.ArrayType), // type = array
 				0x00, 0x02,      // size = 2 (inner #1)
-				byte(Int8Type), // type = int8
+				byte(types.Int8Type), // type = int8
 				0x01, 0x02,     // values
 				0x00, 0x03, // size = 3 (inner #2)
-				byte(Int8Type),   // type = int8
+				byte(types.Int8Type),   // type = int8
 				0x03, 0x04, 0x05, // values
 			},
 			want: []any{
@@ -267,7 +268,7 @@ func TestReadArray(t *testing.T) {
 			input: []byte{
 				0x00, 0x79,
 				0x00, 0x02, // size = 2
-				byte(Int32Type),        // type
+				byte(types.Int32Type),        // type
 				0x00, 0x00, 0x00, 0x0A, // 10
 				0x00, 0x00, 0x00, 0x14, // 20
 			},
@@ -278,7 +279,7 @@ func TestReadArray(t *testing.T) {
 			input: []byte{
 				0x00, 0x79,
 				0x00, 0x02, // size = 2
-				byte(StringType),     // type
+				byte(types.StringType),     // type
 				0x00, 0x02, 'H', 'i', // "Hi"
 				0x00, 0x03, 'B', 'y', 'e', // "Bye"
 			},
@@ -289,7 +290,7 @@ func TestReadArray(t *testing.T) {
 			input: []byte{
 				0x00, 0x79,
 				0x00, 0x03, // size = 3
-				byte(BooleanType), // type
+				byte(types.BooleanType), // type
 				0x01, 0x00, 0x01,  // true, false, true
 			},
 			want: []any{true, false, true},
@@ -309,7 +310,7 @@ func TestReadArray(t *testing.T) {
 			input: []byte{
 				0x00, 0x79,
 				0x00, 0x02, // size = 2
-				byte(Int8Type),
+				byte(types.Int8Type),
 				0x01, // only 1 element, should be 2
 			},
 			wantErr: true,
@@ -319,7 +320,7 @@ func TestReadArray(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			reader := reader.NewReader(tt.input)
-			p := &Parameters{}
+			p := &Parameter{}
 			err := p.Parse(reader)
 
 			if (err != nil) != tt.wantErr {
@@ -344,7 +345,7 @@ func TestReadArrayGeneric(t *testing.T) {
 			0x00, 0x00, 0x00, 0xC8, // 200
 		}
 		reader := reader.NewReader(input)
-		p := &Parameters{}
+		p := &Parameter{}
 		err := p.Parse(reader)
 
 		if err != nil {
@@ -371,13 +372,13 @@ func TestReadArrayGeneric(t *testing.T) {
 
 	t.Run("float32 array", func(t *testing.T) {
 		input := []byte{
-			0x00, 0x79, // ID, ArrayType
+			0x00, 0x79, // ID, types.ArrayType
 			0x00, 0x01, // uint16 size = 1
 			0x66,                   // Float32Type
 			0x3f, 0x80, 0x00, 0x00, // 1.0 BE
 		}
 		reader := reader.NewReader(input)
-		p := &Parameters{}
+		p := &Parameter{}
 		err := p.Parse(reader)
 		if err != nil {
 			t.Fatalf("readArray[float32]() error = %v", err)
@@ -410,7 +411,7 @@ func BenchmarkReadInt8Array(b *testing.B) {
 	}
 	b.ResetTimer()
 	reader := reader.NewReader(data)
-	p := &Parameters{}
+	p := &Parameter{}
 
 	for i := 0; i < b.N; i++ {
 		err := p.Parse(reader)
@@ -429,7 +430,7 @@ func BenchmarkReadStringArray(b *testing.B) {
 	}
 	b.ResetTimer()
 	reader := reader.NewReader(data)
-	p := &Parameters{}
+	p := &Parameter{}
 
 	for i := 0; i < b.N; i++ {
 		err := p.Parse(reader)

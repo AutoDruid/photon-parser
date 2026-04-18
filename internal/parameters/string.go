@@ -10,8 +10,8 @@ import "michelprogram/photon-parser/internal/reader"
 // Example wire format for "hello":
 //
 //	0x00 0x05 'h' 'e' 'l' 'l' 'o'
-func (p Parameters) readString(reader *reader.Reader) (string, error) {
-	size, err := reader.ReadInt16()
+func (p Parameter) readString(reader *reader.Reader) (string, error) {
+	size, err := reader.ReadUInt16()
 	if err != nil {
 		return "", err
 	}

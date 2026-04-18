@@ -3,6 +3,7 @@ package parameters_test
 import (
 	. "michelprogram/photon-parser/internal/parameters"
 	"michelprogram/photon-parser/internal/reader"
+	"michelprogram/photon-parser/internal/types"
 	"reflect"
 	"testing"
 )
@@ -18,7 +19,7 @@ func TestReadDictionnary(t *testing.T) {
 			name: "int32 to int32 dictionary",
 			input: []byte{
 				0x00, 0x44,
-				byte(Int32Type), byte(Int32Type), // keyType, valueType
+				byte(types.Int32Type), byte(types.Int32Type), // keyType, valueType
 				0x00, 0x02, // size = 2
 				0x00, 0x00, 0x00, 0x01, // key = 1
 				0x00, 0x00, 0x28, 0xC1, // value = 10433
@@ -34,7 +35,7 @@ func TestReadDictionnary(t *testing.T) {
 			name: "empty dictionary",
 			input: []byte{
 				0x00, 0x44,
-				byte(Int32Type), byte(Int32Type),
+				byte(types.Int32Type), byte(types.Int32Type),
 				0x00, 0x00, // size = 0
 			},
 			want: map[any]any{},
@@ -43,7 +44,7 @@ func TestReadDictionnary(t *testing.T) {
 			name: "string to boolean dictionary",
 			input: []byte{
 				0x00, 0x44,
-				byte(StringType), byte(BooleanType),
+				byte(types.StringType), byte(types.BooleanType),
 				0x00, 0x02, // size = 2
 				0x00, 0x01, 'a', // key = "a"
 				0x01,                 // value = true
@@ -62,14 +63,14 @@ func TestReadDictionnary(t *testing.T) {
 		},
 		{
 			name:    "missing value type",
-			input:   []byte{0x00, 0x44, byte(Int32Type)},
+			input:   []byte{0x00, 0x44, byte(types.Int32Type)},
 			wantErr: true,
 		},
 		{
 			name: "truncated size",
 			input: []byte{
 				0x00, 0x44,
-				byte(Int32Type), byte(Int32Type),
+				byte(types.Int32Type), byte(types.Int32Type),
 				0x00, // size needs 2 bytes
 			},
 			wantErr: true,
@@ -78,7 +79,7 @@ func TestReadDictionnary(t *testing.T) {
 			name: "truncated data",
 			input: []byte{
 				0x00, 0x44,
-				byte(Int32Type), byte(Int32Type),
+				byte(types.Int32Type), byte(types.Int32Type),
 				0x00, 0x01, // size = 1
 				0x00, 0x00, 0x00, 0x01, // key = 1 (value missing)
 			},
@@ -89,7 +90,7 @@ func TestReadDictionnary(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			reader := reader.NewReader(tt.input)
-			p := &Parameters{}
+			p := &Parameter{}
 			err := p.Parse(reader)
 
 			if (err != nil) != tt.wantErr {
@@ -116,13 +117,13 @@ func TestReadHashtable(t *testing.T) {
 			input: []byte{
 				0x00, 0x68,
 				0x00, 0x02, // size = 2
-				byte(Int32Type),        // key type
+				byte(types.Int32Type),        // key type
 				0x00, 0x00, 0x00, 0x01, // key = 1
-				byte(StringType),     // value type
+				byte(types.StringType),     // value type
 				0x00, 0x02, 'h', 'i', // value = "hi"
-				byte(StringType), // key type
+				byte(types.StringType), // key type
 				0x00, 0x01, 'k',  // key = "k"
-				byte(BooleanType), // value type
+				byte(types.BooleanType), // value type
 				0x01,              // value = true
 			},
 			want: map[any]any{
@@ -140,7 +141,7 @@ func TestReadHashtable(t *testing.T) {
 			input: []byte{
 				0x00, 0x68,
 				0x00, 0x01, // size = 1
-				byte(Int32Type),
+				byte(types.Int32Type),
 				0x00, 0x00, 0x00, 0x01, // key = 1 (value type/value missing)
 			},
 			wantErr: true,
@@ -150,7 +151,7 @@ func TestReadHashtable(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			reader := reader.NewReader(tt.input)
-			p := &Parameters{}
+			p := &Parameter{}
 			err := p.Parse(reader)
 
 			if (err != nil) != tt.wantErr {

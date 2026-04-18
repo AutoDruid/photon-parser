@@ -1,6 +1,9 @@
 package parameters
 
-import "michelprogram/photon-parser/internal/reader"
+import (
+	"michelprogram/photon-parser/internal/reader"
+	"michelprogram/photon-parser/internal/types"
+)
 
 // ReadDictionary reads a Photon Protocol16 dictionary with uniform key and value types.
 // Format: Type byte (key type), Type byte (value type), uint16 size,
@@ -15,7 +18,7 @@ import "michelprogram/photon-parser/internal/reader"
 //	0x00 0x05 'h' 'e' 'l' 'l' 'o'  // value: "hello"
 //
 // Returns an error if the dictionary cannot be fully read.
-func (p Parameters) readDictionary(r *reader.Reader) (map[any]any, error) {
+func (p Parameter) readDictionary(r *reader.Reader) (map[any]any, error) {
 
 	keyType, err := r.ReadUInt8()
 	if err != nil {
@@ -35,12 +38,12 @@ func (p Parameters) readDictionary(r *reader.Reader) (map[any]any, error) {
 	res := make(map[any]any, size)
 
 	for i := uint16(0); i < size; i++ {
-		key, err := p.decode(r, Type(keyType))
+		key, err := p.decode(r, types.ParameterType(keyType))
 		if err != nil {
 			return nil, err
 		}
 
-		value, err := p.decode(r, Type(valueType))
+		value, err := p.decode(r, types.ParameterType(valueType))
 		if err != nil {
 			return nil, err
 		}
@@ -72,7 +75,7 @@ func (p Parameters) readDictionary(r *reader.Reader) (map[any]any, error) {
 //	0x01                 // entry 2 value: true
 //
 // Returns an error if the hashtable cannot be fully read.
-func (p Parameters) readHashTable(r *reader.Reader) (map[any]any, error) {
+func (p Parameter) readHashTable(r *reader.Reader) (map[any]any, error) {
 	size, err := r.ReadUInt16()
 	if err != nil {
 		return nil, err
@@ -84,7 +87,7 @@ func (p Parameters) readHashTable(r *reader.Reader) (map[any]any, error) {
 		if err != nil {
 			return nil, err
 		}
-		key, err := p.decode(r, Type(keyType))
+		key, err := p.decode(r, types.ParameterType(keyType))
 		if err != nil {
 			return nil, err
 		}
@@ -93,7 +96,7 @@ func (p Parameters) readHashTable(r *reader.Reader) (map[any]any, error) {
 		if err != nil {
 			return nil, err
 		}
-		value, err := p.decode(r, Type(valueType))
+		value, err := p.decode(r, types.ParameterType(valueType))
 		if err != nil {
 			return nil, err
 		}
