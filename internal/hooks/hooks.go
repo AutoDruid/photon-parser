@@ -1,0 +1,41 @@
+package hooks
+
+import "michelprogram/photon-parser/internal/types"
+
+type Hooks struct {
+	types.AsyncHooks
+	types.SyncHooks
+}
+
+func ensureChan[T types.Hookable](slot *chan T, size uint16) <-chan T {
+	if *slot == nil {
+		*slot = make(chan T, size)
+	}
+	return *slot
+}
+func (h *Hooks) OnSessionAsync(options types.HookOptions) <-chan types.Session {
+	return ensureChan(&h.AsyncHooks.OnSession, options.Size)
+}
+func (h *Hooks) OnCommandAsync(options types.HookOptions) <-chan types.Command {
+	return ensureChan(&h.AsyncHooks.OnCommand, options.Size)
+}
+func (h *Hooks) OnParameterAsync(options types.HookOptions) <-chan types.Parameter {
+	return ensureChan(&h.AsyncHooks.OnParameter, options.Size)
+}
+
+func (h *Hooks) CloseAsyncHooks() {
+	if h.AsyncHooks.OnSession != nil {
+		close(h.AsyncHooks.OnSession)
+		h.AsyncHooks.OnSession = nil
+	}
+
+	if h.AsyncHooks.OnCommand != nil {
+		close(h.AsyncHooks.OnCommand)
+		h.AsyncHooks.OnCommand = nil
+	}
+
+	if h.AsyncHooks.OnParameter != nil {
+		close(h.AsyncHooks.OnParameter)
+		h.AsyncHooks.OnParameter = nil
+	}
+}

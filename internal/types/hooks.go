@@ -11,3 +11,11 @@ type AsyncHooks struct {
 	OnCommand   chan Command
 	OnParameter chan Parameter
 }
+
+type HookOptions struct {
+	Size uint16
+}
+
+type Hookable interface {
+	Session | Command | Parameter
+}
