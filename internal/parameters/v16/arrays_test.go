@@ -53,15 +53,16 @@ func TestReadInt8Array(t *testing.T) {
 				ParameterParser: &Parameter{},
 			})
 			p := &Parameter{}
-			err := p.Parse(reader)
+			out := &types.Parameter{}
+			err := p.Parse(reader, out)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadInt8Array() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
-			if !tt.wantErr && !reflect.DeepEqual(p.Value, tt.want) {
-				t.Errorf("ReadInt8Array() = %v, want %v", p.Value, tt.want)
+			if !tt.wantErr && !reflect.DeepEqual(out.Value, tt.want) {
+				t.Errorf("ReadInt8Array() = %v, want %v", out.Value, tt.want)
 			}
 		})
 	}
@@ -123,15 +124,16 @@ func TestReadInt32Array(t *testing.T) {
 				ParameterParser: &Parameter{},
 			})
 			p := &Parameter{}
-			err := p.Parse(reader)
+			out := &types.Parameter{}
+			err := p.Parse(reader, out)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadInt32Array() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
-			if !tt.wantErr && !reflect.DeepEqual(p.Value, tt.want) {
-				t.Errorf("ReadInt32Array() = %v, want %v", p.Value, tt.want)
+			if !tt.wantErr && !reflect.DeepEqual(out.Value, tt.want) {
+				t.Errorf("ReadInt32Array() = %v, want %v", out.Value, tt.want)
 			}
 		})
 	}
@@ -211,14 +213,15 @@ func TestReadStringArray(t *testing.T) {
 				ParameterParser: &Parameter{},
 			})
 			p := &Parameter{}
-			err := p.Parse(reader)
+			out := &types.Parameter{}
+			err := p.Parse(reader, out)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadStringArray() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
-			if !tt.wantErr && !reflect.DeepEqual(p.Value, tt.want) {
+			if !tt.wantErr && !reflect.DeepEqual(out.Value, tt.want) {
 				t.Errorf("ReadStringArray() = %v, want %v", p.Value, tt.want)
 			}
 		})
@@ -329,14 +332,15 @@ func TestReadArray(t *testing.T) {
 				ParameterParser: &Parameter{},
 			})
 			p := &Parameter{}
-			err := p.Parse(reader)
+			out := &types.Parameter{}
+			err := p.Parse(reader, out)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadArray() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
-			if !tt.wantErr && !reflect.DeepEqual(p.Value.([]any), tt.want) {
+			if !tt.wantErr && !reflect.DeepEqual(out.Value.([]any), tt.want) {
 				t.Errorf("ReadArray() = %v (types: %T), want %v (types: %T)", p.Value, p.Value, tt.want, tt.want)
 			}
 		})
@@ -356,14 +360,15 @@ func TestReadArrayGeneric(t *testing.T) {
 			ParameterParser: &Parameter{},
 		})
 		p := &Parameter{}
-		err := p.Parse(reader)
+		out := &types.Parameter{}
+		err := p.Parse(reader, out)
 
 		if err != nil {
 			t.Fatalf("readArray[uint32]() error = %v", err)
 		}
-		got, ok := p.Value.([]any)
+		got, ok := out.Value.([]any)
 		if !ok {
-			t.Fatalf("value type %T, want []any", p.Value)
+			t.Fatalf("value type %T, want []any", out.Value)
 		}
 		wantU32 := []uint32{100, 200}
 		if len(got) != len(wantU32) {
@@ -391,13 +396,14 @@ func TestReadArrayGeneric(t *testing.T) {
 			ParameterParser: &Parameter{},
 		})
 		p := &Parameter{}
-		err := p.Parse(reader)
+		out := &types.Parameter{}
+		err := p.Parse(reader, out)
 		if err != nil {
 			t.Fatalf("readArray[float32]() error = %v", err)
 		}
-		got, ok := p.Value.([]any)
+		got, ok := out.Value.([]any)
 		if !ok {
-			t.Fatalf("value type %T, want []any", p.Value)
+			t.Fatalf("value type %T, want []any", out.Value)
 		}
 		want := []float32{1.0}
 		if len(got) != len(want) {
@@ -428,7 +434,8 @@ func BenchmarkReadInt8Array(b *testing.B) {
 	p := &Parameter{}
 
 	for i := 0; i < b.N; i++ {
-		err := p.Parse(reader)
+		out := &types.Parameter{}
+		err := p.Parse(reader, out)
 		if err != nil {
 			b.Fatalf("ReadInt8Array() error = %v", err)
 		}
@@ -449,7 +456,8 @@ func BenchmarkReadStringArray(b *testing.B) {
 	p := &Parameter{}
 
 	for i := 0; i < b.N; i++ {
-		err := p.Parse(reader)
+		out := &types.Parameter{}
+		err := p.Parse(reader, out)
 		if err != nil {
 			b.Fatalf("ReadStringArray() error = %v", err)
 		}

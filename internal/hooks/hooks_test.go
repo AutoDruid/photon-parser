@@ -209,8 +209,9 @@ func TestReader_ParameterSyncHookMatchesParsedParameter(t *testing.T) {
 	var got types.Parameter
 	r.SyncHooks.OnParameter = func(p types.Parameter) { got = p }
 
-	p := &v16.Parameter{}
-	if err := p.Parse(r); err != nil {
+	p := &v16.Parameter{}	
+	out := &types.Parameter{}
+	if err := p.Parse(r, out); err != nil {
 		t.Fatalf("Parse parameter: %v", err)
 	}
 
@@ -228,7 +229,8 @@ func TestReader_ParameterAsyncHookReceivesMatchingParameter(t *testing.T) {
 	_ = r.OnParameterAsync(types.HookOptions{Size: 1})
 
 	p := &v16.Parameter{}
-	if err := p.Parse(r); err != nil {
+	out := &types.Parameter{}
+	if err := p.Parse(r, out); err != nil {
 		t.Fatalf("Parse parameter: %v", err)
 	}
 

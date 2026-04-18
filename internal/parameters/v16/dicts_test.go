@@ -92,16 +92,17 @@ func TestReadDictionnary(t *testing.T) {
 			reader := reader.NewReader(tt.input, reader.Options{
 				ParameterParser: &Parameter{},
 			})
-			p := &Parameter{}
-			err := p.Parse(reader)
+			p := &Parameter{}	
+			out := &types.Parameter{}
+			err := p.Parse(reader, out)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadDictionary() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
-			if !tt.wantErr && !reflect.DeepEqual(p.Value, tt.want) {
-				t.Errorf("ReadDictionary() = %v, want %v", p.Value, tt.want)
+			if !tt.wantErr && !reflect.DeepEqual(out.Value, tt.want) {
+				t.Errorf("ReadDictionary() = %v, want %v", out.Value, tt.want)
 			}
 		})
 	}
@@ -156,15 +157,16 @@ func TestReadHashtable(t *testing.T) {
 				ParameterParser: &Parameter{},
 			})
 			p := &Parameter{}
-			err := p.Parse(reader)
+			out := &types.Parameter{}
+			err := p.Parse(reader, out)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadHashTable() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 
-			if !tt.wantErr && !reflect.DeepEqual(p.Value, tt.want) {
-				t.Errorf("ReadHashTable() = %v, want %v", p.Value, tt.want)
+			if !tt.wantErr && !reflect.DeepEqual(out.Value, tt.want) {
+				t.Errorf("ReadHashTable() = %v, want %v", out.Value, tt.want)
 			}
 		})
 	}
