@@ -1,6 +1,7 @@
 package photonparser
 
 import (
+	"michelprogram/photon-parser/internal/hooks"
 	v16 "michelprogram/photon-parser/internal/parameters/v16"
 	v18 "michelprogram/photon-parser/internal/parameters/v18"
 	"michelprogram/photon-parser/internal/reader"
@@ -10,6 +11,7 @@ import (
 
 type Parser struct {
 	reader *reader.Reader
+	hooks  *hooks.Hooks
 }
 
 func NewParserV16() *Parser {
@@ -17,6 +19,7 @@ func NewParserV16() *Parser {
 		reader: reader.NewReader(nil, reader.Options{
 			ParameterParser: &v16.Parameter{},
 		}),
+		hooks: hooks.NewHooks(),
 	}
 }
 
@@ -25,6 +28,7 @@ func NewParserV18() *Parser {
 		reader: reader.NewReader(nil, reader.Options{
 			ParameterParser: &v18.Parameter{},
 		}),
+		hooks: hooks.NewHooks(),
 	}
 }
 
@@ -32,8 +36,7 @@ func (p *Parser) ParsePacket(data []byte) (*Session, error) {
 
 	p.reader.Reset(data)
 
-	sess := session.Session{}
-	err := sess.Parse(p.reader)
+	sess, err := session.Parse(p.reader, p.hooks)
 	if err != nil {
 		return nil, err
 	}
@@ -42,29 +45,29 @@ func (p *Parser) ParsePacket(data []byte) (*Session, error) {
 }
 
 func (p *Parser) OnSessionSync(fn func(Session)) {
-	p.reader.SyncHooks.OnSession = fn
+	p.hooks.SyncHooks.OnSession = fn
 }
 
 func (p *Parser) OnCommandSync(fn func(Command)) {
-	p.reader.SyncHooks.OnCommand = fn
+	p.hooks.SyncHooks.OnCommand = fn
 }
 
 func (p *Parser) OnParameterSync(fn func(Parameter)) {
-	p.reader.SyncHooks.OnParameter = fn
+	p.hooks.SyncHooks.OnParameter = fn
 }
 
 func (p *Parser) OnSessionAsync(options types.HookOptions) <-chan Session {
-	return p.reader.OnSessionAsync(options)
+	return p.hooks.OnSessionAsync(options)
 }
 
 func (p *Parser) OnCommandAsync(options types.HookOptions) <-chan Command {
-	return p.reader.OnCommandAsync(options)
+	return p.hooks.OnCommandAsync(options)
 }
 
 func (p *Parser) OnParameterAsync(options types.HookOptions) <-chan Parameter {
-	return p.reader.OnParameterAsync(options)
+	return p.hooks.OnParameterAsync(options)
 }
 
 func (p *Parser) Close() {
-	p.reader.CloseAsyncHooks()
+	p.hooks.CloseAsyncHooks()
 }

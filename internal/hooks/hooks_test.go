@@ -121,11 +121,12 @@ func TestReader_SessionSyncHookMatchesParsedSession(t *testing.T) {
 	r := reader.NewReader(payload, reader.Options{
 		ParameterParser: &v16.Parameter{},
 	})
+	h := hooks.NewHooks()
 	var got types.Session
-	r.SyncHooks.OnSession = func(s types.Session) { got = s }
+	h.SyncHooks.OnSession = func(s types.Session) { got = s }
 
-	sess := &session.Session{}
-	if err := sess.Parse(r); err != nil {
+	sess, err := session.Parse(r, h); 
+	if err != nil {
 		t.Fatalf("Parse: %v", err)
 	}
 
@@ -140,15 +141,16 @@ func TestReader_SessionAsyncHookReceivesMatchingSession(t *testing.T) {
 	r := reader.NewReader(payload, reader.Options{
 		ParameterParser: &v16.Parameter{},
 	})
-	_ = r.OnSessionAsync(types.HookOptions{Size: 1}) // buffered: emit won’t hit default
+	h := hooks.NewHooks()
+	_ = h.OnSessionAsync(types.HookOptions{Size: 1}) // buffered: emit won’t hit default
 
-	sess := &session.Session{}
-	if err := sess.Parse(r); err != nil {
+	sess, err := session.Parse(r, h); 
+	if err != nil {
 		t.Fatalf("Parse: %v", err)
 	}
 
 	select {
-	case got := <-r.AsyncHooks.OnSession:
+	case got := <-h.AsyncHooks.OnSession:
 		if !reflect.DeepEqual(got, sess.Session) {
 			t.Fatalf("async session mismatch:\ngot:  %+v\nsess: %+v", got, sess.Session)
 		}
@@ -163,11 +165,12 @@ func TestReader_CommandSyncHookMatchesParsedCommand(t *testing.T) {
 	r := reader.NewReader(payload, reader.Options{
 		ParameterParser: &v16.Parameter{},
 	})
+	h:=hooks.NewHooks()
 	var got types.Command
-	r.SyncHooks.OnCommand = func(c types.Command) { got = c }
+	h.SyncHooks.OnCommand = func(c types.Command) { got = c }
 
-	cmd := &command.Command{}
-	if err := cmd.Parse(r); err != nil {
+	cmd, err := command.Parse(r, h); 
+	if err != nil {
 		t.Fatalf("Parse command: %v", err)
 	}
 
@@ -182,15 +185,16 @@ func TestReader_CommandAsyncHookReceivesMatchingCommand(t *testing.T) {
 	r := reader.NewReader(payload, reader.Options{
 		ParameterParser: &v16.Parameter{},
 	})
-	_ = r.OnCommandAsync(types.HookOptions{Size: 1})
+	h := hooks.NewHooks()
+	_ = h.OnCommandAsync(types.HookOptions{Size: 1})
 
-	cmd := &command.Command{}
-	if err := cmd.Parse(r); err != nil {
+	cmd, err := command.Parse(r, h); 
+	if err != nil {
 		t.Fatalf("Parse command: %v", err)
 	}
 
 	select {
-	case got := <-r.AsyncHooks.OnCommand:
+	case got := <-h.AsyncHooks.OnCommand:
 		if !reflect.DeepEqual(got, cmd.Command) {
 			t.Fatalf("async command mismatch:\ngot: %+v\ncmd: %+v", got, cmd.Command)
 		}
@@ -206,12 +210,13 @@ func TestReader_ParameterSyncHookMatchesParsedParameter(t *testing.T) {
 	r := reader.NewReader(paramBytes, reader.Options{
 		ParameterParser: &v16.Parameter{},
 	})
+	h := hooks.NewHooks()
 	var got types.Parameter
-	r.SyncHooks.OnParameter = func(p types.Parameter) { got = p }
+	h.SyncHooks.OnParameter = func(p types.Parameter) { got = p }
 
 	p := &v16.Parameter{}	
 	out := &types.Parameter{}
-	if err := p.Parse(r, out); err != nil {
+	if err := p.Parse(r, out, h); err != nil {
 		t.Fatalf("Parse parameter: %v", err)
 	}
 
@@ -226,16 +231,17 @@ func TestReader_ParameterAsyncHookReceivesMatchingParameter(t *testing.T) {
 	r := reader.NewReader(paramBytes, reader.Options{
 		ParameterParser: &v16.Parameter{},
 	})
-	_ = r.OnParameterAsync(types.HookOptions{Size: 1})
+	h := hooks.NewHooks()
+	_ = h.OnParameterAsync(types.HookOptions{Size: 1})
 
 	p := &v16.Parameter{}
 	out := &types.Parameter{}
-	if err := p.Parse(r, out); err != nil {
+	if err := p.Parse(r, out, h); err != nil {
 		t.Fatalf("Parse parameter: %v", err)
 	}
 
 	select {
-	case got := <-r.AsyncHooks.OnParameter:
+	case got := <-h.AsyncHooks.OnParameter:
 		if !reflect.DeepEqual(got, p.Parameter) {
 			t.Fatalf("async parameter mismatch:\ngot: %+v\nparam: %+v", got, p.Parameter)
 		}

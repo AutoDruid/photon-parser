@@ -14,8 +14,8 @@ func TestParseSession(t *testing.T) {
 	reader := reader.NewReader(payload, reader.Options{
 		ParameterParser: &v16.Parameter{},
 	})
-	cmd := &command.Command{}
-	err := cmd.Parse(reader)
+
+	cmd, err := command.Parse(reader, nil)
 
 	if err != nil {
 		t.Fatalf("LoadFromWiresharkExport() failed: %v", err)

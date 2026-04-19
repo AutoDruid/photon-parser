@@ -2,6 +2,7 @@ package sendReliable
 
 import (
 	"fmt"
+	"michelprogram/photon-parser/internal/hooks"
 	"michelprogram/photon-parser/internal/reader"
 	"michelprogram/photon-parser/internal/types"
 )
@@ -39,8 +40,6 @@ type Reliable struct {
 	Parameters []types.Parameter // Slice of decoded parameters
 }
 
-var _ reader.Parseable = (*Reliable)(nil)
-
 // ParseFromReader parses a Photon reliable message from a parser.Reader.
 // It reads the 5-byte header, then iterates through and parses each parameter
 // as specified by the ParameterCount field.
@@ -51,28 +50,29 @@ var _ reader.Parseable = (*Reliable)(nil)
 //
 // Returns a Reliable struct with all fields populated including the Parameters slice,
 // or an error if any part of parsing fails.
-func (r *Reliable) Parse(reader *reader.Reader) error {
-	header, err := r.parseHeader(reader)
+func Parse(reader *reader.Reader, hooks *hooks.Hooks) (*Reliable, error) {
+	reliable := Reliable{}
+	header, err := reliable.parseHeader(reader)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if header.Signature != 0xF3 {
-		return fmt.Errorf("encrypted or unknown packet, signature: 0x%02x", header.Signature)
+		return nil, fmt.Errorf("encrypted or unknown packet, signature: 0x%02x", header.Signature)
 	}
 
-	r.Header = header
+	reliable.Header = header
 
-	r.Parameters = make([]types.Parameter, header.ParameterCount)
+	reliable.Parameters = make([]types.Parameter, header.ParameterCount)
 
-	for i := uint16(0); i < r.ParameterCount; i++ {
-		err := reader.ParameterParser.Parse(reader, &r.Parameters[i]); 
+	for i := uint16(0); i < reliable.ParameterCount; i++ {
+		err := reader.ParameterParser.Parse(reader, &reliable.Parameters[i], hooks)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	return nil
+	return &reliable, nil
 }
 
 func (r *Reliable) parseHeader(reader *reader.Reader) (Header, error) {

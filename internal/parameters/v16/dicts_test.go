@@ -94,7 +94,7 @@ func TestReadDictionnary(t *testing.T) {
 			})
 			p := &Parameter{}	
 			out := &types.Parameter{}
-			err := p.Parse(reader, out)
+			err := p.Parse(reader, out, nil)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadDictionary() error = %v, wantErr %v", err, tt.wantErr)
@@ -158,7 +158,7 @@ func TestReadHashtable(t *testing.T) {
 			})
 			p := &Parameter{}
 			out := &types.Parameter{}
-			err := p.Parse(reader, out)
+			err := p.Parse(reader, out, nil)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadHashTable() error = %v, wantErr %v", err, tt.wantErr)

@@ -6,6 +6,7 @@ package session
 import (
 	"fmt"
 	"michelprogram/photon-parser/internal/command"
+	"michelprogram/photon-parser/internal/hooks"
 	"michelprogram/photon-parser/internal/reader"
 	"michelprogram/photon-parser/internal/types"
 )
@@ -14,50 +15,51 @@ type Session struct {
 	types.Session
 }
 
-var _ reader.Parseable = (*Session)(nil)
-
 // Parse parses a Photon session packet from a parser.Reader.
 // This function reads the session header, then iterates through and parses
 // each command as specified by the CommandCount field.
 //
 // Returns a Session struct with all fields populated including the Commands slice,
 // or an error if any part of parsing fails.
-func (s *Session) Parse(r *reader.Reader) error {
-	header, err := s.parseHeader(r)
+func Parse(reader *reader.Reader, hooks *hooks.Hooks) (*Session, error) {
+	session := Session{}
+	header, err := session.parseHeader(reader)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	s.Commands = make([]*types.Command, header.CommandCount)
+	session.Commands = make([]*types.Command, header.CommandCount)
 
 	for i := uint8(0); i < header.CommandCount; i++ {
-		cmd := &command.Command{}
-		err := cmd.Parse(r)
+		cmd, err := command.Parse(reader, hooks)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		s.Commands[i] = &cmd.Command
+		session.Commands[i] = &cmd.Command
 	}
 
-	s.Header = header
+	session.Header = header
 
-	s.emit(r)
+	session.emit(reader, hooks)
 
-	return nil
+	return &session, nil
 }
 
-func (s Session) emit(r *reader.Reader) {
-
-	if r.SyncHooks.OnSession != nil {
-		r.SyncHooks.OnSession(s.Session)
+func (s Session) emit(reader *reader.Reader, hooks *hooks.Hooks) {
+	if hooks == nil {
+		return
 	}
 
-	if r.AsyncHooks.OnSession == nil {
+	if hooks.SyncHooks.OnSession != nil {
+		hooks.SyncHooks.OnSession(s.Session)
+	}
+
+	if hooks.AsyncHooks.OnSession == nil {
 		return
 	}
 
 	select {
-	case r.AsyncHooks.OnSession <- s.Session:
+	case hooks.AsyncHooks.OnSession <- s.Session:
 	default:
 	}
 }

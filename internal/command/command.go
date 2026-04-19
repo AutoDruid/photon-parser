@@ -5,6 +5,7 @@ import (
 	"michelprogram/photon-parser/internal/command/acknowledge"
 	"michelprogram/photon-parser/internal/command/ping"
 	"michelprogram/photon-parser/internal/command/sendReliable"
+	"michelprogram/photon-parser/internal/hooks"
 	"michelprogram/photon-parser/internal/reader"
 	"michelprogram/photon-parser/internal/types"
 )
@@ -12,8 +13,6 @@ import (
 type Command struct {
 	types.Command
 }
-
-var _ reader.Parseable = (*Command)(nil)
 
 // ParseFromReader parses a Photon command from a parser.Reader.
 // It first reads the 12-byte command header, validates the length field,
@@ -27,53 +26,60 @@ var _ reader.Parseable = (*Command)(nil)
 // The returned Command struct contains all header fields and the raw payload
 // in the Data field. For SendReliable commands, the Data can be further parsed
 // using the reliable package.
-func (c *Command) Parse(r *reader.Reader) error {
-	header, err := c.parseHeader(r)
+func Parse(reader *reader.Reader, hooks *hooks.Hooks) (*Command, error) {
+	cmd := Command{}
+	header, err := cmd.parseHeader(reader)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	if header.Length < types.COMMAND_HEADER_SIZE {
-		return fmt.Errorf(
+		return nil, fmt.Errorf(
 			"command length %d smaller than header size %d",
 			header.Length,
 			types.COMMAND_HEADER_SIZE,
 		)
 	}
 
-	c.CommandHeader = header
-	parsed, err := c.parsePayload(header.Type, r)
+	cmd.CommandHeader = header
+	parsed, err := cmd.parsePayload(header.Type, reader, hooks)
 	if err != nil {
 		//TODO Check on error if cursor position still sync
-		rest, _ := r.ReadBytes(int(header.Length - types.COMMAND_HEADER_SIZE))
+		rest, _ := reader.ReadBytes(int(header.Length - types.COMMAND_HEADER_SIZE))
 		// don't fatal — just store raw for encrypted packets
-		c.Payload = types.UnknownPayload{Raw: rest, Kind: header.Type}
-	}else{
-		c.Payload = parsed
+		cmd.Payload = types.UnknownPayload{Raw: rest, Kind: header.Type}
+	} else {
+		cmd.Payload = parsed
 	}
 
+	cmd.emit(reader, hooks)
 
-	c.emit(r)
-
-	return nil
+	return &cmd, nil
 }
 
-func (c Command) emit(r *reader.Reader) {
-	if r.SyncHooks.OnCommand != nil {
-		r.SyncHooks.OnCommand(c.Command)
+func (c Command) emit(r *reader.Reader, hooks *hooks.Hooks) {
+	if hooks == nil {
+		return
 	}
-	if r.AsyncHooks.OnCommand != nil {
-		select {
-		case r.AsyncHooks.OnCommand <- c.Command:
-		default: // don't block parser
-		}
+
+	if hooks.SyncHooks.OnCommand != nil {
+		hooks.SyncHooks.OnCommand(c.Command)
 	}
+
+	if hooks.AsyncHooks.OnCommand == nil {
+		return
+	}
+
+	select {
+	case hooks.AsyncHooks.OnCommand <- c.Command:
+	default: // don't block parser
+	}
+
 }
-func (c Command) parsePayload(t types.CommandType, r *reader.Reader) (types.Payload, error) {
+func (c Command) parsePayload(t types.CommandType, r *reader.Reader, hooks *hooks.Hooks) (types.Payload, error) {
 	switch t {
 	case types.SendReliableCommand:
-		sd := sendReliable.Reliable{}
-		err := sd.Parse(r)
+		sd, err := sendReliable.Parse(r, hooks)
 		if err != nil {
 			return nil, err
 		}

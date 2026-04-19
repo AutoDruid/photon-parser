@@ -7,10 +7,25 @@ type Hooks struct {
 	types.SyncHooks
 }
 
+func NewHooks() *Hooks {
+	return &Hooks{
+		AsyncHooks: types.AsyncHooks{
+			OnSession:   nil,
+			OnCommand:   nil,
+			OnParameter: nil,
+		},
+		SyncHooks: types.SyncHooks{
+			OnSession:   nil,
+			OnCommand:   nil,
+			OnParameter: nil,
+		},
+	}
+}
+
 func ensureChan[T types.Hookable](slot *chan T, size uint16) <-chan T {
 	var minSize uint16 = 1
 
-	if minSize != 0 {
+	if size != 0 {
 		minSize = size
 	}
 
@@ -30,6 +45,7 @@ func (h *Hooks) OnParameterAsync(options types.HookOptions) <-chan types.Paramet
 }
 
 func (h *Hooks) CloseAsyncHooks() {
+
 	if h.AsyncHooks.OnSession != nil {
 		close(h.AsyncHooks.OnSession)
 		h.AsyncHooks.OnSession = nil

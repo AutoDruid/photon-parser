@@ -7,15 +7,11 @@ import (
 	"michelprogram/photon-parser/internal/types"
 )
 
-type Parseable interface {
-	Parse(r *Reader) error
-}
-
 // ParameterParser is implemented by each protocol-version parameters package
 // (v16, v18, ...). It is wired once at Parser construction so the hot path
 // has no version branches.
 type ParameterParser interface {
-	Parse(r *Reader, out *types.Parameter) error
+	Parse(r *Reader, out *types.Parameter, hooks *hooks.Hooks) error
 }
 
 const (
@@ -36,7 +32,6 @@ type Reader struct {
 	Max    int
 	Cursor int
 
-	hooks.Hooks
 	Options
 }
 
@@ -45,7 +40,6 @@ func NewReader(data []byte, options Options) *Reader {
 		Buffer:  data,
 		Max:     len(data),
 		Cursor:  0,
-		Hooks:   hooks.Hooks{},
 		Options: options,
 	}
 }

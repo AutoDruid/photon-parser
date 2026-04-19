@@ -2,6 +2,7 @@ package v16
 
 import (
 	"fmt"
+	"michelprogram/photon-parser/internal/hooks"
 	"michelprogram/photon-parser/internal/reader"
 	"michelprogram/photon-parser/internal/types"
 )
@@ -29,14 +30,14 @@ var _ reader.ParameterParser = (*Parameter)(nil)
 //	    return err
 //	}
 //	fmt.Printf("Parameter %d has value: %v\n", param.ID, param.Value)
-func (p *Parameter) Parse(r *reader.Reader, out *types.Parameter) error {
+func (p *Parameter) Parse(reader *reader.Reader, out *types.Parameter, hooks *hooks.Hooks) error {
 
-	header, err := p.parseHeader(r)
+	header, err := p.parseHeader(reader)
 	if err != nil {
 		return err
 	}
 
-	value, err := p.decode(r, header.Type)
+	value, err := p.decode(reader, header.Type)
 
 	if err != nil {
 		return err
@@ -45,23 +46,26 @@ func (p *Parameter) Parse(r *reader.Reader, out *types.Parameter) error {
 	out.ParameterHeader = header
 	out.Value = value
 
-	p.emit(r)
+	p.emit(reader, hooks)
 
 	return nil
 }
 
-func (p Parameter) emit(r *reader.Reader) {
-
-	if r.SyncHooks.OnParameter != nil {
-		r.SyncHooks.OnParameter(p.Parameter)
+func (p Parameter) emit(reader *reader.Reader, hooks *hooks.Hooks) {
+	if hooks == nil {
+		return
 	}
 
-	if r.AsyncHooks.OnParameter == nil {
+	if hooks.SyncHooks.OnParameter != nil {
+		hooks.SyncHooks.OnParameter(p.Parameter)
+	}
+
+	if hooks.AsyncHooks.OnParameter == nil {
 		return
 	}
 
 	select {
-	case r.AsyncHooks.OnParameter <- p.Parameter:
+	case hooks.AsyncHooks.OnParameter <- p.Parameter:
 	default:
 	}
 }

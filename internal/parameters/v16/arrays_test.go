@@ -54,7 +54,7 @@ func TestReadInt8Array(t *testing.T) {
 			})
 			p := &Parameter{}
 			out := &types.Parameter{}
-			err := p.Parse(reader, out)
+			err := p.Parse(reader, out, nil)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadInt8Array() error = %v, wantErr %v", err, tt.wantErr)
@@ -125,7 +125,7 @@ func TestReadInt32Array(t *testing.T) {
 			})
 			p := &Parameter{}
 			out := &types.Parameter{}
-			err := p.Parse(reader, out)
+			err := p.Parse(reader, out, nil)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadInt32Array() error = %v, wantErr %v", err, tt.wantErr)
@@ -214,7 +214,7 @@ func TestReadStringArray(t *testing.T) {
 			})
 			p := &Parameter{}
 			out := &types.Parameter{}
-			err := p.Parse(reader, out)
+			err := p.Parse(reader, out, nil)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadStringArray() error = %v, wantErr %v", err, tt.wantErr)
@@ -333,7 +333,7 @@ func TestReadArray(t *testing.T) {
 			})
 			p := &Parameter{}
 			out := &types.Parameter{}
-			err := p.Parse(reader, out)
+			err := p.Parse(reader, out, nil)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadArray() error = %v, wantErr %v", err, tt.wantErr)
@@ -361,7 +361,7 @@ func TestReadArrayGeneric(t *testing.T) {
 		})
 		p := &Parameter{}
 		out := &types.Parameter{}
-		err := p.Parse(reader, out)
+		err := p.Parse(reader, out, nil)
 
 		if err != nil {
 			t.Fatalf("readArray[uint32]() error = %v", err)
@@ -397,7 +397,7 @@ func TestReadArrayGeneric(t *testing.T) {
 		})
 		p := &Parameter{}
 		out := &types.Parameter{}
-		err := p.Parse(reader, out)
+		err := p.Parse(reader, out, nil)
 		if err != nil {
 			t.Fatalf("readArray[float32]() error = %v", err)
 		}
@@ -435,7 +435,7 @@ func BenchmarkReadInt8Array(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		out := &types.Parameter{}
-		err := p.Parse(reader, out)
+		err := p.Parse(reader, out, nil)
 		if err != nil {
 			b.Fatalf("ReadInt8Array() error = %v", err)
 		}
@@ -457,7 +457,7 @@ func BenchmarkReadStringArray(b *testing.B) {
 
 	for i := 0; i < b.N; i++ {
 		out := &types.Parameter{}
-		err := p.Parse(reader, out)
+		err := p.Parse(reader, out, nil)
 		if err != nil {
 			b.Fatalf("ReadStringArray() error = %v", err)
 		}
