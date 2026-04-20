@@ -5,6 +5,7 @@ package session
 
 import (
 	"fmt"
+	"log"
 	"michelprogram/photon-parser/internal/command"
 	"michelprogram/photon-parser/internal/hooks"
 	"michelprogram/photon-parser/internal/reader"
@@ -29,6 +30,8 @@ func Parse(reader *reader.Reader, hooks *hooks.Hooks) (*Session, error) {
 	}
 
 	session.Commands = make([]*types.Command, header.CommandCount)
+
+	log.Println("Session header", header)
 
 	for i := uint8(0); i < header.CommandCount; i++ {
 		cmd, err := command.Parse(reader, hooks)
@@ -74,11 +77,6 @@ func (s *Session) parseHeader(r *reader.Reader) (types.Header, error) {
 	}
 
 	header.CRCEnabled, err = r.ReadUInt8()
-	if err != nil {
-		return types.Header{}, err
-	}
-
-	header.CommandCount, err = r.ReadUInt8()
 	if err != nil {
 		return types.Header{}, err
 	}

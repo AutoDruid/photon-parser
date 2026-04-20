@@ -2,6 +2,7 @@ package command
 
 import (
 	"fmt"
+	"log"
 	"michelprogram/photon-parser/internal/command/acknowledge"
 	"michelprogram/photon-parser/internal/command/ping"
 	"michelprogram/photon-parser/internal/command/sendReliable"
@@ -33,6 +34,8 @@ func Parse(reader *reader.Reader, hooks *hooks.Hooks) (*Command, error) {
 		return nil, err
 	}
 
+	log.Println("header", header)
+
 	if header.Length < types.COMMAND_HEADER_SIZE {
 		return nil, fmt.Errorf(
 			"command length %d smaller than header size %d",
@@ -51,6 +54,8 @@ func Parse(reader *reader.Reader, hooks *hooks.Hooks) (*Command, error) {
 	} else {
 		cmd.Payload = parsed
 	}
+
+	log.Println(parsed)
 
 	cmd.emit(reader, hooks)
 

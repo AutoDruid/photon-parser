@@ -7,6 +7,139 @@ import (
 	"testing"
 )
 
+func TestReadByte(t *testing.T) {
+	tests := []struct {
+		name    string
+		input   []byte
+		want    byte
+		wantErr bool
+	}{
+		{name: "zero", input: []byte{0x00}, want: 0},
+		{name: "high bit set is not negative as byte", input: []byte{0xFF}, want: 0xFF},
+		{name: "truncated", input: []byte{}, wantErr: true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := reader.NewReader(tt.input, reader.Options{ParameterParser: &v16.Parameter{}})
+			got, err := r.ReadByte()
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("ReadByte() err = %v, wantErr %v", err, tt.wantErr)
+			}
+			if !tt.wantErr && got != tt.want {
+				t.Errorf("ReadByte() = %#02x, want %#02x", got, tt.want)
+			}
+			// If you care about signed interpretation of that same byte:
+			if !tt.wantErr && tt.want == 0xFF && int8(got) != -1 {
+				t.Errorf("int8(ReadByte()) = %d, want -1", int8(got))
+			}
+		})
+	}
+}
+
+func TestReadVarintInt32(t *testing.T) {
+	tests := []struct {
+		name  string
+		want  int32
+		input []byte
+	}{
+		// ── 1-byte varint (zigzag 0–127) ────────────────────────
+		{name: "1byte_positive", input: []byte{0x02}, want: 1},
+		{name: "1byte_negative", input: []byte{0x01}, want: -1},
+
+		// ── 2-byte varint (zigzag 128–16383) ────────────────────
+		{name: "2byte_positive", input: []byte{0x80, 0x01}, want: 64},
+		{name: "2byte_negative", input: []byte{0x81, 0x01}, want: -65},
+
+		// ── 3-byte varint (zigzag 16384–2097151) ────────────────
+		{name: "3byte_positive", input: []byte{0x80, 0x80, 0x01}, want: 8192},
+		{name: "3byte_negative", input: []byte{0x81, 0x80, 0x01}, want: -8193},
+
+		// ── 4-byte varint (zigzag 2097152–268435455) ────────────
+		{name: "4byte_positive", input: []byte{0x80, 0x80, 0x80, 0x01}, want: 1048576},
+		{name: "4byte_negative", input: []byte{0x81, 0x80, 0x80, 0x01}, want: -1048577},
+
+		// ── 5-byte varint (zigzag 268435456–4294967295) ─────────
+		{name: "5byte_positive", input: []byte{0xFE, 0xFF, 0xFF, 0xFF, 0x0F}, want: 2147483647},  // int32 max
+		{name: "5byte_negative", input: []byte{0xFF, 0xFF, 0xFF, 0xFF, 0x0F}, want: -2147483648}, // int32 min
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := reader.NewReader(tt.input, reader.Options{ParameterParser: &v16.Parameter{}})
+			got, err := r.ReadVarintInt32()
+			if err != nil {
+				t.Fatalf("ReadVarintInt32() err = %v", err)
+			}
+			if got != tt.want {
+				t.Errorf("ReadVarintInt32() = %d, want %d", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestReadVarintInt64(t *testing.T) {
+	tests := []struct {
+		name  string
+		want  int64
+		input []byte
+	}{
+		// ── 1-byte varint (zigzag 0–127) ────────────────────────
+		{name: "1byte_positive", input: []byte{0x02}, want: 1},
+		{name: "1byte_negative", input: []byte{0x01}, want: -1},
+
+		// ── 2-byte varint (zigzag 128–16383) ────────────────────
+		{name: "2byte_positive", input: []byte{0x80, 0x01}, want: 64},
+		{name: "2byte_negative", input: []byte{0x81, 0x01}, want: -65},
+
+		// ── 3-byte varint (zigzag 16384–2097151) ────────────────
+		{name: "3byte_positive", input: []byte{0x80, 0x80, 0x01}, want: 8192},
+		{name: "3byte_negative", input: []byte{0x81, 0x80, 0x01}, want: -8193},
+
+		// ── 4-byte varint (zigzag 2097152–268435455) ────────────
+		{name: "4byte_positive", input: []byte{0x80, 0x80, 0x80, 0x01}, want: 1048576},
+		{name: "4byte_negative", input: []byte{0x81, 0x80, 0x80, 0x01}, want: -1048577},
+
+				// ── 5–9 byte varint: wire value is ZigZag(n), so positive n uses
+		// trailing 0x02 (2<<(...)) not 0x01; negative uses 0x81 then 0x80…0x02.
+		// ── 5-byte varint ────────────────────────────────────────
+		{name: "5byte_positive", input: []byte{0x80, 0x80, 0x80, 0x80, 0x02}, want: 268435456},
+		{name: "5byte_negative", input: []byte{0x81, 0x80, 0x80, 0x80, 0x02}, want: -268435457},
+
+		// ── 6-byte varint ────────────────────────────────────────
+		{name: "6byte_positive", input: []byte{0x80, 0x80, 0x80, 0x80, 0x80, 0x02}, want: 34359738368},
+		{name: "6byte_negative", input: []byte{0x81, 0x80, 0x80, 0x80, 0x80, 0x02}, want: -34359738369},
+
+		// ── 7-byte varint ────────────────────────────────────────
+		{name: "7byte_positive", input: []byte{0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x02}, want: 4398046511104},
+		{name: "7byte_negative", input: []byte{0x81, 0x80, 0x80, 0x80, 0x80, 0x80, 0x02}, want: -4398046511105},
+
+		// ── 8-byte varint ────────────────────────────────────────
+		{name: "8byte_positive", input: []byte{0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x02}, want: 562949953421312},
+		{name: "8byte_negative", input: []byte{0x81, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x02}, want: -562949953421313},
+
+		// ── 9-byte varint ────────────────────────────────────────
+		{name: "9byte_positive", input: []byte{0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x02}, want: 72057594037927936},
+		{name: "9byte_negative", input: []byte{0x81, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x02}, want: -72057594037927937},
+
+		// ── 10-byte varint (int64 max/min) ───────────────────────
+		{name: "10byte_positive", input: []byte{0xFE, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01}, want: 9223372036854775807},  // int64 max
+		{name: "10byte_negative", input: []byte{0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x01}, want: -9223372036854775808}, // int64 min
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := reader.NewReader(tt.input, reader.Options{nil})
+			got, err := r.ReadVarintInt64()
+			if err != nil {
+				t.Fatalf("ReadVarintInt64() err = %v", err)
+			}
+			if got != tt.want {
+				t.Errorf("ReadVarintInt64() = %d, want %d", got, tt.want)
+			}
+		})
+	}
+}
+
 func TestReadInt8(t *testing.T) {
 	tests := []struct {
 		name    string

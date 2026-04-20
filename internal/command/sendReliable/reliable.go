@@ -26,10 +26,10 @@ const (
 // Header represents the reliable message header.
 // This appears at the start of the payload in SendReliable commands.
 type Header struct {
-	Signature      uint8  `json:"signature"`       // Message signature (typically 0xF3)
-	Type           Type   `json:"type"`            // Message type (operation, event, etc.)
-	EventCode      uint8  `json:"event_code"`      // Operation/event code (application-specific)
-	ParameterCount uint16 `json:"parameter_count"` // Number of parameters following this header
+	Signature      uint8 `json:"signature"`       // Message signature (typically 0xF3)
+	Type           Type  `json:"type"`            // Message type (operation, event, etc.)
+	EventCode      uint8 `json:"event_code"`      // Operation/event code (application-specific)
+	ParameterCount int   `json:"parameter_count"` // Number of parameters following this header
 }
 
 // Reliable represents a complete reliable message with header and parameters.
@@ -65,7 +65,7 @@ func Parse(reader *reader.Reader, hooks *hooks.Hooks) (*Reliable, error) {
 
 	reliable.Parameters = make([]types.Parameter, header.ParameterCount)
 
-	for i := uint16(0); i < reliable.ParameterCount; i++ {
+	for i := 0; i < reliable.ParameterCount; i++ {
 		err := reader.ParameterParser.Parse(reader, &reliable.Parameters[i], hooks)
 		if err != nil {
 			return nil, err
@@ -96,7 +96,7 @@ func (r *Reliable) parseHeader(reader *reader.Reader) (Header, error) {
 		return Header{}, err
 	}
 
-	header.ParameterCount, err = reader.ReadUInt16()
+	header.ParameterCount, err = reader.Options.ReliableHeaderParameterCount.Count(reader)
 	if err != nil {
 		return Header{}, err
 	}
