@@ -43,11 +43,15 @@ func (p *Parameter) Parse(reader *reader.Reader, out *types.Parameter, hooks *ho
 	value, err := p.decode(reader, ParameterType(header.Type))
 
 	log.Println("value", value)
-	log.Println("err", err)
-	log.Printf("next %x\n", reader.Buffer[reader.Cursor+1])
+	if reader.Cursor+1 < reader.Max {
+		log.Printf("next % x\n", reader.Buffer[reader.Cursor+1:])
+
+	}
 
 	if err != nil {
+		log.Println("err on parameter type", header.Type, err)
 		return err
+
 	}
 
 	out.ParameterHeader = header
@@ -91,8 +95,6 @@ func (p *Parameter) parseHeader(r *reader.Reader) (types.ParameterHeader, error)
 		return types.ParameterHeader{}, err
 	}
 
-	log.Println("ParameterType", b)
-
 	header.Type = types.ParameterType(b)
 
 	return header, nil
@@ -110,6 +112,24 @@ func (p *Parameter) parseHeader(r *reader.Reader) (types.ParameterHeader, error)
 // For unsupported type codes, returns an error.
 func (p Parameter) decode(reader *reader.Reader, ttype ParameterType) (any, error) {
 	switch ttype {
+	case Int16Type:
+		return reader.ReadInt16LittleEndian()
+	case Int16Positive:
+		value, err := reader.ReadUInt16LittleEndian()
+		if err != nil {
+			return nil, err
+		}
+		return int32(value), nil
+	case Long16Positive:
+		value, err := reader.ReadUInt16LittleEndian()
+		if err != nil {
+			return nil, err
+		}
+		return int64(value), nil
+	case StringType:
+		return p.readString(reader)
+	case CompressedInt32Type:
+		return reader.ReadVarintInt32()
 	case CompressedInt64Type:
 		return reader.ReadVarintInt64()
 	case Float32ArrayType:
@@ -118,6 +138,12 @@ func (p Parameter) decode(reader *reader.Reader, ttype ParameterType) (any, erro
 		return reader.ReadFloat32()
 	case Int8Type:
 		return reader.ReadInt8()
+	case ByteZeroType:
+		return byte(0), nil
+	case ShortArrayType:
+		return p.readInt16Array(reader)
+	case ByteArrayType:
+		return p.readInt8Array(reader)
 	case NilType, UnknownType:
 		return nil, nil
 	default:

@@ -2,7 +2,6 @@ package sendReliable
 
 import (
 	"fmt"
-	"log"
 	"michelprogram/photon-parser/internal/hooks"
 	"michelprogram/photon-parser/internal/reader"
 	"michelprogram/photon-parser/internal/types"
@@ -63,8 +62,6 @@ func Parse(reader *reader.Reader, hooks *hooks.Hooks) (*Reliable, error) {
 	if reliable.Signature != 0xF3 {
 		return nil, fmt.Errorf("encrypted or unknown packet, signature: 0x%02x", header.Signature)
 	}
-
-	log.Println("parameter count send reliable", header.ParameterCount, header)
 
 	reliable.Parameters = make([]types.Parameter, header.ParameterCount)
 

@@ -1,6 +1,8 @@
 package v18
 
-import "michelprogram/photon-parser/internal/reader"
+import (
+	"michelprogram/photon-parser/internal/reader"
+)
 
 // ReadString reads a Photon Protocol16 string from the reader.
 // Format: uint16 length (big-endian) followed by UTF-8 bytes.

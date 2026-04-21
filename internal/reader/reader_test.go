@@ -1,8 +1,10 @@
 package reader_test
 
 import (
+	"encoding/binary"
 	"math"
 	v16 "michelprogram/photon-parser/internal/parameters/v16"
+	v18 "michelprogram/photon-parser/internal/parameters/v18"
 	"michelprogram/photon-parser/internal/reader"
 	"testing"
 )
@@ -20,7 +22,11 @@ func TestReadByte(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := reader.NewReader(tt.input, reader.Options{ParameterParser: &v16.Parameter{}})
+			r := reader.NewReader(tt.input, reader.Options{
+				ParameterParser:              &v16.Parameter{},
+				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
+				BinaryOrder:                  binary.BigEndian,
+			})
 			got, err := r.ReadByte()
 			if (err != nil) != tt.wantErr {
 				t.Fatalf("ReadByte() err = %v, wantErr %v", err, tt.wantErr)
@@ -65,7 +71,11 @@ func TestReadVarintInt32(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := reader.NewReader(tt.input, reader.Options{ParameterParser: &v16.Parameter{}})
+			r := reader.NewReader(tt.input, reader.Options{
+				ParameterParser:              &v18.Parameter{},
+				ReliableHeaderParameterCount: &v18.ReliableHeaderParameterCountV18{},
+				BinaryOrder:                  binary.LittleEndian,
+			})
 			got, err := r.ReadVarintInt32()
 			if err != nil {
 				t.Fatalf("ReadVarintInt32() err = %v", err)
@@ -99,7 +109,7 @@ func TestReadVarintInt64(t *testing.T) {
 		{name: "4byte_positive", input: []byte{0x80, 0x80, 0x80, 0x01}, want: 1048576},
 		{name: "4byte_negative", input: []byte{0x81, 0x80, 0x80, 0x01}, want: -1048577},
 
-				// ── 5–9 byte varint: wire value is ZigZag(n), so positive n uses
+		// ── 5–9 byte varint: wire value is ZigZag(n), so positive n uses
 		// trailing 0x02 (2<<(...)) not 0x01; negative uses 0x81 then 0x80…0x02.
 		// ── 5-byte varint ────────────────────────────────────────
 		{name: "5byte_positive", input: []byte{0x80, 0x80, 0x80, 0x80, 0x02}, want: 268435456},
@@ -128,7 +138,11 @@ func TestReadVarintInt64(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			r := reader.NewReader(tt.input, reader.Options{nil})
+			r := reader.NewReader(tt.input, reader.Options{
+				ParameterParser:              &v18.Parameter{},
+				ReliableHeaderParameterCount: &v18.ReliableHeaderParameterCountV18{},
+				BinaryOrder:                  binary.LittleEndian,
+			})
 			got, err := r.ReadVarintInt64()
 			if err != nil {
 				t.Fatalf("ReadVarintInt64() err = %v", err)
@@ -209,7 +223,9 @@ func TestReadUInt8(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := reader.NewReader(tt.input, reader.Options{
-				ParameterParser: &v16.Parameter{},
+				ParameterParser:              &v16.Parameter{},
+				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
+				BinaryOrder:                  binary.BigEndian,
 			})
 			got, err := r.ReadUInt8()
 
@@ -266,7 +282,9 @@ func TestReadInt16(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := reader.NewReader(tt.input, reader.Options{
-				ParameterParser: &v16.Parameter{},
+				ParameterParser:              &v16.Parameter{},
+				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
+				BinaryOrder:                  binary.BigEndian,
 			})
 			got, err := r.ReadInt16()
 
@@ -299,7 +317,9 @@ func TestReadUInt16(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := reader.NewReader(tt.input, reader.Options{
-				ParameterParser: &v16.Parameter{},
+				ParameterParser:              &v16.Parameter{},
+				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
+				BinaryOrder:                  binary.BigEndian,
 			})
 			got, err := r.ReadUInt16()
 
@@ -351,7 +371,9 @@ func TestReadInt32(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := reader.NewReader(tt.input, reader.Options{
-				ParameterParser: &v16.Parameter{},
+				ParameterParser:              &v16.Parameter{},
+				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
+				BinaryOrder:                  binary.BigEndian,
 			})
 			got, err := r.ReadInt32()
 
@@ -383,7 +405,9 @@ func TestReadUInt32(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := reader.NewReader(tt.input, reader.Options{
-				ParameterParser: &v16.Parameter{},
+				ParameterParser:              &v16.Parameter{},
+				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
+				BinaryOrder:                  binary.BigEndian,
 			})
 			got, err := r.ReadUInt32()
 
@@ -435,7 +459,9 @@ func TestReadInt64(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := reader.NewReader(tt.input, reader.Options{
-				ParameterParser: &v16.Parameter{},
+				ParameterParser:              &v16.Parameter{},
+				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
+				BinaryOrder:                  binary.BigEndian,
 			})
 			got, err := r.ReadInt64()
 
@@ -483,7 +509,9 @@ func TestReadUInt64(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := reader.NewReader(tt.input, reader.Options{
-				ParameterParser: &v16.Parameter{},
+				ParameterParser:              &v16.Parameter{},
+				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
+				BinaryOrder:                  binary.BigEndian,
 			})
 			got, err := r.ReadUInt64()
 
@@ -535,7 +563,9 @@ func TestReadFloat32(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := reader.NewReader(tt.input, reader.Options{
-				ParameterParser: &v16.Parameter{},
+				ParameterParser:              &v16.Parameter{},
+				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
+				BinaryOrder:                  binary.BigEndian,
 			})
 			got, err := r.ReadFloat32()
 
@@ -586,7 +616,9 @@ func TestReadFloat64(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := reader.NewReader(tt.input, reader.Options{
-				ParameterParser: &v16.Parameter{},
+				ParameterParser:              &v16.Parameter{},
+				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
+				BinaryOrder:                  binary.BigEndian,
 			})
 			got, err := r.ReadFloat64()
 
@@ -641,7 +673,9 @@ func TestReadBoolean(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := reader.NewReader(tt.input, reader.Options{
-				ParameterParser: &v16.Parameter{},
+				ParameterParser:              &v16.Parameter{},
+				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
+				BinaryOrder:                  binary.BigEndian,
 			})
 			got, err := r.ReadBoolean()
 
@@ -700,7 +734,9 @@ func TestReadString(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := reader.NewReader(tt.input, reader.Options{
-				ParameterParser: &v16.Parameter{},
+				ParameterParser:              &v16.Parameter{},
+				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
+				BinaryOrder:                  binary.BigEndian,
 			})
 			got, err := r.ReadString(tt.size)
 

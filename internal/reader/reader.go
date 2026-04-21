@@ -3,7 +3,6 @@ package reader
 import (
 	"encoding/binary"
 	"fmt"
-	"log"
 	"math"
 	"michelprogram/photon-parser/internal/hooks"
 	"michelprogram/photon-parser/internal/types"
@@ -103,6 +102,20 @@ func (r *Reader) ReadInt16() (int16, error) {
 	return int16(b[0])<<8 | int16(b[1]), nil
 }
 
+func (r *Reader) ReadInt16LittleEndian() (int16, error) {
+
+	size := r.Cursor + INT16_SIZE
+
+	if size > r.Max {
+		return 0, fmt.Errorf("not enough bytes to read int16")
+	}
+
+	b := r.Buffer[r.Cursor:size]
+	r.Cursor += INT16_SIZE
+
+	return int16(b[1])<<8 | int16(b[0]), nil
+}
+
 // ReadUInt16 reads a 16-bit unsigned integer from the reader in big-endian format.
 // Returns an error if fewer than 2 bytes are available.
 func (r *Reader) ReadUInt16() (uint16, error) {
@@ -117,6 +130,20 @@ func (r *Reader) ReadUInt16() (uint16, error) {
 	r.Cursor += INT16_SIZE
 
 	return uint16(b[0])<<8 | uint16(b[1]), nil
+}
+
+func (r *Reader) ReadUInt16LittleEndian() (uint16, error) {
+
+	size := r.Cursor + INT16_SIZE
+
+	if size > r.Max {
+		return 0, fmt.Errorf("not enough bytes to read uint16")
+	}
+
+	b := r.Buffer[r.Cursor:size]
+	r.Cursor += INT16_SIZE
+
+	return uint16(b[1])<<8 | uint16(b[0]), nil
 }
 
 // ReadInt32 reads a 32-bit signed integer from the reader in big-endian format.
@@ -135,6 +162,22 @@ func (r *Reader) ReadInt32() (int32, error) {
 		int32(b[1])<<16 |
 		int32(b[2])<<8 |
 		int32(b[3]), nil
+}
+
+func (r *Reader) ReadInt32LittleEndian() (int32, error) {
+	size := r.Cursor + INT32_SIZE
+
+	if size > r.Max {
+		return 0, fmt.Errorf("not enough bytes to read int32")
+	}
+
+	b := r.Buffer[r.Cursor:size]
+	r.Cursor += INT32_SIZE
+
+	return int32(b[3])<<24 |
+		int32(b[2])<<16 |
+		int32(b[1])<<8 |
+		int32(b[0]), nil
 }
 
 // ReadUInt32 reads a 32-bit unsigned integer from the reader in big-endian format.
@@ -333,7 +376,6 @@ func (r *Reader) ReadVarintInt32() (int32, error) {
 			break
 		}
 		shift += VARINT_SHIFT
-		log.Println("shift", shift)
 	}
 
 	//ZigZag decode

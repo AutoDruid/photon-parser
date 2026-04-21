@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"michelprogram/photon-parser/internal/command/acknowledge"
+	"michelprogram/photon-parser/internal/command/connect"
 	"michelprogram/photon-parser/internal/command/ping"
 	"michelprogram/photon-parser/internal/command/sendReliable"
 	"michelprogram/photon-parser/internal/hooks"
@@ -30,11 +31,19 @@ type Command struct {
 func Parse(reader *reader.Reader, hooks *hooks.Hooks) (*Command, error) {
 	cmd := Command{}
 	header, err := cmd.parseHeader(reader)
+
+	cmd.CommandHeader = header
+	if header.Type > types.SendReliableFragmentCommand {
+		rest, _ := reader.ReadBytes(reader.Max - reader.Cursor - 1)
+		cmd.Payload = types.UnknownPayload{Raw: rest, Kind: header.Type}
+		return &cmd, nil
+	}
+
 	if err != nil {
 		return nil, err
 	}
 
-	log.Println("header", header)
+	log.Println("Command header", header)
 
 	if header.Length < types.COMMAND_HEADER_SIZE {
 		return nil, fmt.Errorf(
@@ -44,9 +53,11 @@ func Parse(reader *reader.Reader, hooks *hooks.Hooks) (*Command, error) {
 		)
 	}
 
-	cmd.CommandHeader = header
+	log.Println("header.type", header.Type)
+
 	parsed, err := cmd.parsePayload(header.Type, reader, hooks)
 	if err != nil {
+		panic(err)
 		//TODO Check on error if cursor position still sync
 		rest, _ := reader.ReadBytes(int(header.Length - types.COMMAND_HEADER_SIZE))
 		// don't fatal — just store raw for encrypted packets
@@ -54,8 +65,6 @@ func Parse(reader *reader.Reader, hooks *hooks.Hooks) (*Command, error) {
 	} else {
 		cmd.Payload = parsed
 	}
-
-	log.Println(parsed)
 
 	cmd.emit(reader, hooks)
 
@@ -81,6 +90,7 @@ func (c Command) emit(r *reader.Reader, hooks *hooks.Hooks) {
 	}
 
 }
+
 func (c Command) parsePayload(t types.CommandType, r *reader.Reader, hooks *hooks.Hooks) (types.Payload, error) {
 	switch t {
 	case types.SendReliableCommand:
@@ -90,13 +100,33 @@ func (c Command) parsePayload(t types.CommandType, r *reader.Reader, hooks *hook
 		}
 		return sd, nil
 	case types.PingCommand:
-		ping := &ping.Ping{}
-		ping.Parse(r)
-		return ping, nil
+		p, err := ping.Parse(r)
+		if err != nil {
+			return nil, err
+		}
+		return p, nil
 	case types.AcknowledgeCommand:
-		acknowledge := &acknowledge.Acknowledge{}
-		acknowledge.Parse(r)
-		return acknowledge, nil
+		ack, err := acknowledge.Parse(r)
+		if err != nil {
+			return nil, err
+		}
+		return ack, nil
+	case types.SendUnreliableCommand:
+		_, err := r.ReadBytes(4)
+		if err != nil {
+			return nil, err
+		}
+		sd, err := sendReliable.Parse(r, hooks)
+		if err != nil {
+			return nil, err
+		}
+		return sd, nil
+	case types.ConnectCommand, types.VerifyConnectCommand:
+		connect, err := connect.Parse(r, hooks)
+		if err != nil {
+			return nil, err
+		}
+		return connect, nil
 	default:
 		return nil, fmt.Errorf("unknown")
 	}
@@ -112,6 +142,10 @@ func (s *Command) parseHeader(r *reader.Reader) (types.CommandHeader, error) {
 	}
 
 	header.Type = types.CommandType(b)
+
+	if header.Type > types.SendReliableFragmentCommand {
+		return header, nil
+	}
 
 	header.ChannelID, err = r.ReadUInt8()
 	if err != nil {
