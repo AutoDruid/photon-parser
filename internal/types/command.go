@@ -43,3 +43,12 @@ type UnknownPayload struct {
 	Raw  []byte
 	Kind CommandType
 }
+
+type Fragment struct {
+	ID     uint32
+	Count  uint32
+	Index  uint32
+	Size   uint32
+	Offset uint32
+	Data   []byte
+}

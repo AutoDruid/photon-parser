@@ -1,7 +1,9 @@
-package photonparser
+package photon
 
 import (
 	"encoding/binary"
+	"michelprogram/photon-parser/internal/assembler"
+	"michelprogram/photon-parser/internal/context"
 	"michelprogram/photon-parser/internal/hooks"
 	v16 "michelprogram/photon-parser/internal/parameters/v16"
 	v18 "michelprogram/photon-parser/internal/parameters/v18"
@@ -11,37 +13,42 @@ import (
 )
 
 type Parser struct {
-	reader *reader.Reader
-	hooks  *hooks.Hooks
+	Ctx *context.Context
 }
 
 func NewParserV16() *Parser {
 	return &Parser{
-		reader: reader.NewReader(nil, reader.Options{
-			ParameterParser: &v16.Parameter{},
-			ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-			BinaryOrder: binary.BigEndian,
-		}),
-		hooks: hooks.NewHooks(),
+		Ctx: &context.Context{
+			Reader: reader.NewReader(nil, reader.Options{
+				ParameterParser:              &v16.Parameter{},
+				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
+				BinaryOrder:                  binary.BigEndian,
+			}),
+			Hooks:     hooks.NewHooks(),
+			Assembler: assembler.NewAssembler(),
+		},
 	}
 }
 
 func NewParserV18() *Parser {
 	return &Parser{
-		reader: reader.NewReader(nil, reader.Options{
-			ParameterParser: &v18.Parameter{},
-			ReliableHeaderParameterCount: &v18.ReliableHeaderParameterCountV18{},
-			BinaryOrder: binary.LittleEndian,
-		}),
-		hooks: hooks.NewHooks(),
+		Ctx: &context.Context{
+			Reader: reader.NewReader(nil, reader.Options{
+				ParameterParser:              &v18.Parameter{},
+				ReliableHeaderParameterCount: &v18.ReliableHeaderParameterCountV18{},
+				BinaryOrder:                  binary.LittleEndian,
+			}),
+			Assembler: assembler.NewAssembler(),
+			Hooks:     hooks.NewHooks(),
+		},
 	}
 }
 
 func (p *Parser) ParsePacket(data []byte) (*Session, error) {
 
-	p.reader.Reset(data)
+	p.Ctx.Reader.Reset(data)
 
-	sess, err := session.Parse(p.reader, p.hooks)
+	sess, err := session.Parse(p.Ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -50,29 +57,29 @@ func (p *Parser) ParsePacket(data []byte) (*Session, error) {
 }
 
 func (p *Parser) OnSessionSync(fn func(Session)) {
-	p.hooks.SyncHooks.OnSession = fn
+	p.Ctx.Hooks.SyncHooks.OnSession = fn
 }
 
 func (p *Parser) OnCommandSync(fn func(Command)) {
-	p.hooks.SyncHooks.OnCommand = fn
+	p.Ctx.Hooks.SyncHooks.OnCommand = fn
 }
 
 func (p *Parser) OnParameterSync(fn func(Parameter)) {
-	p.hooks.SyncHooks.OnParameter = fn
+	p.Ctx.Hooks.SyncHooks.OnParameter = fn
 }
 
 func (p *Parser) OnSessionAsync(options types.HookOptions) <-chan Session {
-	return p.hooks.OnSessionAsync(options)
+	return p.Ctx.Hooks.OnSessionAsync(options)
 }
 
 func (p *Parser) OnCommandAsync(options types.HookOptions) <-chan Command {
-	return p.hooks.OnCommandAsync(options)
+	return p.Ctx.Hooks.OnCommandAsync(options)
 }
 
 func (p *Parser) OnParameterAsync(options types.HookOptions) <-chan Parameter {
-	return p.hooks.OnParameterAsync(options)
+	return p.Ctx.Hooks.OnParameterAsync(options)
 }
 
 func (p *Parser) Close() {
-	p.hooks.CloseAsyncHooks()
+	p.Ctx.Hooks.CloseAsyncHooks()
 }

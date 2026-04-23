@@ -3,7 +3,7 @@ package v18
 type ParameterType uint8
 
 const (
-	UnknownType         ParameterType = 0
+	UnknownType         ParameterType = 0 //Tested
 	BooleanType         ParameterType = 2
 	Int8Type            ParameterType = 3
 	Int16Type           ParameterType = 4 //Tested

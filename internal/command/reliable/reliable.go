@@ -1,9 +1,8 @@
-package sendReliable
+package reliable
 
 import (
-	"fmt"
-	"log"
-	"michelprogram/photon-parser/internal/hooks"
+	"michelprogram/photon-parser/internal/context"
+	"michelprogram/photon-parser/internal/errors"
 	"michelprogram/photon-parser/internal/reader"
 	"michelprogram/photon-parser/internal/types"
 )
@@ -51,34 +50,37 @@ type Reliable struct {
 //
 // Returns a Reliable struct with all fields populated including the Parameters slice,
 // or an error if any part of parsing fails.
-func Parse(reader *reader.Reader, hooks *hooks.Hooks) (*Reliable, error) {
+func Parse(ctx *context.Context, length uint32) (*Reliable, error) {
 	reliable := Reliable{}
-	header, err := reliable.parseHeader(reader)
+	header, err := reliable.parseHeader(ctx.Reader, length)
 	if err != nil {
 		return nil, err
+	}
+
+	if header.Type >= ExchangeKeys {
+		return nil, nil
 	}
 
 	reliable.Header = header
 
 	if reliable.Signature != 0xF3 {
-		return nil, fmt.Errorf("encrypted or unknown packet, signature: 0x%02x", header.Signature)
+		return nil, errors.EncryptedPacket
 	}
-
-	log.Println("parameter count send reliable", header.ParameterCount, header)
 
 	reliable.Parameters = make([]types.Parameter, header.ParameterCount)
 
 	for i := 0; i < reliable.ParameterCount; i++ {
-		err := reader.ParameterParser.Parse(reader, &reliable.Parameters[i], hooks)
+		err := ctx.Reader.ParameterParser.Parse(ctx.Reader, &reliable.Parameters[i], ctx.Hooks)
 		if err != nil {
 			return nil, err
 		}
 	}
 
 	return &reliable, nil
+
 }
 
-func (r *Reliable) parseHeader(reader *reader.Reader) (Header, error) {
+func (r *Reliable) parseHeader(reader *reader.Reader, length uint32) (Header, error) {
 	var err error
 	var header Header
 
@@ -94,9 +96,27 @@ func (r *Reliable) parseHeader(reader *reader.Reader) (Header, error) {
 
 	header.Type = Type(b)
 
-	header.EventCode, err = reader.ReadUInt8()
-	if err != nil {
-		return Header{}, err
+	switch header.Type {
+	case OperationResponse, OtherOperationResponse:
+
+		header.EventCode, err = reader.ReadUInt8()
+		if err != nil {
+			return Header{}, err
+		}
+
+		//Return code
+		reader.ReadInt16LittleEndian()
+
+		//Read debug msg
+		reader.ReadByte()
+	case EventDataType, OperationRequest:
+		header.EventCode, err = reader.ReadUInt8()
+		if err != nil {
+			return Header{}, err
+		}
+	default:
+		reader.ReadBytes(int(length) - 14)
+		return header, nil
 	}
 
 	header.ParameterCount, err = reader.Options.ReliableHeaderParameterCount.Count(reader)

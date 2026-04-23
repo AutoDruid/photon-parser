@@ -1,8 +1,7 @@
 package connect
 
 import (
-	"michelprogram/photon-parser/internal/hooks"
-	"michelprogram/photon-parser/internal/reader"
+	"michelprogram/photon-parser/internal/context"
 )
 
 type Connect struct {
@@ -16,38 +15,38 @@ type Connect struct {
 	PacketThrottleDeceleration uint32
 }
 
-func Parse(r *reader.Reader, hooks *hooks.Hooks) (*Connect, error) {
+func Parse(ctx *context.Context) (*Connect, error) {
 	var err error
 	connect := Connect{}
-	connect.Mtu, err = r.ReadUInt32()
+	connect.Mtu, err = ctx.Reader.ReadUInt32()
 	if err != nil {
 		return nil, err
 	}
-	connect.WindowSize, err = r.ReadUInt32()
+	connect.WindowSize, err = ctx.Reader.ReadUInt32()
 	if err != nil {
 		return nil, err
 	}
-	connect.ChannelCount, err = r.ReadUInt32()
+	connect.ChannelCount, err = ctx.Reader.ReadUInt32()
 	if err != nil {
 		return nil, err
 	}
-	connect.IncomingBandwidth, err = r.ReadUInt32()
+	connect.IncomingBandwidth, err = ctx.Reader.ReadUInt32()
 	if err != nil {
 		return nil, err
 	}
-	connect.OutgoingBandwidth, err = r.ReadUInt32()
+	connect.OutgoingBandwidth, err = ctx.Reader.ReadUInt32()
 	if err != nil {
 		return nil, err
 	}
-	connect.DisconnectThrollte, err = r.ReadUInt32()
+	connect.DisconnectThrollte, err = ctx.Reader.ReadUInt32()
 	if err != nil {
 		return nil, err
 	}
-	connect.PacketThrottleAcceleration, err = r.ReadUInt32()
+	connect.PacketThrottleAcceleration, err = ctx.Reader.ReadUInt32()
 	if err != nil {
 		return nil, err
 	}
-	connect.PacketThrottleDeceleration, err = r.ReadUInt32()
+	connect.PacketThrottleDeceleration, err = ctx.Reader.ReadUInt32()
 	if err != nil {
 		return nil, err
 	}

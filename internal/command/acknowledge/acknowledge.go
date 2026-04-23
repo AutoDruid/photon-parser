@@ -1,22 +1,24 @@
 package acknowledge
 
-import "michelprogram/photon-parser/internal/reader"
+import (
+	"michelprogram/photon-parser/internal/context"
+)
 
 type Acknowledge struct {
 	AckReliableSequenceNumber uint32
 	AckSentTime               uint32
 }
 
-func Parse(reader *reader.Reader) (*Acknowledge, error) {
+func Parse(ctx *context.Context) (*Acknowledge, error) {
 	var ack Acknowledge
 	var err error
 
-	ack.AckReliableSequenceNumber, err = reader.ReadUInt32()
+	ack.AckReliableSequenceNumber, err = ctx.Reader.ReadUInt32()
 	if err != nil {
 		return nil, err
 	}
 
-	ack.AckSentTime, err = reader.ReadUInt32()
+	ack.AckSentTime, err = ctx.Reader.ReadUInt32()
 	if err != nil {
 		return nil, err
 	}

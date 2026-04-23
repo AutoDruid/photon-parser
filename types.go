@@ -1,4 +1,4 @@
-package photonparser
+package photon
 
 import "michelprogram/photon-parser/internal/types"
 

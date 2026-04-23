@@ -4,8 +4,11 @@
 package session
 
 import (
+	"errors"
 	"fmt"
 	"michelprogram/photon-parser/internal/command"
+	"michelprogram/photon-parser/internal/context"
+	photonErrors "michelprogram/photon-parser/internal/errors"
 	"michelprogram/photon-parser/internal/hooks"
 	"michelprogram/photon-parser/internal/reader"
 	"michelprogram/photon-parser/internal/types"
@@ -21,9 +24,9 @@ type Session struct {
 //
 // Returns a Session struct with all fields populated including the Commands slice,
 // or an error if any part of parsing fails.
-func Parse(reader *reader.Reader, hooks *hooks.Hooks) (*Session, error) {
+func Parse(ctx *context.Context) (*Session, error) {
 	session := Session{}
-	header, err := session.parseHeader(reader)
+	header, err := session.parseHeader(ctx.Reader)
 	if err != nil {
 		return nil, err
 	}
@@ -31,7 +34,11 @@ func Parse(reader *reader.Reader, hooks *hooks.Hooks) (*Session, error) {
 	session.Commands = make([]*types.Command, header.CommandCount)
 
 	for i := uint8(0); i < header.CommandCount; i++ {
-		cmd, err := command.Parse(reader, hooks)
+		cmd, err := command.Parse(ctx)
+
+		if errors.Is(err, photonErrors.HeaderSize) {
+			break
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -45,7 +52,7 @@ func Parse(reader *reader.Reader, hooks *hooks.Hooks) (*Session, error) {
 
 	session.Header = header
 
-	session.emit(reader, hooks)
+	session.emit(ctx.Reader, ctx.Hooks)
 
 	return &session, nil
 }

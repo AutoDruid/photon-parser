@@ -29,14 +29,14 @@ func (p Parameter) readDictionary(r *reader.Reader) (map[any]any, error) {
 		return nil, err
 	}
 
-	size, err := r.ReadUInt16()
+	size, err := r.ReadVarintUInt32()
 	if err != nil {
 		return nil, err
 	}
 
 	res := make(map[any]any, size)
 
-	for i := uint16(0); i < size; i++ {
+	for i := uint32(0); i < size; i++ {
 		key, err := p.decode(r, ParameterType(keyType))
 		if err != nil {
 			return nil, err

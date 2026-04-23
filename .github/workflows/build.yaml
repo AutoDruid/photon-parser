@@ -4,7 +4,7 @@ on:
   push:
 
 jobs:
-  fmt_test_build:
+  fmt_build:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -17,9 +17,6 @@ jobs:
 
       - name: Check gofmt
         run: gofmt -w .
-
-      - name: Test
-        run: go test ./...
 
       - name: Build
         run: go build ./...

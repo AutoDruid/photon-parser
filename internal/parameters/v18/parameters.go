@@ -38,20 +38,11 @@ func (p *Parameter) Parse(reader *reader.Reader, out *types.Parameter, hooks *ho
 		return err
 	}
 
-	log.Println("header", header)
-
 	value, err := p.decode(reader, ParameterType(header.Type))
-
-	log.Println("value", value)
-	if reader.Cursor+1 < reader.Max {
-		log.Printf("next % x\n", reader.Buffer[reader.Cursor+1:])
-
-	}
 
 	if err != nil {
 		log.Println("err on parameter type", header.Type, err)
 		return err
-
 	}
 
 	out.ParameterHeader = header
@@ -112,6 +103,18 @@ func (p *Parameter) parseHeader(r *reader.Reader) (types.ParameterHeader, error)
 // For unsupported type codes, returns an error.
 func (p Parameter) decode(reader *reader.Reader, ttype ParameterType) (any, error) {
 	switch ttype {
+	case Int8Positive:
+		value, err := reader.ReadByte()
+		if err != nil {
+			return nil, err
+		}
+		return int32(value), nil
+	case Int8Negative:
+		value, err := reader.ReadByte()
+		if err != nil {
+			return nil, err
+		}
+		return -int32(value), nil
 	case Int16Type:
 		return reader.ReadInt16LittleEndian()
 	case Int16Positive:
@@ -120,12 +123,36 @@ func (p Parameter) decode(reader *reader.Reader, ttype ParameterType) (any, erro
 			return nil, err
 		}
 		return int32(value), nil
+	case Int16Negative:
+		value, err := reader.ReadUInt16LittleEndian()
+		if err != nil {
+			return nil, err
+		}
+		return -int32(value), nil
+	case Long8Positive:
+		value, err := reader.ReadByte()
+		if err != nil {
+			return nil, err
+		}
+		return int64(value), nil
+	case Long8Negative:
+		value, err := reader.ReadByte()
+		if err != nil {
+			return nil, err
+		}
+		return -int64(value), nil
 	case Long16Positive:
 		value, err := reader.ReadUInt16LittleEndian()
 		if err != nil {
 			return nil, err
 		}
 		return int64(value), nil
+	case Long16Negative:
+		value, err := reader.ReadUInt16LittleEndian()
+		if err != nil {
+			return nil, err
+		}
+		return -int64(value), nil
 	case StringType:
 		return p.readString(reader)
 	case CompressedInt32Type:
@@ -138,12 +165,32 @@ func (p Parameter) decode(reader *reader.Reader, ttype ParameterType) (any, erro
 		return reader.ReadFloat32()
 	case Int8Type:
 		return reader.ReadInt8()
+	case BooleanTrueType:
+		return true, nil
+	case BooleanFalseType:
+		return false, nil
+	case IntZeroType:
+		return int32(0), nil
+	case ShortZeroType:
+		return int16(0), nil
 	case ByteZeroType:
 		return byte(0), nil
+	case ArrayType:
+		return p.readArray(reader)
 	case ShortArrayType:
 		return p.readInt16Array(reader)
 	case ByteArrayType:
 		return p.readInt8Array(reader)
+	case BooleanArrayType:
+		return p.readBooleanArray(reader)
+	case StringArrayType:
+		return p.readStringArray(reader)
+	case DictionaryType:
+		return p.readDictionary(reader)
+	case CompressedIntArrayType:
+		return p.readCompressedInt32Array(reader)
+	case CompressedLongArrayType:
+		return p.readCompressedInt64Array(reader)
 	case NilType, UnknownType:
 		return nil, nil
 	default:

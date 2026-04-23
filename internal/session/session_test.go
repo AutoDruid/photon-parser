@@ -3,6 +3,7 @@ package session_test
 import (
 	"encoding/binary"
 	"encoding/hex"
+	"michelprogram/photon-parser/internal/context"
 	v16 "michelprogram/photon-parser/internal/parameters/v16"
 	"michelprogram/photon-parser/internal/reader"
 	"michelprogram/photon-parser/internal/session"
@@ -18,13 +19,15 @@ func TestParseSession(t *testing.T) {
 		t.Fatalf("LoadFromWiresharkExport() failed: %v", err)
 	}
 
-	reader := reader.NewReader(cleared, reader.Options{
-		ParameterParser:              &v16.Parameter{},
-		ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-		BinaryOrder:                  binary.BigEndian,
-	})
+	ctx := &context.Context{
+		Reader: reader.NewReader(cleared, reader.Options{
+			ParameterParser:              &v16.Parameter{},
+			ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
+			BinaryOrder:                  binary.BigEndian,
+		}),
+	}
 
-	sess, err := session.Parse(reader, nil)
+	sess, err := session.Parse(ctx)
 	if err != nil {
 		t.Fatalf("LoadFromWiresharkExport() failed: %v", err)
 	}
@@ -60,12 +63,16 @@ func BenchmarkParseSession(b *testing.B) {
 	b.ReportAllocs()
 
 	for b.Loop() {
-		r := reader.NewReader(payload, reader.Options{
-			ParameterParser: &v16.Parameter{}, 
-			ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-			BinaryOrder: binary.BigEndian,
-		})
-		sess, err := session.Parse(r, nil)
+
+		ctx := &context.Context{
+			Reader: reader.NewReader(payload, reader.Options{
+				ParameterParser:              &v16.Parameter{},
+				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
+				BinaryOrder:                  binary.BigEndian,
+			}),
+		}
+
+		sess, err := session.Parse(ctx)
 		if err != nil {
 			b.Fatalf("LoadFromWiresharkExport() failed: %v", err)
 		}

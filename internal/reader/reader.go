@@ -54,6 +54,12 @@ func NewReader(data []byte, options Options) *Reader {
 	}
 }
 
+func (r *Reader) ReadRest() []byte {
+	tmp := r.Cursor
+	r.Cursor = r.Max
+	return r.Buffer[tmp:]
+}
+
 func (r *Reader) SetParameterParser(parser ParameterParser) {
 	r.ParameterParser = parser
 }

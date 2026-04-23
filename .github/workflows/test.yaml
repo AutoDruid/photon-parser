@@ -1,0 +1,59 @@
+name: Test
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  check-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      test-changed: ${{ steps.diff.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check if test file changed
+        id: diff
+        run: |
+          git diff --name-only origin/${{ github.base_ref }}...HEAD \
+            | grep -q '^parser_test\.go$' \
+            && echo "changed=true" >> $GITHUB_OUTPUT \
+            || echo "changed=false" >> $GITHUB_OUTPUT
+
+  test-with-data:
+    needs: check-changes
+    if: needs.check-changes.outputs.test-changed == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout private test data
+        uses: actions/checkout@v4
+        with:
+          repository: AutoDruid/photon-data-set
+          token: ${{ secrets.TESTDATA_TOKEN }}
+          path: resources
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+      - run: go test ./...
+
+  test-with-data-gated:
+    needs: check-changes
+    if: needs.check-changes.outputs.test-changed == 'true'
+    runs-on: ubuntu-latest
+    environment: ci-protected
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout private test data
+        uses: actions/checkout@v4
+        with:
+          repository: AutoDruid/photon-data-set
+          token: ${{ secrets.TESTDATA_TOKEN }}
+          path: resources
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+      - run: go test ./...
