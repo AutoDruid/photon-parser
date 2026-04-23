@@ -1,7 +1,6 @@
 package v16_test
 
 import (
-	"encoding/binary"
 	"math"
 	. "michelprogram/photon-parser/internal/parameters/v16"
 	"michelprogram/photon-parser/internal/reader"
@@ -169,7 +168,6 @@ func TestDecode(t *testing.T) {
 			reader := reader.NewReader(fullInput, reader.Options{
 				ParameterParser:              &Parameter{},
 				ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
 			})
 			param := Parameter{}
 			out := &types.Parameter{}
@@ -220,7 +218,6 @@ func TestDecodeAllTypes(t *testing.T) {
 				ParameterParser: &Parameter{},
 
 				ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
 			})
 			param := Parameter{}
 			out := &types.Parameter{}
@@ -240,10 +237,8 @@ func TestDecodeReaderPosition(t *testing.T) {
 		0x00, byte(types.Int16Type), 0x03, 0xE8,
 	}
 	reader := reader.NewReader(input, reader.Options{
-		ParameterParser: &Parameter{},
-
+		ParameterParser:              &Parameter{},
 		ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-		BinaryOrder:                  binary.BigEndian,
 	})
 	param := Parameter{}
 
@@ -284,7 +279,6 @@ func TestDecodeEmptyReader(t *testing.T) {
 				ParameterParser: &Parameter{},
 
 				ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
 			})
 			param := Parameter{}
 			out := &types.Parameter{}
@@ -343,7 +337,6 @@ func BenchmarkDecode(b *testing.B) {
 			r := reader.NewReader(fullInput, reader.Options{
 				ParameterParser:              &Parameter{},
 				ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
 			})
 			param := Parameter{}
 			for i := 0; i < b.N; i++ {

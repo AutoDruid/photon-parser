@@ -1,7 +1,6 @@
 package reliable_test
 
 import (
-	"encoding/binary"
 	"log"
 	"michelprogram/photon-parser/internal/command/reliable"
 	"michelprogram/photon-parser/internal/context"
@@ -18,7 +17,6 @@ func TestReliableParsing(t *testing.T) {
 		Reader: reader.NewReader(payload, reader.Options{
 			ParameterParser:              &v16.Parameter{},
 			ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-			BinaryOrder:                  binary.BigEndian,
 		}),
 	}
 	sd, err := reliable.Parse(ctx, 0)

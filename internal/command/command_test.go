@@ -1,7 +1,6 @@
 package command_test
 
 import (
-	"encoding/binary"
 	"michelprogram/photon-parser/internal/command"
 	"michelprogram/photon-parser/internal/context"
 	v16 "michelprogram/photon-parser/internal/parameters/v16"
@@ -17,7 +16,6 @@ func TestParseSession(t *testing.T) {
 		Reader: reader.NewReader(payload, reader.Options{
 			ParameterParser:              &v16.Parameter{},
 			ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-			BinaryOrder:                  binary.BigEndian,
 		}),
 	}
 

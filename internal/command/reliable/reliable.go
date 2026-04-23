@@ -1,6 +1,7 @@
 package reliable
 
 import (
+	"encoding/binary"
 	"michelprogram/photon-parser/internal/context"
 	"michelprogram/photon-parser/internal/errors"
 	"michelprogram/photon-parser/internal/reader"
@@ -105,7 +106,7 @@ func (r *Reliable) parseHeader(reader *reader.Reader, length uint32) (Header, er
 		}
 
 		//Return code
-		reader.ReadInt16LittleEndian()
+		reader.ReadInt16(binary.LittleEndian)
 
 		//Read debug msg
 		reader.ReadByte()

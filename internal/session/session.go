@@ -4,6 +4,7 @@
 package session
 
 import (
+	"encoding/binary"
 	"errors"
 	"fmt"
 	"michelprogram/photon-parser/internal/command"
@@ -80,7 +81,7 @@ func (s *Session) parseHeader(r *reader.Reader) (types.Header, error) {
 	var err error
 	var header types.Header
 
-	header.PeerID, err = r.ReadUInt16()
+	header.PeerID, err = r.ReadUInt16(binary.BigEndian)
 	if err != nil {
 		return types.Header{}, err
 	}
@@ -95,12 +96,12 @@ func (s *Session) parseHeader(r *reader.Reader) (types.Header, error) {
 		return types.Header{}, err
 	}
 
-	header.Timestamp, err = r.ReadUInt32()
+	header.Timestamp, err = r.ReadUInt32(binary.BigEndian)
 	if err != nil {
 		return types.Header{}, err
 	}
 
-	header.Challenge, err = r.ReadInt32()
+	header.Challenge, err = r.ReadInt32(binary.BigEndian)
 	if err != nil {
 		return types.Header{}, err
 	}

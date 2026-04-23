@@ -1,6 +1,7 @@
 package acknowledge
 
 import (
+	"encoding/binary"
 	"michelprogram/photon-parser/internal/context"
 )
 
@@ -13,12 +14,12 @@ func Parse(ctx *context.Context) (*Acknowledge, error) {
 	var ack Acknowledge
 	var err error
 
-	ack.AckReliableSequenceNumber, err = ctx.Reader.ReadUInt32()
+	ack.AckReliableSequenceNumber, err = ctx.Reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}
 
-	ack.AckSentTime, err = ctx.Reader.ReadUInt32()
+	ack.AckSentTime, err = ctx.Reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}

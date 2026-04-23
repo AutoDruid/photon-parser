@@ -1,7 +1,6 @@
 package v16_test
 
 import (
-	"encoding/binary"
 	. "michelprogram/photon-parser/internal/parameters/v16"
 	"michelprogram/photon-parser/internal/reader"
 	"michelprogram/photon-parser/internal/types"
@@ -53,7 +52,6 @@ func TestReadInt8Array(t *testing.T) {
 			reader := reader.NewReader(tt.input, reader.Options{
 				ParameterParser:              &Parameter{},
 				ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
 			})
 			p := &Parameter{}
 			out := &types.Parameter{}
@@ -127,7 +125,6 @@ func TestReadInt32Array(t *testing.T) {
 				ParameterParser: &Parameter{},
 
 				ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
 			})
 			p := &Parameter{}
 			out := &types.Parameter{}
@@ -218,7 +215,6 @@ func TestReadStringArray(t *testing.T) {
 			reader := reader.NewReader(tt.input, reader.Options{
 				ParameterParser:              &Parameter{},
 				ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
 			})
 			p := &Parameter{}
 			out := &types.Parameter{}
@@ -339,7 +335,6 @@ func TestReadArray(t *testing.T) {
 			reader := reader.NewReader(tt.input, reader.Options{
 				ParameterParser:              &Parameter{},
 				ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
 			})
 			p := &Parameter{}
 			out := &types.Parameter{}
@@ -369,7 +364,6 @@ func TestReadArrayGeneric(t *testing.T) {
 		reader := reader.NewReader(input, reader.Options{
 			ParameterParser:              &Parameter{},
 			ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-			BinaryOrder:                  binary.BigEndian,
 		})
 		p := &Parameter{}
 		out := &types.Parameter{}
@@ -408,7 +402,6 @@ func TestReadArrayGeneric(t *testing.T) {
 			ParameterParser: &Parameter{},
 
 			ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-			BinaryOrder:                  binary.BigEndian,
 		})
 		p := &Parameter{}
 		out := &types.Parameter{}
@@ -446,7 +439,6 @@ func BenchmarkReadInt8Array(b *testing.B) {
 	reader := reader.NewReader(data, reader.Options{
 		ParameterParser:              &Parameter{},
 		ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-		BinaryOrder:                  binary.BigEndian,
 	})
 	p := &Parameter{}
 
@@ -470,7 +462,6 @@ func BenchmarkReadStringArray(b *testing.B) {
 	reader := reader.NewReader(data, reader.Options{
 		ParameterParser:              &Parameter{},
 		ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-		BinaryOrder:                  binary.BigEndian,
 	})
 	p := &Parameter{}
 

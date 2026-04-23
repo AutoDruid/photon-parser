@@ -1,6 +1,7 @@
 package connect
 
 import (
+	"encoding/binary"
 	"michelprogram/photon-parser/internal/context"
 )
 
@@ -18,35 +19,35 @@ type Connect struct {
 func Parse(ctx *context.Context) (*Connect, error) {
 	var err error
 	connect := Connect{}
-	connect.Mtu, err = ctx.Reader.ReadUInt32()
+	connect.Mtu, err = ctx.Reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}
-	connect.WindowSize, err = ctx.Reader.ReadUInt32()
+	connect.WindowSize, err = ctx.Reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}
-	connect.ChannelCount, err = ctx.Reader.ReadUInt32()
+	connect.ChannelCount, err = ctx.Reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}
-	connect.IncomingBandwidth, err = ctx.Reader.ReadUInt32()
+	connect.IncomingBandwidth, err = ctx.Reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}
-	connect.OutgoingBandwidth, err = ctx.Reader.ReadUInt32()
+	connect.OutgoingBandwidth, err = ctx.Reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}
-	connect.DisconnectThrottle, err = ctx.Reader.ReadUInt32()
+	connect.DisconnectThrottle, err = ctx.Reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}
-	connect.PacketThrottleAcceleration, err = ctx.Reader.ReadUInt32()
+	connect.PacketThrottleAcceleration, err = ctx.Reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}
-	connect.PacketThrottleDeceleration, err = ctx.Reader.ReadUInt32()
+	connect.PacketThrottleDeceleration, err = ctx.Reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}

@@ -25,7 +25,6 @@ func TestReadByte(t *testing.T) {
 			r := reader.NewReader(tt.input, reader.Options{
 				ParameterParser:              &v16.Parameter{},
 				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
 			})
 			got, err := r.ReadByte()
 			if (err != nil) != tt.wantErr {
@@ -74,7 +73,6 @@ func TestReadVarintInt32(t *testing.T) {
 			r := reader.NewReader(tt.input, reader.Options{
 				ParameterParser:              &v18.Parameter{},
 				ReliableHeaderParameterCount: &v18.ReliableHeaderParameterCountV18{},
-				BinaryOrder:                  binary.LittleEndian,
 			})
 			got, err := r.ReadVarintInt32()
 			if err != nil {
@@ -141,7 +139,6 @@ func TestReadVarintInt64(t *testing.T) {
 			r := reader.NewReader(tt.input, reader.Options{
 				ParameterParser:              &v18.Parameter{},
 				ReliableHeaderParameterCount: &v18.ReliableHeaderParameterCountV18{},
-				BinaryOrder:                  binary.LittleEndian,
 			})
 			got, err := r.ReadVarintInt64()
 			if err != nil {
@@ -225,7 +222,6 @@ func TestReadUInt8(t *testing.T) {
 			r := reader.NewReader(tt.input, reader.Options{
 				ParameterParser:              &v16.Parameter{},
 				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
 			})
 			got, err := r.ReadUInt8()
 
@@ -284,9 +280,8 @@ func TestReadInt16(t *testing.T) {
 			r := reader.NewReader(tt.input, reader.Options{
 				ParameterParser:              &v16.Parameter{},
 				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
 			})
-			got, err := r.ReadInt16()
+			got, err := r.ReadInt16(binary.BigEndian)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadInt16() error = %v, wantErr %v", err, tt.wantErr)
@@ -319,9 +314,8 @@ func TestReadUInt16(t *testing.T) {
 			r := reader.NewReader(tt.input, reader.Options{
 				ParameterParser:              &v16.Parameter{},
 				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
 			})
-			got, err := r.ReadUInt16()
+			got, err := r.ReadUInt16(binary.BigEndian)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadUInt16() error = %v, wantErr %v", err, tt.wantErr)
@@ -373,9 +367,8 @@ func TestReadInt32(t *testing.T) {
 			r := reader.NewReader(tt.input, reader.Options{
 				ParameterParser:              &v16.Parameter{},
 				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
 			})
-			got, err := r.ReadInt32()
+			got, err := r.ReadInt32(binary.BigEndian)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadInt32() error = %v, wantErr %v", err, tt.wantErr)
@@ -407,9 +400,8 @@ func TestReadUInt32(t *testing.T) {
 			r := reader.NewReader(tt.input, reader.Options{
 				ParameterParser:              &v16.Parameter{},
 				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
 			})
-			got, err := r.ReadUInt32()
+			got, err := r.ReadUInt32(binary.BigEndian)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadUInt32() error = %v, wantErr %v", err, tt.wantErr)
@@ -461,9 +453,8 @@ func TestReadInt64(t *testing.T) {
 			r := reader.NewReader(tt.input, reader.Options{
 				ParameterParser:              &v16.Parameter{},
 				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
 			})
-			got, err := r.ReadInt64()
+			got, err := r.ReadInt64(binary.BigEndian)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadInt64() error = %v, wantErr %v", err, tt.wantErr)
@@ -511,9 +502,8 @@ func TestReadUInt64(t *testing.T) {
 			r := reader.NewReader(tt.input, reader.Options{
 				ParameterParser:              &v16.Parameter{},
 				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
 			})
-			got, err := r.ReadUInt64()
+			got, err := r.ReadUInt64(binary.BigEndian)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadUInt64() error = %v, wantErr %v", err, tt.wantErr)
@@ -565,9 +555,8 @@ func TestReadFloat32(t *testing.T) {
 			r := reader.NewReader(tt.input, reader.Options{
 				ParameterParser:              &v16.Parameter{},
 				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
 			})
-			got, err := r.ReadFloat32()
+			got, err := r.ReadFloat32(binary.BigEndian)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadFloat32() error = %v, wantErr %v", err, tt.wantErr)
@@ -618,9 +607,8 @@ func TestReadFloat64(t *testing.T) {
 			r := reader.NewReader(tt.input, reader.Options{
 				ParameterParser:              &v16.Parameter{},
 				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
 			})
-			got, err := r.ReadFloat64()
+			got, err := r.ReadFloat64(binary.BigEndian)
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadFloat64() error = %v, wantErr %v", err, tt.wantErr)
@@ -675,7 +663,6 @@ func TestReadBoolean(t *testing.T) {
 			r := reader.NewReader(tt.input, reader.Options{
 				ParameterParser:              &v16.Parameter{},
 				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
 			})
 			got, err := r.ReadBoolean()
 
@@ -736,7 +723,6 @@ func TestReadString(t *testing.T) {
 			r := reader.NewReader(tt.input, reader.Options{
 				ParameterParser:              &v16.Parameter{},
 				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
 			})
 			got, err := r.ReadString(tt.size)
 

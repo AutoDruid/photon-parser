@@ -1,7 +1,6 @@
 package session_test
 
 import (
-	"encoding/binary"
 	"encoding/hex"
 	"michelprogram/photon-parser/internal/context"
 	v16 "michelprogram/photon-parser/internal/parameters/v16"
@@ -23,7 +22,6 @@ func TestParseSession(t *testing.T) {
 		Reader: reader.NewReader(cleared, reader.Options{
 			ParameterParser:              &v16.Parameter{},
 			ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-			BinaryOrder:                  binary.BigEndian,
 		}),
 	}
 
@@ -68,7 +66,6 @@ func BenchmarkParseSession(b *testing.B) {
 			Reader: reader.NewReader(payload, reader.Options{
 				ParameterParser:              &v16.Parameter{},
 				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
 			}),
 		}
 

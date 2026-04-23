@@ -1,7 +1,6 @@
 package photon
 
 import (
-	"encoding/binary"
 	"michelprogram/photon-parser/internal/assembler"
 	"michelprogram/photon-parser/internal/context"
 	"michelprogram/photon-parser/internal/hooks"
@@ -22,7 +21,6 @@ func NewParserV16() *Parser {
 			reader.NewReader(nil, reader.Options{
 				ParameterParser:              &v16.Parameter{},
 				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
 			}),
 			assembler.NewAssembler(),
 			hooks.NewHooks(),
@@ -36,7 +34,6 @@ func NewParserV18() *Parser {
 			Reader: reader.NewReader(nil, reader.Options{
 				ParameterParser:              &v18.Parameter{},
 				ReliableHeaderParameterCount: &v18.ReliableHeaderParameterCountV18{},
-				BinaryOrder:                  binary.LittleEndian,
 			}),
 			Assembler: assembler.NewAssembler(),
 			Hooks:     hooks.NewHooks(),

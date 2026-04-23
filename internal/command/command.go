@@ -1,6 +1,7 @@
 package command
 
 import (
+	"encoding/binary"
 	"fmt"
 	"michelprogram/photon-parser/internal/command/acknowledge"
 	"michelprogram/photon-parser/internal/command/connect"
@@ -146,12 +147,12 @@ func (s *Command) parseHeader(r *reader.Reader) (types.CommandHeader, error) {
 		return types.CommandHeader{}, err
 	}
 
-	header.Length, err = r.ReadUInt32()
+	header.Length, err = r.ReadUInt32(binary.BigEndian)
 	if err != nil {
 		return types.CommandHeader{}, err
 	}
 
-	header.ReliableSequenceNumber, err = r.ReadUInt32()
+	header.ReliableSequenceNumber, err = r.ReadUInt32(binary.BigEndian)
 	if err != nil {
 		return types.CommandHeader{}, err
 	}

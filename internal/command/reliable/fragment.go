@@ -1,6 +1,7 @@
 package reliable
 
 import (
+	"encoding/binary"
 	"michelprogram/photon-parser/internal/context"
 	"michelprogram/photon-parser/internal/reader"
 	"michelprogram/photon-parser/internal/types"
@@ -31,32 +32,32 @@ func parseMetadata(reader *reader.Reader) (*Fragment, error) {
 	var fragment Fragment
 	var err error
 
-	fragment.ID, err = reader.ReadUInt32()
+	fragment.ID, err = reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}
 
-	fragment.Count, err = reader.ReadUInt32()
+	fragment.Count, err = reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}
 
-	fragment.Index, err = reader.ReadUInt32()
+	fragment.Index, err = reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}
 
-	fragment.Size, err = reader.ReadUInt32()
+	fragment.Size, err = reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}
 
-	fragment.Offset, err = reader.ReadUInt32()
+	fragment.Offset, err = reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}
 
-	fragment.Data = reader.ReadRest()
+	fragment.Data = reader.ReadRemaining()
 
 	return &fragment, nil
 

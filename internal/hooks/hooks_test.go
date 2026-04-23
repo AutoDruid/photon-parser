@@ -1,7 +1,6 @@
 package hooks_test
 
 import (
-	"encoding/binary"
 	"reflect"
 	"testing"
 	"time"
@@ -124,7 +123,6 @@ func TestReader_SessionSyncHookMatchesParsedSession(t *testing.T) {
 		Reader: reader.NewReader(payload, reader.Options{
 			ParameterParser:              &v16.Parameter{},
 			ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-			BinaryOrder:                  binary.BigEndian,
 		}),
 		Hooks: hooks.NewHooks(),
 	}
@@ -149,7 +147,6 @@ func TestReader_SessionAsyncHookReceivesMatchingSession(t *testing.T) {
 		Reader: reader.NewReader(payload, reader.Options{
 			ParameterParser:              &v16.Parameter{},
 			ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-			BinaryOrder:                  binary.BigEndian,
 		}),
 		Hooks: hooks.NewHooks(),
 	}
@@ -177,7 +174,6 @@ func TestReader_CommandSyncHookMatchesParsedCommand(t *testing.T) {
 		Reader: reader.NewReader(payload, reader.Options{
 			ParameterParser:              &v16.Parameter{},
 			ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-			BinaryOrder:                  binary.BigEndian,
 		}),
 		Hooks: hooks.NewHooks(),
 	}
@@ -202,7 +198,6 @@ func TestReader_CommandAsyncHookReceivesMatchingCommand(t *testing.T) {
 		Reader: reader.NewReader(payload, reader.Options{
 			ParameterParser:              &v16.Parameter{},
 			ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-			BinaryOrder:                  binary.BigEndian,
 		}),
 		Hooks: hooks.NewHooks(),
 	}
@@ -231,7 +226,6 @@ func TestReader_ParameterSyncHookMatchesParsedParameter(t *testing.T) {
 	r := reader.NewReader(paramBytes, reader.Options{
 		ParameterParser:              &v16.Parameter{},
 		ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-		BinaryOrder:                  binary.BigEndian,
 	})
 	h := hooks.NewHooks()
 	var got types.Parameter
@@ -254,7 +248,6 @@ func TestReader_ParameterAsyncHookReceivesMatchingParameter(t *testing.T) {
 	r := reader.NewReader(paramBytes, reader.Options{
 		ParameterParser:              &v16.Parameter{},
 		ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-		BinaryOrder:                  binary.BigEndian,
 	})
 	h := hooks.NewHooks()
 	_ = h.OnParameterAsync(types.HookOptions{Size: 1})
