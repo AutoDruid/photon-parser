@@ -4,7 +4,6 @@ import (
 	"encoding/binary"
 	"michelprogram/photon-parser/internal/context"
 	"michelprogram/photon-parser/internal/errors"
-	"michelprogram/photon-parser/internal/reader"
 	"michelprogram/photon-parser/internal/types"
 )
 
@@ -53,7 +52,7 @@ type Reliable struct {
 // or an error if any part of parsing fails.
 func Parse(ctx *context.Context, length uint32) (*Reliable, error) {
 	reliable := Reliable{}
-	header, err := reliable.parseHeader(ctx.Reader, length)
+	header, err := reliable.parseHeader(ctx, length)
 	if err != nil {
 		return nil, err
 	}
@@ -71,7 +70,7 @@ func Parse(ctx *context.Context, length uint32) (*Reliable, error) {
 	reliable.Parameters = make([]types.Parameter, header.ParameterCount)
 
 	for i := 0; i < reliable.ParameterCount; i++ {
-		err := ctx.Reader.ParameterParser.Parse(ctx.Reader, &reliable.Parameters[i], ctx.Hooks)
+		err := ctx.Decoders.ParameterParser.Parse(ctx.Reader, &reliable.Parameters[i], ctx.Hooks)
 		if err != nil {
 			return nil, err
 		}
@@ -81,16 +80,16 @@ func Parse(ctx *context.Context, length uint32) (*Reliable, error) {
 
 }
 
-func (r *Reliable) parseHeader(reader *reader.Reader, length uint32) (Header, error) {
+func (r *Reliable) parseHeader(ctx *context.Context, length uint32) (Header, error) {
 	var err error
 	var header Header
 
-	header.Signature, err = reader.ReadUInt8()
+	header.Signature, err = ctx.Reader.ReadUInt8()
 	if err != nil {
 		return Header{}, err
 	}
 
-	b, err := reader.ReadUInt8()
+	b, err := ctx.Reader.ReadUInt8()
 	if err != nil {
 		return Header{}, err
 	}
@@ -100,27 +99,27 @@ func (r *Reliable) parseHeader(reader *reader.Reader, length uint32) (Header, er
 	switch header.Type {
 	case OperationResponse, OtherOperationResponse:
 
-		header.EventCode, err = reader.ReadUInt8()
+		header.EventCode, err = ctx.Reader.ReadUInt8()
 		if err != nil {
 			return Header{}, err
 		}
 
 		//Return code
-		reader.ReadInt16(binary.LittleEndian)
+		ctx.Reader.ReadInt16(binary.LittleEndian)
 
 		//Read debug msg
-		reader.ReadByte()
+		ctx.Reader.ReadByte()
 	case EventDataType, OperationRequest:
-		header.EventCode, err = reader.ReadUInt8()
+		header.EventCode, err = ctx.Reader.ReadUInt8()
 		if err != nil {
 			return Header{}, err
 		}
 	default:
-		reader.ReadBytes(int(length) - 14)
+		ctx.Reader.ReadBytes(int(length) - 14)
 		return header, nil
 	}
 
-	header.ParameterCount, err = reader.Options.ReliableHeaderParameterCount.Count(reader)
+	header.ParameterCount, err = ctx.Decoders.ReliableHeaderParameterCount.Count(ctx.Reader)
 	if err != nil {
 		return Header{}, err
 	}

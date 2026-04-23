@@ -49,10 +49,7 @@ func TestReadInt8Array(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reader := reader.NewReader(tt.input, reader.Options{
-				ParameterParser:              &Parameter{},
-				ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-			})
+			reader := reader.NewReader(tt.input)
 			p := &Parameter{}
 			out := &types.Parameter{}
 			err := p.Parse(reader, out, nil)
@@ -121,11 +118,7 @@ func TestReadInt32Array(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 
-			reader := reader.NewReader(tt.input, reader.Options{
-				ParameterParser: &Parameter{},
-
-				ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-			})
+			reader := reader.NewReader(tt.input)
 			p := &Parameter{}
 			out := &types.Parameter{}
 			err := p.Parse(reader, out, nil)
@@ -212,10 +205,7 @@ func TestReadStringArray(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reader := reader.NewReader(tt.input, reader.Options{
-				ParameterParser:              &Parameter{},
-				ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-			})
+			reader := reader.NewReader(tt.input)
 			p := &Parameter{}
 			out := &types.Parameter{}
 			err := p.Parse(reader, out, nil)
@@ -332,10 +322,7 @@ func TestReadArray(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reader := reader.NewReader(tt.input, reader.Options{
-				ParameterParser:              &Parameter{},
-				ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-			})
+			reader := reader.NewReader(tt.input)
 			p := &Parameter{}
 			out := &types.Parameter{}
 			err := p.Parse(reader, out, nil)
@@ -361,10 +348,7 @@ func TestReadArrayGeneric(t *testing.T) {
 			0x00, 0x00, 0x00, 0x64, // 100
 			0x00, 0x00, 0x00, 0xC8, // 200
 		}
-		reader := reader.NewReader(input, reader.Options{
-			ParameterParser:              &Parameter{},
-			ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-		})
+		reader := reader.NewReader(input)
 		p := &Parameter{}
 		out := &types.Parameter{}
 		err := p.Parse(reader, out, nil)
@@ -398,11 +382,7 @@ func TestReadArrayGeneric(t *testing.T) {
 			0x66,                   // Float32Type
 			0x3f, 0x80, 0x00, 0x00, // 1.0 BE
 		}
-		reader := reader.NewReader(input, reader.Options{
-			ParameterParser: &Parameter{},
-
-			ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-		})
+		reader := reader.NewReader(input)
 		p := &Parameter{}
 		out := &types.Parameter{}
 		err := p.Parse(reader, out, nil)
@@ -436,10 +416,7 @@ func BenchmarkReadInt8Array(b *testing.B) {
 		0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0A,
 	}
 	b.ResetTimer()
-	reader := reader.NewReader(data, reader.Options{
-		ParameterParser:              &Parameter{},
-		ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-	})
+	reader := reader.NewReader(data)
 	p := &Parameter{}
 
 	for i := 0; i < b.N; i++ {
@@ -459,10 +436,7 @@ func BenchmarkReadStringArray(b *testing.B) {
 		0x00, 0x04, 'D', 'a', 't', 'a',
 	}
 	b.ResetTimer()
-	reader := reader.NewReader(data, reader.Options{
-		ParameterParser:              &Parameter{},
-		ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-	})
+	reader := reader.NewReader(data)
 	p := &Parameter{}
 
 	for i := 0; i < b.N; i++ {

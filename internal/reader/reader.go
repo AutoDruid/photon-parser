@@ -4,20 +4,7 @@ import (
 	"encoding/binary"
 	"math"
 	"michelprogram/photon-parser/internal/errors"
-	"michelprogram/photon-parser/internal/hooks"
-	"michelprogram/photon-parser/internal/types"
 )
-
-// ParameterParser is implemented by each protocol-version parameters package
-// (v16, v18, ...). It is wired once at Parser construction so the hot path
-// has no version branches.
-type ParameterParser interface {
-	Parse(r *Reader, out *types.Parameter, hooks *hooks.Hooks) error
-}
-
-type ReliableHeaderParameterCount interface {
-	Count(r *Reader) (int, error)
-}
 
 const (
 	INT8_SIZE       = 1
@@ -31,25 +18,17 @@ const (
 	VARINT_MSB_MASK = 0x80
 )
 
-type Options struct {
-	ParameterParser
-	ReliableHeaderParameterCount
-}
-
 type Reader struct {
 	Buffer []byte
 	Max    int
 	Cursor int
-
-	Options
 }
 
-func NewReader(data []byte, options Options) *Reader {
+func NewReader(data []byte) *Reader {
 	return &Reader{
-		Buffer:  data,
-		Max:     len(data),
-		Cursor:  0,
-		Options: options,
+		Buffer: data,
+		Max:    len(data),
+		Cursor: 0,
 	}
 }
 
@@ -58,11 +37,6 @@ func (r *Reader) ReadRemaining() []byte {
 	tmp := r.Cursor
 	r.Cursor = r.Max
 	return r.Buffer[tmp:]
-}
-
-// SetParameterParser sets the parameter parser for the reader.
-func (r *Reader) SetParameterParser(parser ParameterParser) {
-	r.ParameterParser = parser
 }
 
 // ReadInt8 reads an 8-bit signed integer from the reader.

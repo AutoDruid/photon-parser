@@ -3,6 +3,7 @@ package v16
 import (
 	"encoding/binary"
 	"fmt"
+	"michelprogram/photon-parser/internal/context"
 	"michelprogram/photon-parser/internal/hooks"
 	"michelprogram/photon-parser/internal/reader"
 	"michelprogram/photon-parser/internal/types"
@@ -12,7 +13,7 @@ type Parameter struct {
 	types.Parameter
 }
 
-var _ reader.ParameterParser = (*Parameter)(nil)
+var _ context.ParameterParser = (*Parameter)(nil)
 
 // Parse reads a complete parameter from the reader.
 // Format: Header (1 byte ID + 1 byte Type), followed by the typed value.

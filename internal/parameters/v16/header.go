@@ -1,14 +1,17 @@
 package v16
 
-import "michelprogram/photon-parser/internal/reader"
+import (
+	"michelprogram/photon-parser/internal/context"
+	"michelprogram/photon-parser/internal/reader"
+)
 
 type ReliableHeaderParameterCountV16 struct{}
 
-var _ reader.ReliableHeaderParameterCount = (*ReliableHeaderParameterCountV16)(nil)
+var _ context.ReliableHeaderParameterCount = (*ReliableHeaderParameterCountV16)(nil)
 
 func (ReliableHeaderParameterCountV16) Count(r *reader.Reader) (int, error) {
 	res, err := r.ReadUInt8()
-	if err != nil{
+	if err != nil {
 		return 0, err
 	}
 

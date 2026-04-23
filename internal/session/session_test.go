@@ -18,12 +18,15 @@ func TestParseSession(t *testing.T) {
 		t.Fatalf("LoadFromWiresharkExport() failed: %v", err)
 	}
 
-	ctx := &context.Context{
-		Reader: reader.NewReader(cleared, reader.Options{
+	ctx := context.NewContext(
+		reader.NewReader(cleared),
+		nil,
+		nil,
+		context.Decoders{
 			ParameterParser:              &v16.Parameter{},
 			ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-		}),
-	}
+		},
+	)
 
 	sess, err := session.Parse(ctx)
 	if err != nil {
@@ -62,13 +65,15 @@ func BenchmarkParseSession(b *testing.B) {
 
 	for b.Loop() {
 
-		ctx := &context.Context{
-			Reader: reader.NewReader(payload, reader.Options{
+		ctx := context.NewContext(
+			reader.NewReader(payload),
+			nil,
+			nil,
+			context.Decoders{
 				ParameterParser:              &v16.Parameter{},
 				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
-			}),
-		}
-
+			},
+		)
 		sess, err := session.Parse(ctx)
 		if err != nil {
 			b.Fatalf("LoadFromWiresharkExport() failed: %v", err)
