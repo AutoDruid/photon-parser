@@ -2,5 +2,5 @@ package errors
 
 import "errors"
 
-var HeaderSize = errors.New("header size to low")
-var EncryptedPacket = errors.New("encrypted or unknown packet, signature")
+var HeaderSize = errors.New("header size too low")
+var EncryptedPacket = errors.New("packet is encrypted or unknown: unexpected signature byte")  

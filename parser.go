@@ -18,15 +18,15 @@ type Parser struct {
 
 func NewParserV16() *Parser {
 	return &Parser{
-		Ctx: &context.Context{
-			Reader: reader.NewReader(nil, reader.Options{
+		Ctx: context.NewContext(
+			reader.NewReader(nil, reader.Options{
 				ParameterParser:              &v16.Parameter{},
 				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
 				BinaryOrder:                  binary.BigEndian,
 			}),
-			Hooks:     hooks.NewHooks(),
-			Assembler: assembler.NewAssembler(),
-		},
+			assembler.NewAssembler(),
+			hooks.NewHooks(),
+		),
 	}
 }
 

@@ -21,7 +21,7 @@ func TestReliableParsing(t *testing.T) {
 			BinaryOrder:                  binary.BigEndian,
 		}),
 	}
-	sd, err := reliable.Parse(ctx)
+	sd, err := reliable.Parse(ctx, 0)
 
 	if err != nil {
 		t.Fatalf("LoadFromWiresharkExport() failed: %v", err)

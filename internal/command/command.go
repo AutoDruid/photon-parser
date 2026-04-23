@@ -36,7 +36,11 @@ func Parse(ctx *context.Context) (*Command, error) {
 
 	cmd.CommandHeader = header
 	if header.Type > types.SendReliableFragmentCommand {
-		rest, _ := ctx.Reader.ReadBytes(ctx.Reader.Max - ctx.Reader.Cursor - 1)
+		remaining := ctx.Reader.Max - ctx.Reader.Cursor - 1
+		rest, err := ctx.Reader.ReadBytes(remaining)
+		if err != nil {
+			return nil, err
+		}
 		cmd.Payload = types.UnknownPayload{Raw: rest, Kind: header.Type}
 		return &cmd, nil
 	}
@@ -51,8 +55,6 @@ func Parse(ctx *context.Context) (*Command, error) {
 
 	parsed, err := cmd.parsePayload(header.Type, ctx, header.Length)
 	if err != nil {
-		panic(err)
-		//TODO Check on error if cursor position still sync
 		rest, _ := ctx.Reader.ReadBytes(int(header.Length - types.COMMAND_HEADER_SIZE))
 		// don't fatal — just store raw for encrypted packets
 		cmd.Payload = types.UnknownPayload{Raw: rest, Kind: header.Type}

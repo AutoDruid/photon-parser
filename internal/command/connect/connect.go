@@ -10,7 +10,7 @@ type Connect struct {
 	ChannelCount               uint32
 	IncomingBandwidth          uint32
 	OutgoingBandwidth          uint32
-	DisconnectThrollte         uint32
+	DisconnectThrottle         uint32
 	PacketThrottleAcceleration uint32
 	PacketThrottleDeceleration uint32
 }
@@ -38,7 +38,7 @@ func Parse(ctx *context.Context) (*Connect, error) {
 	if err != nil {
 		return nil, err
 	}
-	connect.DisconnectThrollte, err = ctx.Reader.ReadUInt32()
+	connect.DisconnectThrottle, err = ctx.Reader.ReadUInt32()
 	if err != nil {
 		return nil, err
 	}

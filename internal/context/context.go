@@ -11,3 +11,11 @@ type Context struct {
 	Assembler *assembler.Assembler
 	Hooks     *hooks.Hooks
 }
+
+func NewContext(reader *reader.Reader, assembler *assembler.Assembler, hooks *hooks.Hooks) *Context {
+	return &Context{
+		Reader:    reader,
+		Assembler: assembler,
+		Hooks:     hooks,
+	}
+}

@@ -48,18 +48,18 @@ func (p *Parameter) Parse(reader *reader.Reader, out *types.Parameter, hooks *ho
 	out.ParameterHeader = header
 	out.Value = value
 
-	p.emit(reader, hooks)
+	p.emit(reader, hooks,out)
 
 	return nil
 }
 
-func (p Parameter) emit(reader *reader.Reader, hooks *hooks.Hooks) {
+func (p Parameter) emit(reader *reader.Reader, hooks *hooks.Hooks, out *types.Parameter) {
 	if hooks == nil {
 		return
 	}
 
 	if hooks.SyncHooks.OnParameter != nil {
-		hooks.SyncHooks.OnParameter(p.Parameter)
+		hooks.SyncHooks.OnParameter(*out)
 	}
 
 	if hooks.AsyncHooks.OnParameter == nil {
@@ -67,7 +67,7 @@ func (p Parameter) emit(reader *reader.Reader, hooks *hooks.Hooks) {
 	}
 
 	select {
-	case hooks.AsyncHooks.OnParameter <- p.Parameter:
+	case hooks.AsyncHooks.OnParameter <- *out:
 	default:
 	}
 }
