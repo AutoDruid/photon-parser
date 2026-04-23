@@ -28,3 +28,5 @@ go.work
 
 ressources
 main.go
+
+.DS_Store
