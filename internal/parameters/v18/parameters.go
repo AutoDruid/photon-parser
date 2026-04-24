@@ -182,7 +182,7 @@ func (p Parameter) decode(reader *reader.Reader, t ParameterType) (types.Value, 
 		res.Blob = blob
 		res.Num = uint64(count)
 	case Float32Type:
-		value, err := reader.ReadFloat32(binary.BigEndian)
+		value, err := reader.ReadFloat32(binary.LittleEndian)
 		if err != nil {
 			return types.Value{}, err
 		}

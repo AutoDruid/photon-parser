@@ -1,5 +1,10 @@
 package types
 
+import (
+	"encoding/json"
+	"fmt"
+)
+
 // Header represents the Photon session header containing peer and timing information.
 // This header appears at the start of every Photon packet.
 type Header struct {
@@ -13,6 +18,19 @@ type Header struct {
 // Session represents a complete Photon session packet with its header and commands.
 // A session packet can contain multiple commands that will be processed sequentially.
 type Session struct {
-	Header
-	Commands []Command // Slice of commands contained in this session
+	Header   `json:"header"`
+	Commands []Command `json:"commands"`
+}
+
+func (s *Session) String() string {
+	sess := struct {
+		Session `json:"session"`
+	}{
+		Session: *s,
+	}
+	b, err := json.MarshalIndent(sess, "", "  ")
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	return string(b)
 }

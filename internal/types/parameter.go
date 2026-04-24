@@ -1,5 +1,14 @@
 package types
 
+import (
+	"encoding/binary"
+	"encoding/json"
+	"fmt"
+	"iter"
+	"log"
+	"math"
+)
+
 // Type represents a Photon Protocol16 type code.
 // Each type code indicates how the following bytes should be interpreted.
 type ParameterType uint8
@@ -34,21 +43,83 @@ const (
 // Header represents the parameter header containing the parameter ID and type.
 // This appears at the beginning of each serialized parameter.
 type ParameterHeader struct {
-	ID   uint8         // Parameter identifier (application-specific)
-	Type ParameterType // Protocol16 type code indicating how to decode the value
+	ID   uint8         `json:"id"`   // Parameter identifier (application-specific)
+	Type ParameterType `json:"type"` // Protocol16 type code indicating how to decode the value
 }
 
 // Parameters represents a complete Photon Protocol parameter with its header and decoded value.
 // The Value field contains the decoded data according to the Type specified in the Header.
 type Parameter struct {
-	ParameterHeader
-	Value
+	ParameterHeader `json:"header"`
+	Value           `json:"value"`
+}
+
+func (p Parameter) String() string {
+	param := struct {
+		Parameter `json:"parameter"`
+	}{
+		Parameter: p,
+	}
+	b, err := json.MarshalIndent(param, "", "  ")
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	return string(b)
 }
 
 type Value struct {
-    Kind, KeyType, ValType ParameterType
-    _pad [5]byte
-    Num  uint64
-    Str  string
-    Blob []byte
+	Kind    ParameterType `json:"kind"`
+	KeyType ParameterType `json:"key_type"`
+	ValType ParameterType `json:"val_type"`
+	_pad    [5]byte       `json:"-"`
+	Num     uint64        `json:"num"`
+	Str     string        `json:"str,omitempty"`
+	Blob    []byte        `json:"blob,omitempty"`
+}
+
+func (v *Value) Float32s() iter.Seq2[int, float32] {
+	n := int(v.Num)
+	if n <= 0 || len(v.Blob) < n*4 {
+		return nil
+	}
+	return func(yield func(int, float32) bool) {
+		for i := 0; i < n; i++ {
+			bits := binary.LittleEndian.Uint32(v.Blob[i*4 : (i+1)*4])
+			if !yield(i, math.Float32frombits(bits)) {
+				return
+			}
+		}
+	}
+}
+
+func (v *Value) Float32() float32 {
+	return math.Float32frombits(uint32(v.Num))
+}
+
+func (v Value) MarshalJSON() ([]byte, error) {
+	type Alias Value
+
+	out := struct {
+		Alias
+		Decoded any `json:"decoded,omitempty"`
+	}{
+		Alias: Alias(v),
+	}
+
+	// Example: special behavior by parameter kind/type
+	switch v.Kind {
+	case 5:
+		log.Println("test")
+		out.Decoded = v.Float32()
+	case 69:
+		res := make([]float32, v.Num)
+		for index, fl := range v.Float32s() {
+			res[index] = fl
+		}
+		out.Decoded = res
+	default:
+		out.Decoded = v.Num
+	}
+
+	return json.Marshal(out)
 }
