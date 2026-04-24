@@ -255,7 +255,6 @@ func (r *Reader) ReadBytes(n int) ([]byte, error) {
 }
 
 // ReadVarintUInt32 reads a 32-bit unsigned integer from the reader in varint format.
-// Returns an error if fewer than 4 bytes are available.
 func (r *Reader) ReadVarintUInt32() (uint32, error) {
 
 	var res uint32
@@ -279,7 +278,6 @@ func (r *Reader) ReadVarintUInt32() (uint32, error) {
 }
 
 // ReadVarintInt32 reads a 32-bit signed integer from the reader in varint format.
-// Returns an error if fewer than 4 bytes are available.
 func (r *Reader) ReadVarintInt32() (int32, error) {
 
 	res, err := r.ReadVarintUInt32()
@@ -292,7 +290,6 @@ func (r *Reader) ReadVarintInt32() (int32, error) {
 }
 
 // ReadVarintUInt64 reads a 64-bit unsigned integer from the reader in varint format.
-// Returns an error if fewer than 8 bytes are available.
 func (r *Reader) ReadVarintUInt64() (uint64, error) {
 
 	var res uint64
@@ -316,7 +313,6 @@ func (r *Reader) ReadVarintUInt64() (uint64, error) {
 }
 
 // ReadVarintInt64 reads a 64-bit signed integer from the reader in varint format.
-// Returns an error if fewer than 8 bytes are available.
 func (r *Reader) ReadVarintInt64() (int64, error) {
 
 	res, err := r.ReadVarintUInt64()

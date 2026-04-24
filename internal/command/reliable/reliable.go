@@ -10,6 +10,8 @@ import (
 // HEADER_SIZE is the size in bytes of a reliable message header (5 bytes).
 const HEADER_SIZE = 5
 
+const READED_HEADER_SIZE = 14
+
 // Type represents a Photon reliable message type.
 type Type uint8
 
@@ -105,17 +107,26 @@ func (r *Reliable) parseHeader(ctx *context.Context, length uint32) (Header, err
 		}
 
 		//Return code
-		ctx.Reader.ReadInt16(binary.LittleEndian)
+		_, err = ctx.Reader.ReadInt16(binary.LittleEndian)
+		if err != nil {
+			return Header{}, err
+		}
 
 		//Read debug msg
-		ctx.Reader.ReadByte()
+		_, err = ctx.Reader.ReadByte()
+		if err != nil {
+			return Header{}, err
+		}
 	case EventDataType, OperationRequest:
 		header.EventCode, err = ctx.Reader.ReadUInt8()
 		if err != nil {
 			return Header{}, err
 		}
 	default:
-		ctx.Reader.ReadBytes(int(length) - 14)
+		_, err = ctx.Reader.ReadBytes(int(length) - READED_HEADER_SIZE)
+		if err != nil {
+			return Header{}, err
+		}
 		return header, nil
 	}
 

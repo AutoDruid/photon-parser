@@ -6,13 +6,13 @@ import (
 	"michelprogram/photon-parser/internal/types"
 )
 
-// ParameterParserFunc is implemented by each protocol-version parameters package
+// ParameterParser is implemented by each protocol-version parameters package
 // (v16, v18). 
 // It is wired once at Parser construction so the hot path
 type ParameterParser interface {
 	Parse(*reader.Reader, *types.Parameter, *hooks.Hooks) error
 }
-// ReliableHeaderParameterCountFunc is implemented by each protocol-version reliable header parameter count package
+// ReliableHeaderParameterCount is implemented by each protocol-version reliable header parameter count package
 // (v16, v18).
 // It is used to count the number of parameters in a reliable header.
 type ReliableHeaderParameterCount interface {
