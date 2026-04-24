@@ -31,18 +31,24 @@ const (
 	ObjectArrayType       ParameterType = 0x7a // Array of serialized objects
 )
 
-
 // Header represents the parameter header containing the parameter ID and type.
 // This appears at the beginning of each serialized parameter.
 type ParameterHeader struct {
-	ID   uint8 // Parameter identifier (application-specific)
-	Type ParameterType  // Protocol16 type code indicating how to decode the value
+	ID   uint8         // Parameter identifier (application-specific)
+	Type ParameterType // Protocol16 type code indicating how to decode the value
 }
 
 // Parameters represents a complete Photon Protocol parameter with its header and decoded value.
 // The Value field contains the decoded data according to the Type specified in the Header.
 type Parameter struct {
 	ParameterHeader
+	Value
+}
 
-	Value interface{} // Decoded value, type depends on Header.Type
+type Value struct {
+    Kind, KeyType, ValType ParameterType
+    _pad [5]byte
+    Num  uint64
+    Str  string
+    Blob []byte
 }

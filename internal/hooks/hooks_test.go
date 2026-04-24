@@ -131,13 +131,14 @@ func TestReader_SessionSyncHookMatchesParsedSession(t *testing.T) {
 	var got types.Session
 	ctx.Hooks.SyncHooks.OnSession = func(s types.Session) { got = s }
 
-	sess, err := session.Parse(ctx)
+	var sess types.Session
+	err := session.Parse(ctx, &sess)
 	if err != nil {
 		t.Fatalf("Parse: %v", err)
 	}
 
-	if !reflect.DeepEqual(got, sess.Session) {
-		t.Fatalf("sync hook session mismatch:\ngot:  %+v\nsess: %+v", got, sess.Session)
+	if !reflect.DeepEqual(got, sess) {
+		t.Fatalf("sync hook session mismatch:\ngot:  %+v\nsess: %+v", got, sess)
 	}
 }
 
@@ -154,15 +155,16 @@ func TestReader_SessionAsyncHookReceivesMatchingSession(t *testing.T) {
 	}
 	_ = ctx.Hooks.OnSessionAsync(types.HookOptions{Size: 1}) // buffered: emit won’t hit default
 
-	sess, err := session.Parse(ctx)
+	var sess types.Session
+	err := session.Parse(ctx, &sess)
 	if err != nil {
 		t.Fatalf("Parse: %v", err)
 	}
 
 	select {
 	case got := <-ctx.Hooks.AsyncHooks.OnSession:
-		if !reflect.DeepEqual(got, sess.Session) {
-			t.Fatalf("async session mismatch:\ngot:  %+v\nsess: %+v", got, sess.Session)
+		if !reflect.DeepEqual(got, sess) {
+			t.Fatalf("async session mismatch:\ngot:  %+v\nsess: %+v", got, sess)
 		}
 	case <-time.After(time.Second):
 		t.Fatal("timeout waiting for async session")
@@ -184,13 +186,14 @@ func TestReader_CommandSyncHookMatchesParsedCommand(t *testing.T) {
 	var got types.Command
 	ctx.Hooks.SyncHooks.OnCommand = func(c types.Command) { got = c }
 
-	cmd, err := command.Parse(ctx)
+	var cmd types.Command
+	err := command.Parse(ctx, &cmd)
 	if err != nil {
 		t.Fatalf("Parse command: %v", err)
 	}
 
-	if !reflect.DeepEqual(got, cmd.Command) {
-		t.Fatalf("sync hook command mismatch:\ngot: %+v\ncmd: %+v", got, cmd.Command)
+	if !reflect.DeepEqual(got, cmd) {
+		t.Fatalf("sync hook command mismatch:\ngot: %+v\ncmd: %+v", got, cmd)
 	}
 }
 
@@ -208,15 +211,16 @@ func TestReader_CommandAsyncHookReceivesMatchingCommand(t *testing.T) {
 
 	_ = ctx.Hooks.OnCommandAsync(types.HookOptions{Size: 1})
 
-	cmd, err := command.Parse(ctx)
+	var cmd types.Command
+	err := command.Parse(ctx, &cmd)
 	if err != nil {
 		t.Fatalf("Parse command: %v", err)
 	}
 
 	select {
 	case got := <-ctx.Hooks.AsyncHooks.OnCommand:
-		if !reflect.DeepEqual(got, cmd.Command) {
-			t.Fatalf("async command mismatch:\ngot: %+v\ncmd: %+v", got, cmd.Command)
+		if !reflect.DeepEqual(got, cmd) {
+			t.Fatalf("async command mismatch:\ngot: %+v\ncmd: %+v", got, cmd)
 		}
 	case <-time.After(time.Second):
 		t.Fatal("timeout waiting for async command")

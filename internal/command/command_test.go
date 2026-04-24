@@ -5,6 +5,7 @@ import (
 	"michelprogram/photon-parser/internal/context"
 	v16 "michelprogram/photon-parser/internal/parameters/v16"
 	"michelprogram/photon-parser/internal/reader"
+	"michelprogram/photon-parser/internal/types"
 	"testing"
 )
 
@@ -20,7 +21,9 @@ func TestParseSession(t *testing.T) {
 		},
 	}
 
-	cmd, err := command.Parse(ctx)
+	var cmd types.Command
+
+	err := command.Parse(ctx, &cmd)
 
 	if err != nil {
 		t.Fatalf("LoadFromWiresharkExport() failed: %v", err)

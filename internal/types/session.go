@@ -14,5 +14,5 @@ type Header struct {
 // A session packet can contain multiple commands that will be processed sequentially.
 type Session struct {
 	Header
-	Commands []*Command // Slice of commands contained in this session
+	Commands []Command // Slice of commands contained in this session
 }

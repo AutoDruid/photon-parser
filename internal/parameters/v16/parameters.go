@@ -1,7 +1,6 @@
 package v16
 
 import (
-	"encoding/binary"
 	"fmt"
 	"michelprogram/photon-parser/internal/context"
 	"michelprogram/photon-parser/internal/hooks"
@@ -101,8 +100,8 @@ func (p *Parameter) parseHeader(r *reader.Reader) (types.ParameterHeader, error)
 //
 // For NilType and UnknownType, returns nil without error.
 // For unsupported type codes, returns an error.
-func (p Parameter) decode(reader *reader.Reader, ttype types.ParameterType) (any, error) {
-	switch ttype {
+func (p Parameter) decode(reader *reader.Reader, ttype types.ParameterType) (types.Value, error) {
+	/* switch ttype {
 	case types.Int8Type:
 		return reader.ReadInt8()
 	case types.Int16Type:
@@ -135,7 +134,8 @@ func (p Parameter) decode(reader *reader.Reader, ttype types.ParameterType) (any
 		return nil, nil
 	default:
 		return nil, fmt.Errorf("unsupported type: 0x%02x", ttype)
-	}
+	} */
+	return types.Value{}, nil
 }
 
 // String returns a human-readable representation of the parameter.

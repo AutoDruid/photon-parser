@@ -25,37 +25,35 @@ type Session struct {
 //
 // Returns a Session struct with all fields populated including the Commands slice,
 // or an error if any part of parsing fails.
-func Parse(ctx *context.Context) (*Session, error) {
+func Parse(ctx *context.Context, out *types.Session) error {
 	session := Session{}
 	header, err := session.parseHeader(ctx.Reader)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	session.Commands = make([]*types.Command, header.CommandCount)
+	out.Commands = make([]types.Command, header.CommandCount)
 
 	for i := uint8(0); i < header.CommandCount; i++ {
-		cmd, err := command.Parse(ctx)
+		err := command.Parse(ctx, &out.Commands[i])
 
 		if errors.Is(err, photonErrors.HeaderSize) {
 			break
 		}
 		if err != nil {
-			return nil, err
+			return err
 		}
 
-		session.Commands[i] = &cmd.Command
-
-		if cmd.Command.Type > types.SendReliableFragmentCommand {
+		if out.Commands[i].Type > types.SendReliableFragmentCommand {
 			break
 		}
 	}
 
-	session.Header = header
+	out.Header = header
 
 	session.emit(ctx.Reader, ctx.Hooks)
 
-	return &session, nil
+	return nil
 }
 
 func (s Session) emit(reader *reader.Reader, hooks *hooks.Hooks) {

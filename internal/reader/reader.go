@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"math"
 	"michelprogram/photon-parser/internal/errors"
+	"unsafe"
 )
 
 const (
@@ -219,7 +220,8 @@ func (r *Reader) ReadString(n int) (string, error) {
 		return "", errors.NotEnoughBytesString
 	}
 
-	str := string(r.Buffer[r.Cursor:size])
+	//str := string(r.Buffer[r.Cursor:size])
+	str := unsafe.String(&r.Buffer[r.Cursor], n)
 	r.Cursor = size
 
 	return str, nil

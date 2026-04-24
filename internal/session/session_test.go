@@ -6,6 +6,7 @@ import (
 	v16 "michelprogram/photon-parser/internal/parameters/v16"
 	"michelprogram/photon-parser/internal/reader"
 	"michelprogram/photon-parser/internal/session"
+	"michelprogram/photon-parser/internal/types"
 	"strings"
 	"testing"
 )
@@ -28,7 +29,8 @@ func TestParseSession(t *testing.T) {
 		},
 	)
 
-	sess, err := session.Parse(ctx)
+	var sess types.Session
+	err = session.Parse(ctx, &sess)
 	if err != nil {
 		t.Fatalf("LoadFromWiresharkExport() failed: %v", err)
 	}
@@ -74,12 +76,13 @@ func BenchmarkParseSession(b *testing.B) {
 				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
 			},
 		)
-		sess, err := session.Parse(ctx)
+		var sess types.Session
+		err := session.Parse(ctx, &sess)
 		if err != nil {
 			b.Fatalf("LoadFromWiresharkExport() failed: %v", err)
 		}
 
-		if sess == nil {
+		if &sess == nil {
 			b.Fatalf("LoadFromWiresharkExport() failed: %v", err)
 		}
 	}

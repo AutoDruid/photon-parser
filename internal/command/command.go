@@ -31,41 +31,41 @@ type Command struct {
 // The returned Command struct contains all header fields and the raw payload
 // in the Data field. For SendReliable commands, the Data can be further parsed
 // using the reliable package.
-func Parse(ctx *context.Context) (*Command, error) {
+func Parse(ctx *context.Context, out *types.Command) error {
 	cmd := Command{}
 	header, err := cmd.parseHeader(ctx.Reader)
 
-	cmd.CommandHeader = header
+	out.CommandHeader = header
 	if header.Type > types.SendReliableFragmentCommand {
 		remaining := ctx.Reader.Max - ctx.Reader.Cursor - 1
 		rest, err := ctx.Reader.ReadBytes(remaining)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		cmd.Payload = types.UnknownPayload{Raw: rest, Kind: header.Type}
-		return &cmd, nil
+		out.Payload = types.UnknownPayload{Raw: rest, Kind: header.Type}
+		return nil
 	}
 
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if header.Length < types.COMMAND_HEADER_SIZE {
-		return nil, errors.HeaderSize
+		return errors.HeaderSize
 	}
 
 	parsed, err := cmd.parsePayload(header.Type, ctx, header.Length)
 	if err != nil {
 		rest, _ := ctx.Reader.ReadBytes(int(header.Length - types.COMMAND_HEADER_SIZE))
 		// don't fatal — just store raw for encrypted packets
-		cmd.Payload = types.UnknownPayload{Raw: rest, Kind: header.Type}
+		out.Payload = types.UnknownPayload{Raw: rest, Kind: header.Type}
 	} else {
-		cmd.Payload = parsed
+		out.Payload = parsed
 	}
 
 	cmd.emit(ctx.Reader, ctx.Hooks)
 
-	return &cmd, nil
+	return nil
 }
 
 func (c Command) emit(r *reader.Reader, hooks *hooks.Hooks) {
@@ -91,6 +91,7 @@ func (c Command) emit(r *reader.Reader, hooks *hooks.Hooks) {
 func (c Command) parsePayload(t types.CommandType, ctx *context.Context, length uint32) (types.Payload, error) {
 	switch t {
 	case types.SendUnreliableCommand:
+		
 		_, err := ctx.Reader.ReadBytes(4)
 		if err != nil {
 			return nil, err

@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"michelprogram/photon-parser/internal/context"
 	"michelprogram/photon-parser/internal/errors"
+	"michelprogram/photon-parser/internal/pool"
 	"michelprogram/photon-parser/internal/types"
 )
 
@@ -39,6 +40,7 @@ type Header struct {
 // parameter has an ID, type, and value.
 type Reliable struct {
 	Header
+	params     *pool.Params
 	Parameters []types.Parameter // Slice of decoded parameters
 }
 
@@ -69,11 +71,15 @@ func Parse(ctx *context.Context, length uint32) (*Reliable, error) {
 		return nil, errors.EncryptedPacket
 	}
 
-	reliable.Parameters = make([]types.Parameter, header.ParameterCount)
+	//reliable.Parameters = pool.GetParams(header.ParameterCount)
 
+	//reliable.Parameters = make([]types.Parameter, header.ParameterCount)
+	reliable.params = pool.Get(reliable.ParameterCount)
+	reliable.Parameters = reliable.params.S
 	for i := 0; i < reliable.ParameterCount; i++ {
 		err := ctx.Decoders.ParameterParser.Parse(ctx.Reader, &reliable.Parameters[i], ctx.Hooks)
 		if err != nil {
+			pool.Put(reliable.params)
 			return nil, err
 		}
 	}
@@ -136,4 +142,13 @@ func (r *Reliable) parseHeader(ctx *context.Context, length uint32) (Header, err
 	}
 
 	return header, nil
+}
+
+func (r *Reliable) Release() {
+	if r == nil {
+		return
+	}
+	pool.Put(r.params)
+	r.params = nil
+	r.Parameters = nil
 }

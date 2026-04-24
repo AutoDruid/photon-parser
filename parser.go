@@ -2,6 +2,7 @@ package photon
 
 import (
 	"michelprogram/photon-parser/internal/assembler"
+	"michelprogram/photon-parser/internal/command/reliable"
 	"michelprogram/photon-parser/internal/context"
 	"michelprogram/photon-parser/internal/hooks"
 	v16 "michelprogram/photon-parser/internal/parameters/v16"
@@ -47,12 +48,14 @@ func (p *Parser) ParsePacket(data []byte) (*Session, error) {
 
 	p.Ctx.Reader.Reset(data)
 
-	sess, err := session.Parse(p.Ctx)
+	var sess Session
+
+	err := session.Parse(p.Ctx, &sess)
 	if err != nil {
 		return nil, err
 	}
 
-	return &sess.Session, nil
+	return &sess, nil
 }
 
 func (p *Parser) OnSessionSync(fn func(Session)) {
@@ -81,4 +84,15 @@ func (p *Parser) OnParameterAsync(options types.HookOptions) <-chan Parameter {
 
 func (p *Parser) Close() {
 	p.Ctx.Hooks.CloseAsyncHooks()
+}
+
+func (p *Parser) Release(s *Session) {
+	if s == nil {
+		return
+	}
+	for _, cmd := range s.Commands {
+		if rel, ok := cmd.Payload.(*reliable.Reliable); ok {
+			rel.Release()
+		}
+	}
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"log"
+	"math"
 	"michelprogram/photon-parser/internal/context"
 	"michelprogram/photon-parser/internal/hooks"
 	"michelprogram/photon-parser/internal/reader"
@@ -50,7 +51,7 @@ func (p *Parameter) Parse(reader *reader.Reader, out *types.Parameter, hooks *ho
 	out.ParameterHeader = header
 	out.Value = value
 
-	p.emit(reader, hooks, out)
+	//p.emit(reader, hooks, out)
 
 	return nil
 }
@@ -93,111 +94,245 @@ func (p *Parameter) parseHeader(r *reader.Reader) (types.ParameterHeader, error)
 	return header, nil
 }
 
-// Decode reads a value of the specified Photon Protocol16 type from the reader.
-// It dispatches to the appropriate type-specific reader based on ttype.
-// Returns the decoded value as any, or an error if the type is unsupported
-// or if reading fails.
-//
-// Supported types include all primitives (int8, int16, int32, int64, float32, float64,
-// string, boolean), arrays, dictionaries, and hashtables.
-//
-// For NilType and UnknownType, returns nil without error.
-// For unsupported type codes, returns an error.
-func (p Parameter) decode(reader *reader.Reader, ttype ParameterType) (any, error) {
-	switch ttype {
+func (p Parameter) decode(reader *reader.Reader, t ParameterType) (types.Value, error) {
+	res := types.Value{Kind: types.ParameterType(t)}
+
+	switch t {
 	case Int8Positive:
-		value, err := reader.ReadByte()
+		b, err := reader.ReadByte()
 		if err != nil {
-			return nil, err
+			return types.Value{}, err
 		}
-		return int32(value), nil
+		res.Num = uint64(uint(int32(b)))
 	case Int8Negative:
-		value, err := reader.ReadByte()
+		b, err := reader.ReadByte()
 		if err != nil {
-			return nil, err
+			return types.Value{}, err
 		}
-		return -int32(value), nil
+		res.Num = uint64(uint32(-int32(b)))
 	case Int16Type:
-		return reader.ReadInt16(binary.LittleEndian)
+		value, err := reader.ReadInt16(binary.LittleEndian)
+		if err != nil {
+			return types.Value{}, err
+		}
+		res.Num = uint64(uint16(value))
 	case Int16Positive:
 		value, err := reader.ReadUInt16(binary.LittleEndian)
 		if err != nil {
-			return nil, err
+			return types.Value{}, err
 		}
-		return int32(value), nil
+		res.Num = uint64(uint32(int32(value)))
 	case Int16Negative:
 		value, err := reader.ReadUInt16(binary.LittleEndian)
 		if err != nil {
-			return nil, err
+			return types.Value{}, err
 		}
-		return -int32(value), nil
+		res.Num = uint64(uint32(-int32(value)))
 	case Long8Positive:
 		value, err := reader.ReadByte()
 		if err != nil {
-			return nil, err
+			return types.Value{}, err
 		}
-		return int64(value), nil
+		res.Num = uint64(value)
 	case Long8Negative:
 		value, err := reader.ReadByte()
 		if err != nil {
-			return nil, err
+			return types.Value{}, err
 		}
-		return -int64(value), nil
+		res.Num = uint64(-int64(value))
 	case Long16Positive:
 		value, err := reader.ReadUInt16(binary.LittleEndian)
 		if err != nil {
-			return nil, err
+			return types.Value{}, err
 		}
-		return int64(value), nil
+		res.Num = uint64(value)
 	case Long16Negative:
 		value, err := reader.ReadUInt16(binary.LittleEndian)
 		if err != nil {
-			return nil, err
+			return types.Value{}, err
 		}
-		return -int64(value), nil
+		res.Num = uint64(-int64(value))
 	case StringType:
-		return p.readString(reader)
+		value, err := p.readString(reader)
+		if err != nil {
+			return types.Value{}, err
+		}
+		res.Str = value
 	case CompressedInt32Type:
-		return reader.ReadVarintInt32()
+		value, err := reader.ReadVarintInt32()
+		if err != nil {
+			return types.Value{}, err
+		}
+		res.Num = uint64(uint32(value))
 	case CompressedInt64Type:
-		return reader.ReadVarintInt64()
+		value, err := reader.ReadVarintInt64()
+		if err != nil {
+			return types.Value{}, err
+		}
+		res.Num = uint64(value)
 	case Float32ArrayType:
-		return p.readFloatArray(reader)
+		count, err := reader.ReadVarintUInt32()
+		if err != nil {
+			return types.Value{}, err
+		}
+		blob, err := p.readBlob(reader, int(count)*4)
+		if err != nil {
+			return types.Value{}, err
+		}
+		res.Blob = blob
+		res.Num = uint64(count)
 	case Float32Type:
-		return reader.ReadFloat32(binary.BigEndian)
+		value, err := reader.ReadFloat32(binary.BigEndian)
+		if err != nil {
+			return types.Value{}, err
+		}
+		res.Num = uint64(math.Float32bits(value))
 	case Int8Type:
-		return reader.ReadInt8()
+		value, err := reader.ReadInt8()
+		if err != nil {
+			return types.Value{}, err
+		}
+		res.Num = uint64(uint8(value))
 	case BooleanTrueType:
-		return true, nil
+		res.Num = 1
 	case BooleanFalseType:
-		return false, nil
-	case IntZeroType:
-		return int32(0), nil
-	case ShortZeroType:
-		return int16(0), nil
-	case ByteZeroType:
-		return byte(0), nil
+		res.Num = 0
+	case IntZeroType, ShortZeroType, ByteZeroType:
+		break
 	case ArrayType:
-		return p.readArray(reader)
+		count, err := reader.ReadVarintUInt32()
+		if err != nil {
+			return types.Value{}, err
+		}
+		start := reader.Cursor
+		for i := uint32(0); i < count; i++ {
+			ttype, err := reader.ReadByte()
+			if err != nil {
+				return types.Value{}, err
+			}
+			if _, err := p.decode(reader, ParameterType(ttype)); err != nil {
+				return types.Value{}, err
+			}
+		}
+		res.Blob = reader.Buffer[start:reader.Cursor]
+		res.Num = uint64(count)
 	case ShortArrayType:
-		return p.readInt16Array(reader)
+		count, err := reader.ReadVarintUInt32()
+		if err != nil {
+			return types.Value{}, err
+		}
+		blob, err := p.readBlob(reader, int(count)*2)
+		if err != nil {
+			return types.Value{}, err
+		}
+		res.Blob = blob
+		res.Num = uint64(count)
 	case ByteArrayType:
-		return p.readInt8Array(reader)
+		count, err := reader.ReadVarintUInt32()
+		if err != nil {
+			return types.Value{}, err
+		}
+		blob, err := p.readBlob(reader, int(count))
+		if err != nil {
+			return types.Value{}, err
+		}
+		res.Blob = blob
+		res.Num = uint64(count)
 	case BooleanArrayType:
-		return p.readBooleanArray(reader)
+		count, err := reader.ReadVarintUInt32()
+		if err != nil {
+			return types.Value{}, err
+		}
+		packedBytes := (int(count) + 7) / 8
+		blob, err := p.readBlob(reader, packedBytes)
+		if err != nil {
+			return types.Value{}, err
+		}
+		res.Blob = blob
+		res.Num = uint64(count)
 	case StringArrayType:
-		return p.readStringArray(reader)
+		count, err := reader.ReadVarintUInt32()
+		if err != nil {
+			return types.Value{}, err
+		}
+		start := reader.Cursor
+		for i := uint32(0); i < count; i++ {
+			if _, err := p.readString(reader); err != nil {
+				return types.Value{}, err
+			}
+		}
+		res.Blob = reader.Buffer[start:reader.Cursor]
+		res.Num = uint64(count)
 	case DictionaryType:
-		return p.readDictionary(reader)
+		keyType, err := reader.ReadUInt8()
+		if err != nil {
+			return types.Value{}, err
+		}
+		valueType, err := reader.ReadUInt8()
+		if err != nil {
+			return types.Value{}, err
+		}
+		count, err := reader.ReadVarintUInt32()
+		if err != nil {
+			return types.Value{}, err
+		}
+		start := reader.Cursor
+		for i := uint32(0); i < count; i++ {
+			if _, err := p.decode(reader, ParameterType(keyType)); err != nil {
+				return types.Value{}, err
+			}
+			if _, err := p.decode(reader, ParameterType(valueType)); err != nil {
+				return types.Value{}, err
+			}
+		}
+		res.Blob = reader.Buffer[start:reader.Cursor]
+		res.Num = uint64(count)
+		res.KeyType = types.ParameterType(keyType)
+		res.ValType = types.ParameterType(valueType)
 	case CompressedIntArrayType:
-		return p.readCompressedInt32Array(reader)
+		count, err := reader.ReadVarintUInt32()
+		if err != nil {
+			return types.Value{}, err
+		}
+		blob := make([]byte, int(count)*4)
+		for i := 0; i < int(count); i++ {
+			n, err := reader.ReadVarintInt32()
+			if err != nil {
+				return types.Value{}, err
+			}
+			binary.BigEndian.PutUint32(blob[i*4:], uint32(n))
+		}
+		res.Blob = blob
+		res.Num = uint64(count)
 	case CompressedLongArrayType:
-		return p.readCompressedInt64Array(reader)
+		count, err := reader.ReadVarintUInt32()
+		if err != nil {
+			return types.Value{}, err
+		}
+		blob := make([]byte, int(count)*8)
+		for i := 0; i < int(count); i++ {
+			n, err := reader.ReadVarintInt64()
+			if err != nil {
+				return types.Value{}, err
+			}
+			binary.BigEndian.PutUint64(blob[i*8:], uint64(n))
+		}
+		res.Blob = blob
+		res.Num = uint64(count)
 	case NilType, UnknownType:
-		return nil, nil
+		break
 	default:
-		return nil, fmt.Errorf("unsupported type: %d", ttype)
+		return types.Value{}, fmt.Errorf("unsupported type: %d", t)
 	}
+	return res, nil
+}
+
+func (p Parameter) readBlob(r *reader.Reader, n int) ([]byte, error) {
+	raw, err := r.ReadBytes(n)
+	if err != nil {
+		return nil, err
+	}
+	return raw, nil
 }
 
 // String returns a human-readable representation of the parameter.
