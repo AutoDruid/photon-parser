@@ -1,6 +1,7 @@
 package v16
 
 import (
+	"encoding/binary"
 	"michelprogram/photon-parser/internal/reader"
 	"michelprogram/photon-parser/internal/types"
 )
@@ -30,7 +31,7 @@ func (p Parameter) readDictionary(r *reader.Reader) (map[any]any, error) {
 		return nil, err
 	}
 
-	size, err := r.ReadUInt16()
+	size, err := r.ReadUInt16(binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +77,7 @@ func (p Parameter) readDictionary(r *reader.Reader) (map[any]any, error) {
 //
 // Returns an error if the hashtable cannot be fully read.
 func (p Parameter) readHashTable(r *reader.Reader) (map[any]any, error) {
-	size, err := r.ReadUInt16()
+	size, err := r.ReadUInt16(binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}

@@ -1,7 +1,9 @@
 package v16
 
 import (
+	"encoding/binary"
 	"fmt"
+	"michelprogram/photon-parser/internal/context"
 	"michelprogram/photon-parser/internal/hooks"
 	"michelprogram/photon-parser/internal/reader"
 	"michelprogram/photon-parser/internal/types"
@@ -11,7 +13,7 @@ type Parameter struct {
 	types.Parameter
 }
 
-var _ reader.ParameterParser = (*Parameter)(nil)
+var _ context.ParameterParser = (*Parameter)(nil)
 
 // Parse reads a complete parameter from the reader.
 // Format: Header (1 byte ID + 1 byte Type), followed by the typed value.
@@ -104,15 +106,15 @@ func (p Parameter) decode(reader *reader.Reader, ttype types.ParameterType) (any
 	case types.Int8Type:
 		return reader.ReadInt8()
 	case types.Int16Type:
-		return reader.ReadInt16()
+		return reader.ReadInt16(binary.BigEndian)
 	case types.Int32Type:
-		return reader.ReadInt32()
+		return reader.ReadInt32(binary.BigEndian)
 	case types.Int64Type:
-		return reader.ReadInt64()
+		return reader.ReadInt64(binary.BigEndian)
 	case types.Float32Type:
-		return reader.ReadFloat32()
+		return reader.ReadFloat32(binary.BigEndian)
 	case types.Float64Type:
-		return reader.ReadFloat64()
+		return reader.ReadFloat64(binary.BigEndian)
 	case types.StringType:
 		return p.readString(reader)
 	case types.BooleanType:

@@ -1,6 +1,7 @@
 package v16
 
 import (
+	"encoding/binary"
 	"michelprogram/photon-parser/internal/reader"
 	"michelprogram/photon-parser/internal/types"
 )
@@ -9,7 +10,7 @@ import (
 // Format: uint32 size followed by size int8 values.
 // Returns an error if the array cannot be fully read.
 func (p Parameter) readInt8Array(r *reader.Reader) ([]int8, error) {
-	size, err := r.ReadUInt32()
+	size, err := r.ReadUInt32(binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}
@@ -30,7 +31,7 @@ func (p Parameter) readInt8Array(r *reader.Reader) ([]int8, error) {
 // Format: uint32 size followed by size int32 values (each in big-endian).
 // Returns an error if the array cannot be fully read.
 func (p Parameter) readInt32Array(r *reader.Reader) ([]int32, error) {
-	size, err := r.ReadUInt32()
+	size, err := r.ReadUInt32(binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}
@@ -38,7 +39,7 @@ func (p Parameter) readInt32Array(r *reader.Reader) ([]int32, error) {
 	val := make([]int32, size)
 
 	for i := uint32(0); i < size; i++ {
-		input, err := r.ReadInt32()
+		input, err := r.ReadInt32(binary.BigEndian)
 		if err != nil {
 			return nil, err
 		}
@@ -51,7 +52,7 @@ func (p Parameter) readInt32Array(r *reader.Reader) ([]int32, error) {
 // Format: uint32 size followed by size Protocol16 strings (each with uint16 length prefix).
 // Returns an error if the array cannot be fully read.
 func (p Parameter) readStringArray(r *reader.Reader) ([]string, error) {
-	size, err := r.ReadUInt32()
+	size, err := r.ReadUInt32(binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}
@@ -81,7 +82,7 @@ func (p Parameter) readStringArray(r *reader.Reader) ([]string, error) {
 //	0x00 0x00 0x00 0xC8  // 200
 func (p Parameter) readArray(r *reader.Reader) ([]any, error) {
 
-	size, err := r.ReadUInt16()
+	size, err := r.ReadUInt16(binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}

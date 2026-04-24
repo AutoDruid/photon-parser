@@ -1,7 +1,6 @@
 package v16_test
 
 import (
-	"encoding/binary"
 	"math"
 	. "michelprogram/photon-parser/internal/parameters/v16"
 	"michelprogram/photon-parser/internal/reader"
@@ -166,11 +165,7 @@ func TestDecode(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			fullInput := append([]byte{0x00, byte(tt.ttype)}, tt.input...)
-			reader := reader.NewReader(fullInput, reader.Options{
-				ParameterParser:              &Parameter{},
-				ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
-			})
+			reader := reader.NewReader(fullInput)
 			param := Parameter{}
 			out := &types.Parameter{}
 			err := param.Parse(reader, out, nil)
@@ -216,12 +211,7 @@ func TestDecodeAllTypes(t *testing.T) {
 		t.Run(string(rune(ttype)), func(t *testing.T) {
 
 			fullInput := append([]byte{0x00, byte(ttype)}, input...)
-			reader := reader.NewReader(fullInput, reader.Options{
-				ParameterParser: &Parameter{},
-
-				ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
-			})
+			reader := reader.NewReader(fullInput)
 			param := Parameter{}
 			out := &types.Parameter{}
 			err := param.Parse(reader, out, nil)
@@ -239,12 +229,7 @@ func TestDecodeReaderPosition(t *testing.T) {
 		0x00, byte(types.Int8Type), 0x2A,
 		0x00, byte(types.Int16Type), 0x03, 0xE8,
 	}
-	reader := reader.NewReader(input, reader.Options{
-		ParameterParser: &Parameter{},
-
-		ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-		BinaryOrder:                  binary.BigEndian,
-	})
+	reader := reader.NewReader(input)
 	param := Parameter{}
 
 	// Read first value (int8)
@@ -280,12 +265,7 @@ func TestDecodeEmptyReader(t *testing.T) {
 
 	for _, ttype := range parameterTypes {
 		t.Run(string(rune(ttype)), func(t *testing.T) {
-			reader := reader.NewReader([]byte{}, reader.Options{
-				ParameterParser: &Parameter{},
-
-				ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
-			})
+			reader := reader.NewReader([]byte{})
 			param := Parameter{}
 			out := &types.Parameter{}
 			err := param.Parse(reader, out, nil)
@@ -340,11 +320,7 @@ func BenchmarkDecode(b *testing.B) {
 		b.Run(bm.name, func(b *testing.B) {
 			b.ReportAllocs()
 			fullInput := append([]byte{0x00, byte(bm.ttype)}, bm.input...)
-			r := reader.NewReader(fullInput, reader.Options{
-				ParameterParser:              &Parameter{},
-				ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
-			})
+			r := reader.NewReader(fullInput)
 			param := Parameter{}
 			for i := 0; i < b.N; i++ {
 				out := &types.Parameter{}

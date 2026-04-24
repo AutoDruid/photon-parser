@@ -1,6 +1,9 @@
 package v16
 
-import "michelprogram/photon-parser/internal/reader"
+import (
+	"encoding/binary"
+	"michelprogram/photon-parser/internal/reader"
+)
 
 // ReadString reads a Photon Protocol16 string from the reader.
 // Format: uint16 length (big-endian) followed by UTF-8 bytes.
@@ -11,7 +14,7 @@ import "michelprogram/photon-parser/internal/reader"
 //
 //	0x00 0x05 'h' 'e' 'l' 'l' 'o'
 func (p Parameter) readString(reader *reader.Reader) (string, error) {
-	size, err := reader.ReadUInt16()
+	size, err := reader.ReadUInt16(binary.BigEndian)
 	if err != nil {
 		return "", err
 	}

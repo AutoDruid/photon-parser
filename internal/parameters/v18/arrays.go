@@ -1,6 +1,7 @@
 package v18
 
 import (
+	"encoding/binary"
 	"michelprogram/photon-parser/internal/reader"
 )
 
@@ -13,7 +14,7 @@ func (p Parameter) readFloatArray(r *reader.Reader) ([]float32, error) {
 	val := make([]float32, size)
 
 	for i := uint32(0); i < size; i++ {
-		input, err := r.ReadFloat32()
+		input, err := r.ReadFloat32(binary.BigEndian)
 		if err != nil {
 			return nil, err
 		}
@@ -49,7 +50,7 @@ func (p Parameter) readInt16Array(r *reader.Reader) ([]int16, error) {
 	val := make([]int16, size)
 
 	for i := uint32(0); i < size; i++ {
-		input, err := r.ReadInt16LittleEndian()
+		input, err := r.ReadInt16(binary.LittleEndian)
 		if err != nil {
 			return nil, err
 		}

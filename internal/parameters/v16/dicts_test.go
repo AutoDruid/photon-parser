@@ -1,7 +1,6 @@
 package v16_test
 
 import (
-	"encoding/binary"
 	. "michelprogram/photon-parser/internal/parameters/v16"
 	"michelprogram/photon-parser/internal/reader"
 	"michelprogram/photon-parser/internal/types"
@@ -90,11 +89,7 @@ func TestReadDictionnary(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reader := reader.NewReader(tt.input, reader.Options{
-				ParameterParser:              &Parameter{},
-				ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
-			})
+			reader := reader.NewReader(tt.input)
 			p := &Parameter{}
 			out := &types.Parameter{}
 			err := p.Parse(reader, out, nil)
@@ -156,11 +151,7 @@ func TestReadHashtable(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			reader := reader.NewReader(tt.input, reader.Options{
-				ParameterParser:              &Parameter{},
-				ReliableHeaderParameterCount: &ReliableHeaderParameterCountV16{},
-				BinaryOrder:                  binary.BigEndian,
-			})
+			reader := reader.NewReader(tt.input)
 			p := &Parameter{}
 			out := &types.Parameter{}
 			err := p.Parse(reader, out, nil)
