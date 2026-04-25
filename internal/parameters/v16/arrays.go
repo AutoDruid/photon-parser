@@ -3,7 +3,6 @@ package v16
 import (
 	"encoding/binary"
 	"michelprogram/photon-parser/internal/reader"
-	"michelprogram/photon-parser/internal/types"
 )
 
 // ReadInt8Array reads an array of 8-bit signed integers from the reader.
@@ -95,7 +94,7 @@ func (p Parameter) readArray(r *reader.Reader) ([]any, error) {
 	val := make([]any, size)
 
 	for i := uint16(0); i < size; i++ {
-		input, err := p.decode(r, types.ParameterType(ttype))
+		input, err := p.decode(r, ParameterType(ttype))
 		if err != nil {
 			return nil, err
 		}

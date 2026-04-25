@@ -4,6 +4,7 @@ import (
 	"log"
 	photonparser "michelprogram/photon-parser"
 	"michelprogram/photon-parser/internal/command/reliable"
+	v18 "michelprogram/photon-parser/internal/parameters/v18"
 	"testing"
 )
 
@@ -16,9 +17,9 @@ func TestDecode(t *testing.T) {
 	if err != nil {
 		log.Println(err)
 	}	
-		t.Log(sess.Commands[0].Payload.(*reliable.Reliable).Parameters[2])
+	t.Log(sess.Commands[0].Payload.(*reliable.Reliable[v18.Parameter]).Parameters[2])
 
-	t.Log(sess.Commands[0].Payload.(*reliable.Reliable).Parameters[1])
+	t.Log(sess.Commands[0].Payload.(*reliable.Reliable[v18.Parameter]).Parameters[1])
 
 }
 
@@ -43,7 +44,7 @@ func TestAcknowledgeChainedWithPing(t *testing.T) {
 	if err != nil {
 		log.Println(err)
 	}
-	log.Println(sess.Commands[0].Payload.(reliable.Reliable).Parameters[1])
+	log.Println(sess.Commands[0].Payload.(*reliable.Reliable[v18.Parameter]).Parameters[1])
 }
 
 func TestLongSendReliable(t *testing.T) {

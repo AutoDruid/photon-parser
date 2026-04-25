@@ -23,7 +23,7 @@ func TestParseSession(t *testing.T) {
 		reader.NewReader(cleared),
 		nil,
 		nil,
-		context.Decoders{
+		context.Decoders[v16.Parameter]{
 			ParameterParser:              &v16.Parameter{},
 			ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
 		},
@@ -71,7 +71,7 @@ func BenchmarkParseSession(b *testing.B) {
 			reader.NewReader(payload),
 			nil,
 			nil,
-			context.Decoders{
+			context.Decoders[v16.Parameter]{
 				ParameterParser:              &v16.Parameter{},
 				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
 			},

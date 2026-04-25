@@ -7,11 +7,12 @@ import (
 )
 
 // ParameterParser is implemented by each protocol-version parameters package
-// (v16, v18). 
+// (v16, v18).
 // It is wired once at Parser construction so the hot path
-type ParameterParser interface {
-	Parse(*reader.Reader, *types.Parameter, *hooks.Hooks) error
+type ParameterParser[P types.VersionedParameter] interface {
+	Parse(*reader.Reader, *P, *hooks.Hooks[P]) error
 }
+
 // ReliableHeaderParameterCount is implemented by each protocol-version reliable header parameter count package
 // (v16, v18).
 // It is used to count the number of parameters in a reliable header.
@@ -19,7 +20,7 @@ type ReliableHeaderParameterCount interface {
 	Count(*reader.Reader) (int, error)
 }
 
-type Decoders struct {
-	ParameterParser              ParameterParser
+type Decoders[P types.VersionedParameter] struct {
+	ParameterParser              ParameterParser[P]
 	ReliableHeaderParameterCount ReliableHeaderParameterCount
 }

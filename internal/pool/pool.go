@@ -1,44 +1,46 @@
 package pool
 
 import (
-	"sync"
-
 	"michelprogram/photon-parser/internal/types"
+	"sync"
 )
 
-// Params wraps a reusable parameter slice so sync.Pool can store
-// a stable pointer and avoid per-round-trip heap allocation.
-type Params struct {
-	S []types.Parameter
+type Params[P types.VersionedParameter] struct {
+	S []P
 }
 
-var paramPool = sync.Pool{
-	New: func() any {
-		return &Params{S: make([]types.Parameter, 0, 16)}
-	},
+type Pool[P types.VersionedParameter] struct {
+	pool sync.Pool
 }
 
-// Get returns a Params with S of length n, reusing the underlying array when possible.
-func Get(n int) *Params {
-	p := paramPool.Get().(*Params)
-	if cap(p.S) < n {
-		p.S = make([]types.Parameter, n)
+func New[P types.VersionedParameter]() *Pool[P] {
+	return &Pool[P]{
+		pool: sync.Pool{
+			New: func() any {
+				return &Params[P]{S: make([]P, 0, 16)}
+			},
+		},
+	}
+}
+
+func (p *Pool[P]) Get(n int) *Params[P] {
+	params := p.pool.Get().(*Params[P])
+	if cap(params.S) < n {
+		params.S = make([]P, n)
 	} else {
-		p.S = p.S[:n]
-		clear(p.S) // Go 1.21+
+		params.S = params.S[:n]
+		clear(params.S)
 	}
-	return p
+	return params
 }
 
-// Put returns the Params to the pool. Caller must not reference p or p.S afterwards.
-func Put(p *Params) {
-	if p == nil {
+func (p *Pool[P]) Put(params *Params[P]) {
+	if params == nil {
 		return
 	}
-	// Drop pathologically large slices so one weird packet doesn't bloat the pool.
-	if cap(p.S) > 4096 {
+	if cap(params.S) > 4096 {
 		return
 	}
-	p.S = p.S[:0]
-	paramPool.Put(p)
+	params.S = params.S[:0]
+	p.pool.Put(params)
 }
