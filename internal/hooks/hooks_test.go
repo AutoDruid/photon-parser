@@ -242,8 +242,8 @@ func TestReader_ParameterSyncHookMatchesParsedParameter(t *testing.T) {
 		t.Fatalf("Parse parameter: %v", err)
 	}
 
-	if !reflect.DeepEqual(got, p.Parameter) {
-		t.Fatalf("sync hook parameter mismatch:\ngot: %+v\nparam: %+v", got, p.Parameter)
+	if !reflect.DeepEqual(got, *p) {
+		t.Fatalf("sync hook parameter mismatch:\ngot: %+v\nparam: %+v", got, *p)
 	}
 }
 
@@ -262,8 +262,8 @@ func TestReader_ParameterAsyncHookReceivesMatchingParameter(t *testing.T) {
 
 	select {
 	case got := <-h.AsyncHooks.OnParameter:
-		if !reflect.DeepEqual(got, p.Parameter) {
-			t.Fatalf("async parameter mismatch:\ngot: %+v\nparam: %+v", got, p.Parameter)
+		if !reflect.DeepEqual(got, *p) {
+			t.Fatalf("async parameter mismatch:\ngot: %+v\nparam: %+v", got, *p)
 		}
 	case <-time.After(time.Second):
 		t.Fatal("timeout waiting for async parameter")
