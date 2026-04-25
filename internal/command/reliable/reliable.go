@@ -39,15 +39,15 @@ type Header struct {
 // Reliable represents a complete reliable message with header and parameters.
 // Parameters contain the actual game data as key-value pairs where each
 // parameter has an ID, type, and value.
-type Reliable struct {
+type Reliable[P types.VersionedParameter] struct {
 	Header
-	params     *pool.Params
-	Parameters []types.Parameter // Slice of decoded parameters
+	params     *pool.Params[P]
+	Parameters []P // Slice of decoded parameters
 }
 
-func (r *Reliable) String() string {
+func (r *Reliable[P]) String() string {
 	reliable := struct {
-		Reliable `json:"reliable"`
+		Reliable[P] `json:"reliable"`
 	}{
 		Reliable: *r,
 	}
@@ -68,8 +68,8 @@ func (r *Reliable) String() string {
 //
 // Returns a Reliable struct with all fields populated including the Parameters slice,
 // or an error if any part of parsing fails.
-func Parse(ctx *context.Context, length uint32) (*Reliable, error) {
-	reliable := Reliable{}
+func Parse[P types.VersionedParameter](ctx *context.Context[P], length uint32) (*Reliable[P], error) {
+	reliable := Reliable[P]{}
 	header, err := reliable.parseHeader(ctx, length)
 	if err != nil {
 		return nil, err
@@ -87,13 +87,13 @@ func Parse(ctx *context.Context, length uint32) (*Reliable, error) {
 
 	//reliable.Parameters = pool.GetParams(header.ParameterCount)
 
-	//reliable.Parameters = make([]types.Parameter, header.ParameterCount)
-	reliable.params = pool.Get(reliable.ParameterCount)
-	reliable.Parameters = reliable.params.S
+	reliable.Parameters = make([]P, header.ParameterCount)
+	//reliable.params = pool.Get(reliable.ParameterCount)
+	//reliable.Parameters = reliable.params.S
 	for i := 0; i < reliable.ParameterCount; i++ {
 		err := ctx.Decoders.ParameterParser.Parse(ctx.Reader, &reliable.Parameters[i], ctx.Hooks)
 		if err != nil {
-			pool.Put(reliable.params)
+			//pool.Put(reliable.params)
 			return nil, err
 		}
 	}
@@ -102,7 +102,7 @@ func Parse(ctx *context.Context, length uint32) (*Reliable, error) {
 
 }
 
-func (r *Reliable) parseHeader(ctx *context.Context, length uint32) (Header, error) {
+func (r *Reliable[P]) parseHeader(ctx *context.Context[P], length uint32) (Header, error) {
 	var err error
 	var header Header
 
@@ -158,11 +158,11 @@ func (r *Reliable) parseHeader(ctx *context.Context, length uint32) (Header, err
 	return header, nil
 }
 
-func (r *Reliable) Release() {
+func (r *Reliable[P]) Release() {
 	if r == nil {
 		return
 	}
-	pool.Put(r.params)
+	//pool.Put(r.params)
 	r.params = nil
 	r.Parameters = nil
 }

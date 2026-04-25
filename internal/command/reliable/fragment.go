@@ -11,7 +11,7 @@ type Fragment struct {
 	types.Fragment
 }
 
-func ParseFragment(ctx *context.Context, length uint32) (*Reliable, error) {
+func ParseFragment[P types.VersionedParameter](ctx *context.Context[P], length uint32) (*Reliable[P], error) {
 
 	fragment, err := parseMetadata(ctx.Reader)
 	if err != nil {

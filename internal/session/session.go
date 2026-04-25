@@ -6,7 +6,6 @@ package session
 import (
 	"encoding/binary"
 	"errors"
-	"fmt"
 	"michelprogram/photon-parser/internal/command"
 	"michelprogram/photon-parser/internal/context"
 	photonErrors "michelprogram/photon-parser/internal/errors"
@@ -15,7 +14,7 @@ import (
 	"michelprogram/photon-parser/internal/types"
 )
 
-type Session struct {
+type Session[P types.VersionedParameter] struct {
 	types.Session
 }
 
@@ -25,8 +24,8 @@ type Session struct {
 //
 // Returns a Session struct with all fields populated including the Commands slice,
 // or an error if any part of parsing fails.
-func Parse(ctx *context.Context, out *types.Session) error {
-	session := Session{}
+func Parse[P types.VersionedParameter](ctx *context.Context[P], out *types.Session) error {
+	session := Session[P]{}
 	header, err := session.parseHeader(ctx.Reader)
 	if err != nil {
 		return err
@@ -56,7 +55,7 @@ func Parse(ctx *context.Context, out *types.Session) error {
 	return nil
 }
 
-func (s Session) emit(reader *reader.Reader, hooks *hooks.Hooks) {
+func (s Session[P]) emit(reader *reader.Reader, hooks *hooks.Hooks[P]) {
 	if hooks == nil {
 		return
 	}
@@ -75,7 +74,7 @@ func (s Session) emit(reader *reader.Reader, hooks *hooks.Hooks) {
 	}
 }
 
-func (s *Session) parseHeader(r *reader.Reader) (types.Header, error) {
+func (s *Session[P]) parseHeader(r *reader.Reader) (types.Header, error) {
 	var err error
 	var header types.Header
 
@@ -105,12 +104,4 @@ func (s *Session) parseHeader(r *reader.Reader) (types.Header, error) {
 	}
 
 	return header, nil
-}
-
-func (s Session) String() string {
-	res := fmt.Sprintf("Session: PeerID: %d, CRCEnabled: %d, CommandCount: %d, Timestamp: %d, Challenge: %d", s.PeerID, s.CRCEnabled, s.CommandCount, s.Timestamp, s.Challenge)
-	for i, cmd := range s.Commands {
-		res += fmt.Sprintf("\n  Command %d: Type: %d, Payload: %v", i, cmd.Type, cmd.Payload)
-	}
-	return res
 }

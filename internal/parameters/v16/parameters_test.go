@@ -4,7 +4,6 @@ import (
 	"math"
 	. "michelprogram/photon-parser/internal/parameters/v16"
 	"michelprogram/photon-parser/internal/reader"
-	"michelprogram/photon-parser/internal/types"
 	"reflect"
 	"testing"
 )
@@ -12,7 +11,7 @@ import (
 func TestDecode(t *testing.T) {
 	tests := []struct {
 		name    string
-		ttype   types.ParameterType
+		ttype   ParameterType
 		input   []byte
 		want    any
 		wantErr bool
@@ -20,61 +19,61 @@ func TestDecode(t *testing.T) {
 		// Primitives
 		{
 			name:  "int8 positive",
-			ttype: types.Int8Type,
+			ttype: Int8Type,
 			input: []byte{0x2A}, // 42
 			want:  int8(42),
 		},
 		{
 			name:  "int8 negative",
-			ttype: types.Int8Type,
+			ttype: Int8Type,
 			input: []byte{0xFF}, // -1
 			want:  int8(-1),
 		},
 		{
 			name:  "int16",
-			ttype: types.Int16Type,
+			ttype: Int16Type,
 			input: []byte{0x03, 0xE8}, // 1000
 			want:  int16(1000),
 		},
 		{
 			name:  "int32",
-			ttype: types.Int32Type,
+			ttype: Int32Type,
 			input: []byte{0x00, 0x00, 0x27, 0x10}, // 10000
 			want:  int32(10000),
 		},
 		{
 			name:  "int64",
-			ttype: types.Int64Type,
+			ttype: Int64Type,
 			input: []byte{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0xE8}, // 1000
 			want:  int64(1000),
 		},
 		{
 			name:  "float32",
-			ttype: types.Float32Type,
+			ttype: Float32Type,
 			input: []byte{0x3F, 0x80, 0x00, 0x00}, // 1.0
 			want:  float32(1.0),
 		},
 		{
 			name:  "float64",
-			ttype: types.Float64Type,
+			ttype: Float64Type,
 			input: []byte{0x40, 0x09, 0x21, 0xFB, 0x54, 0x44, 0x2D, 0x18}, // pi
 			want:  math.Pi,
 		},
 		{
 			name:  "string",
-			ttype: types.StringType,
+			ttype: StringType,
 			input: []byte{0x00, 0x05, 'h', 'e', 'l', 'l', 'o'},
 			want:  "hello",
 		},
 		{
 			name:  "boolean true",
-			ttype: types.BooleanType,
+			ttype: BooleanType,
 			input: []byte{0x01},
 			want:  true,
 		},
 		{
 			name:  "boolean false",
-			ttype: types.BooleanType,
+			ttype: BooleanType,
 			input: []byte{0x00},
 			want:  false,
 		},
@@ -82,7 +81,7 @@ func TestDecode(t *testing.T) {
 		// Arrays
 		{
 			name:  "int8 array",
-			ttype: types.Int8ArrayType,
+			ttype: Int8ArrayType,
 			input: []byte{
 				0x00, 0x00, 0x00, 0x03, // size = 3 (uint32)
 				0x01, 0x02, 0x03,
@@ -91,7 +90,7 @@ func TestDecode(t *testing.T) {
 		},
 		{
 			name:  "int32 array",
-			ttype: types.Int32ArrayType,
+			ttype: Int32ArrayType,
 			input: []byte{
 				0x00, 0x00, 0x00, 0x02, // size = 2 (uint32)
 				0x00, 0x00, 0x00, 0x0A, // 10
@@ -101,7 +100,7 @@ func TestDecode(t *testing.T) {
 		},
 		{
 			name:  "string array",
-			ttype: types.StringArrayType,
+			ttype: StringArrayType,
 			input: []byte{
 				0x00, 0x00, 0x00, 0x02, // size = 2 (uint32)
 				0x00, 0x02, 'h', 'i', // "hi"
@@ -111,10 +110,10 @@ func TestDecode(t *testing.T) {
 		},
 		{
 			name:  "generic array (int32s)",
-			ttype: types.ArrayType,
+			ttype: ArrayType,
 			input: []byte{
 				0x00, 0x02, // size = 2 (uint16)
-				byte(types.Int32Type),  // element type
+				byte(Int32Type),        // element type
 				0x00, 0x00, 0x00, 0x64, // 100
 				0x00, 0x00, 0x00, 0xC8, // 200
 			},
@@ -124,31 +123,31 @@ func TestDecode(t *testing.T) {
 		// Error cases
 		{
 			name:    "int8 truncated",
-			ttype:   types.Int8Type,
+			ttype:   Int8Type,
 			input:   []byte{},
 			wantErr: true,
 		},
 		{
 			name:    "int16 truncated",
-			ttype:   types.Int16Type,
+			ttype:   Int16Type,
 			input:   []byte{0x01},
 			wantErr: true,
 		},
 		{
 			name:    "int32 truncated",
-			ttype:   types.Int32Type,
+			ttype:   Int32Type,
 			input:   []byte{0x00, 0x00, 0x01},
 			wantErr: true,
 		},
 		{
 			name:    "string truncated",
-			ttype:   types.StringType,
+			ttype:   StringType,
 			input:   []byte{0x00, 0x05, 'h', 'i'}, // length=5 but only 2 chars
 			wantErr: true,
 		},
 		{
 			name:    "array truncated",
-			ttype:   types.Int8ArrayType,
+			ttype:   Int8ArrayType,
 			input:   []byte{0x00, 0x00, 0x00, 0x03, 0x01}, // size=3 (uint32) but only 1 element
 			wantErr: true,
 		},
@@ -156,7 +155,7 @@ func TestDecode(t *testing.T) {
 		// Unknown type should return empty string and nil error (per current implementation)
 		{
 			name:    "unknown type",
-			ttype:   types.ParameterType(0xFF), // Invalid type
+			ttype:   ParameterType(0xFF), // Invalid type
 			input:   []byte{0x01, 0x02, 0x03},
 			wantErr: true,
 		},
@@ -167,7 +166,7 @@ func TestDecode(t *testing.T) {
 			fullInput := append([]byte{0x00, byte(tt.ttype)}, tt.input...)
 			reader := reader.NewReader(fullInput)
 			param := Parameter{}
-			out := &types.Parameter{}
+			out := &Parameter{}
 			err := param.Parse(reader, out, nil)
 
 			if tt.wantErr {
@@ -192,19 +191,19 @@ func TestDecode(t *testing.T) {
 // TestDecodeAllTypes ensures all defined types are handled by Decode
 func TestDecodeAllTypes(t *testing.T) {
 	// Map of all types to sample valid input
-	typeSamples := map[types.ParameterType][]byte{
-		types.Int8Type:        {0x01},
-		types.Int16Type:       {0x00, 0x01},
-		types.Int32Type:       {0x00, 0x00, 0x00, 0x01},
-		types.Int64Type:       {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01},
-		types.Float32Type:     {0x00, 0x00, 0x00, 0x00},
-		types.Float64Type:     {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
-		types.StringType:      {0x00, 0x00}, // empty string
-		types.BooleanType:     {0x00},
-		types.Int8ArrayType:   {0x00, 0x00, 0x00, 0x00},           // empty array (uint32 size)
-		types.Int32ArrayType:  {0x00, 0x00, 0x00, 0x00},           // empty array (uint32 size)
-		types.StringArrayType: {0x00, 0x00, 0x00, 0x00},           // empty array (uint32 size)
-		types.ArrayType:       {0x00, 0x00, byte(types.Int8Type)}, // uint16 count 0 + element type
+	typeSamples := map[ParameterType][]byte{
+		Int8Type:        {0x01},
+		Int16Type:       {0x00, 0x01},
+		Int32Type:       {0x00, 0x00, 0x00, 0x01},
+		Int64Type:       {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01},
+		Float32Type:     {0x00, 0x00, 0x00, 0x00},
+		Float64Type:     {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00},
+		StringType:      {0x00, 0x00}, // empty string
+		BooleanType:     {0x00},
+		Int8ArrayType:   {0x00, 0x00, 0x00, 0x00},     // empty array (uint32 size)
+		Int32ArrayType:  {0x00, 0x00, 0x00, 0x00},     // empty array (uint32 size)
+		StringArrayType: {0x00, 0x00, 0x00, 0x00},     // empty array (uint32 size)
+		ArrayType:       {0x00, 0x00, byte(Int8Type)}, // uint16 count 0 + element type
 	}
 
 	for ttype, input := range typeSamples {
@@ -213,7 +212,7 @@ func TestDecodeAllTypes(t *testing.T) {
 			fullInput := append([]byte{0x00, byte(ttype)}, input...)
 			reader := reader.NewReader(fullInput)
 			param := Parameter{}
-			out := &types.Parameter{}
+			out := &Parameter{}
 			err := param.Parse(reader, out, nil)
 
 			if err != nil {
@@ -226,19 +225,19 @@ func TestDecodeAllTypes(t *testing.T) {
 func TestDecodeReaderPosition(t *testing.T) {
 	// Create buffer with multiple values: int8(42), int16(1000)
 	input := []byte{
-		0x00, byte(types.Int8Type), 0x2A,
-		0x00, byte(types.Int16Type), 0x03, 0xE8,
+		0x00, byte(Int8Type), 0x2A,
+		0x00, byte(Int16Type), 0x03, 0xE8,
 	}
 	reader := reader.NewReader(input)
 	param := Parameter{}
 
 	// Read first value (int8)
-	out := &types.Parameter{}
+	out := &Parameter{}
 	err := param.Parse(reader, out, nil)
 	if err != nil {
 		t.Fatalf("First Decode() failed: %v", err)
 	}
-/* 	if out.Value != int8(42) {
+	/* 	if out.Value != int8(42) {
 		t.Errorf("First value = %v, want 42", out.Value)
 	} */
 
@@ -247,27 +246,29 @@ func TestDecodeReaderPosition(t *testing.T) {
 	}
 
 	// Read second value (int16)
-	out = &types.Parameter{}
+	out = &Parameter{}
 	err = param.Parse(reader, out, nil)
 	if err != nil {
 		t.Fatalf("Second Decode() failed: %v", err)
 	}
-/* 	if out.Value != int16(1000) {
-		t.Errorf("Second value = %v, want 1000", out.Value)
-	} */
+	/*
+		 	if out.Value != int16(1000) {
+				t.Errorf("Second value = %v, want 1000", out.Value)
+			}
+	*/
 }
 
 func TestDecodeEmptyReader(t *testing.T) {
-	parameterTypes := []types.ParameterType{
-		types.Int8Type, types.Int16Type, types.Int32Type, types.Int64Type,
-		types.Float32Type, types.Float64Type, types.BooleanType,
+	parameterTypes := []ParameterType{
+		Int8Type, Int16Type, Int32Type, Int64Type,
+		Float32Type, Float64Type, BooleanType,
 	}
 
 	for _, ttype := range parameterTypes {
 		t.Run(string(rune(ttype)), func(t *testing.T) {
 			reader := reader.NewReader([]byte{})
 			param := Parameter{}
-			out := &types.Parameter{}
+			out := &Parameter{}
 			err := param.Parse(reader, out, nil)
 			if err == nil {
 				t.Errorf("Decode() with empty reader should fail for type 0x%02x", ttype)
@@ -279,27 +280,27 @@ func TestDecodeEmptyReader(t *testing.T) {
 func BenchmarkDecode(b *testing.B) {
 	benchmarks := []struct {
 		name  string
-		ttype types.ParameterType
+		ttype ParameterType
 		input []byte
 	}{
 		{
 			name:  "int8",
-			ttype: types.Int8Type,
+			ttype: Int8Type,
 			input: []byte{0x2A},
 		},
 		{
 			name:  "int32",
-			ttype: types.Int32Type,
+			ttype: Int32Type,
 			input: []byte{0x00, 0x00, 0x27, 0x10},
 		},
 		{
 			name:  "string",
-			ttype: types.StringType,
+			ttype: StringType,
 			input: []byte{0x00, 0x05, 'h', 'e', 'l', 'l', 'o'},
 		},
 		{
 			name:  "int32_array",
-			ttype: types.Int32ArrayType,
+			ttype: Int32ArrayType,
 			input: []byte{
 				0x00, 0x00, 0x00, 0x0A, // 10 elements (uint32)
 				0x00, 0x00, 0x00, 0x01,
@@ -323,7 +324,7 @@ func BenchmarkDecode(b *testing.B) {
 			r := reader.NewReader(fullInput)
 			param := Parameter{}
 			for i := 0; i < b.N; i++ {
-				out := &types.Parameter{}
+				out := &Parameter{}
 				err := param.Parse(r, out, nil)
 				if err != nil {
 					b.Fatal(err)

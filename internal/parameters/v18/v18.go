@@ -1,5 +1,15 @@
 package v18
 
+import (
+	"encoding/binary"
+	"encoding/json"
+	"fmt"
+	"iter"
+	"log"
+	"math"
+	"michelprogram/photon-parser/internal/types"
+)
+
 type ParameterType uint8
 
 const (
@@ -11,7 +21,7 @@ const (
 	Float64Type         ParameterType = 6
 	StringType          ParameterType = 7 //Tested
 	NilType             ParameterType = 8
-	CompressedInt32Type ParameterType = 9 //Tested
+	CompressedInt32Type ParameterType = 9  //Tested
 	CompressedInt64Type ParameterType = 10 //Tested
 
 	Int8Positive  ParameterType = 11 // 1 byte unsigned, cast to +int32
@@ -61,3 +71,93 @@ const (
 	DictionaryArrayType     ParameterType = DictionaryType | ArrayType      // 0x54
 	HashtableArrayType      ParameterType = HashtableType | ArrayType       // 0x55
 )
+
+// Header represents the parameter header containing the parameter ID and type.
+// This appears at the beginning of each serialized parameter.
+type Header struct {
+	ID   uint8         `json:"id"`   // Parameter identifier (application-specific)
+	Type ParameterType `json:"type"` // Protocol16 type code indicating how to decode the value
+}
+
+// Parameters represents a complete Photon Protocol parameter with its header and decoded value.
+// The Value field contains the decoded data according to the Type specified in the Header.
+type Parameter struct {
+	Header `json:"header"`
+	Value  `json:"value"`
+}
+
+var _ types.VersionedParameter = (*Parameter)(nil)
+
+type Value struct {
+	Kind    ParameterType `json:"kind"`
+	KeyType ParameterType `json:"key_type"`
+	ValType ParameterType `json:"val_type"`
+	_pad    [5]byte       `json:"-"`
+	Num     uint64        `json:"num"`
+	Str     string        `json:"str,omitempty"`
+	Blob    []byte        `json:"blob,omitempty"`
+}
+
+func (p Parameter) ID() uint8 {
+	return p.Header.ID
+}
+
+func (p Parameter) String() string {
+	param := struct {
+		Parameter `json:"parameter"`
+	}{
+		Parameter: p,
+	}
+	b, err := json.MarshalIndent(param, "", "  ")
+	if err != nil {
+		fmt.Println("error:", err)
+	}
+	return string(b)
+}
+
+func (p Parameter) Float32s() iter.Seq2[int, float32] {
+	n := int(p.Num)
+	if n <= 0 || len(p.Blob) < n*4 {
+		return nil
+	}
+	return func(yield func(int, float32) bool) {
+		for i := 0; i < n; i++ {
+			bits := binary.LittleEndian.Uint32(p.Blob[i*4 : (i+1)*4])
+			if !yield(i, math.Float32frombits(bits)) {
+				return
+			}
+		}
+	}
+}
+
+func (p Parameter) Float32() float32 {
+	return math.Float32frombits(uint32(p.Num))
+}
+
+func (p Parameter) MarshalJSON() ([]byte, error) {
+	type Alias Parameter
+
+	out := struct {
+		Alias
+		Decoded any `json:"decoded,omitempty"`
+	}{
+		Alias: Alias(p),
+	}
+
+	// Example: special behavior by parameter kind/type
+	switch p.Kind {
+	case 5:
+		log.Println("test")
+		out.Decoded = p.Float32()
+	case 69:
+		res := make([]float32, p.Num)
+		for index, fl := range p.Float32s() {
+			res[index] = fl
+		}
+		out.Decoded = res
+	default:
+		out.Decoded = p.Num
+	}
+
+	return json.Marshal(out)
+}

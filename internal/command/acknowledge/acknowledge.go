@@ -2,7 +2,7 @@ package acknowledge
 
 import (
 	"encoding/binary"
-	"michelprogram/photon-parser/internal/context"
+	"michelprogram/photon-parser/internal/reader"
 )
 
 type Acknowledge struct {
@@ -10,16 +10,16 @@ type Acknowledge struct {
 	AckSentTime               uint32
 }
 
-func Parse(ctx *context.Context) (*Acknowledge, error) {
+func Parse(reader *reader.Reader) (*Acknowledge, error) {
 	var ack Acknowledge
 	var err error
 
-	ack.AckReliableSequenceNumber, err = ctx.Reader.ReadUInt32(binary.BigEndian)
+	ack.AckReliableSequenceNumber, err = reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}
 
-	ack.AckSentTime, err = ctx.Reader.ReadUInt32(binary.BigEndian)
+	ack.AckSentTime, err = reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
 		return nil, err
 	}

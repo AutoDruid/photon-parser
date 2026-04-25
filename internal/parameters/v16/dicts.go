@@ -3,7 +3,6 @@ package v16
 import (
 	"encoding/binary"
 	"michelprogram/photon-parser/internal/reader"
-	"michelprogram/photon-parser/internal/types"
 )
 
 // ReadDictionary reads a Photon Protocol16 dictionary with uniform key and value types.
@@ -39,12 +38,12 @@ func (p Parameter) readDictionary(r *reader.Reader) (map[any]any, error) {
 	res := make(map[any]any, size)
 
 	for i := uint16(0); i < size; i++ {
-		key, err := p.decode(r, types.ParameterType(keyType))
+		key, err := p.decode(r, ParameterType(keyType))
 		if err != nil {
 			return nil, err
 		}
 
-		value, err := p.decode(r, types.ParameterType(valueType))
+		value, err := p.decode(r, ParameterType(valueType))
 		if err != nil {
 			return nil, err
 		}
@@ -88,7 +87,7 @@ func (p Parameter) readHashTable(r *reader.Reader) (map[any]any, error) {
 		if err != nil {
 			return nil, err
 		}
-		key, err := p.decode(r, types.ParameterType(keyType))
+		key, err := p.decode(r, ParameterType(keyType))
 		if err != nil {
 			return nil, err
 		}
@@ -97,7 +96,7 @@ func (p Parameter) readHashTable(r *reader.Reader) (map[any]any, error) {
 		if err != nil {
 			return nil, err
 		}
-		value, err := p.decode(r, types.ParameterType(valueType))
+		value, err := p.decode(r, ParameterType(valueType))
 		if err != nil {
 			return nil, err
 		}

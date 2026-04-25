@@ -15,7 +15,7 @@ import (
 	"michelprogram/photon-parser/internal/types"
 )
 
-type Command struct {
+type Command[P types.VersionedParameter] struct {
 	types.Command
 }
 
@@ -31,8 +31,8 @@ type Command struct {
 // The returned Command struct contains all header fields and the raw payload
 // in the Data field. For SendReliable commands, the Data can be further parsed
 // using the reliable package.
-func Parse(ctx *context.Context, out *types.Command) error {
-	cmd := Command{}
+func Parse[P types.VersionedParameter](ctx *context.Context[P], out *types.Command) error {
+	cmd := Command[P]{}
 	header, err := cmd.parseHeader(ctx.Reader)
 
 	out.CommandHeader = header
@@ -68,7 +68,7 @@ func Parse(ctx *context.Context, out *types.Command) error {
 	return nil
 }
 
-func (c Command) emit(r *reader.Reader, hooks *hooks.Hooks) {
+func (c Command[P]) emit(r *reader.Reader, hooks *hooks.Hooks[P]) {
 	if hooks == nil {
 		return
 	}
@@ -88,10 +88,10 @@ func (c Command) emit(r *reader.Reader, hooks *hooks.Hooks) {
 
 }
 
-func (c Command) parsePayload(t types.CommandType, ctx *context.Context, length uint32) (types.Payload, error) {
+func (c Command[P]) parsePayload(t types.CommandType, ctx *context.Context[P], length uint32) (types.Payload, error) {
 	switch t {
 	case types.SendUnreliableCommand:
-		
+
 		_, err := ctx.Reader.ReadBytes(4)
 		if err != nil {
 			return nil, err
@@ -104,9 +104,9 @@ func (c Command) parsePayload(t types.CommandType, ctx *context.Context, length 
 	case types.SendReliableCommand:
 		return reliable.Parse(ctx, length)
 	case types.AcknowledgeCommand:
-		return acknowledge.Parse(ctx)
+		return acknowledge.Parse(ctx.Reader)
 	case types.ConnectCommand, types.VerifyConnectCommand:
-		return connect.Parse(ctx)
+		return connect.Parse(ctx.Reader)
 	case types.SendReliableFragmentCommand:
 		return reliable.ParseFragment(ctx, length)
 	case types.PingCommand:
@@ -118,7 +118,7 @@ func (c Command) parsePayload(t types.CommandType, ctx *context.Context, length 
 	}
 }
 
-func (s *Command) parseHeader(r *reader.Reader) (types.CommandHeader, error) {
+func (s *Command[P]) parseHeader(r *reader.Reader) (types.CommandHeader, error) {
 	var err error
 	var header types.CommandHeader
 
@@ -159,8 +159,4 @@ func (s *Command) parseHeader(r *reader.Reader) (types.CommandHeader, error) {
 	}
 
 	return header, nil
-}
-
-func (c Command) String() string {
-	return fmt.Sprintf("Type: %d, ChannelID: %d, Flags: %d, ReservedByte: %d, Length: %d, ReliableSequenceNumber: %d", c.Type, c.ChannelID, c.Flags, c.ReservedByte, c.Length, c.ReliableSequenceNumber)
 }
