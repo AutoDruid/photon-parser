@@ -198,7 +198,6 @@ func BenchmarkParseUDP1(b *testing.B) {
 	for b.Loop() {
 		for _, payload := range payloads {
 			sess, _ = parser.ParsePacket(payload)
-			parser.Release(sess)
 		}
 	}
 

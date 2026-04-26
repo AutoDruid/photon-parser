@@ -1,10 +1,7 @@
 package v18
 
 import (
-	"encoding/binary"
 	"fmt"
-	"log"
-	"math"
 	"michelprogram/photon-parser/internal/context"
 	"michelprogram/photon-parser/internal/hooks"
 	"michelprogram/photon-parser/internal/reader"
@@ -36,22 +33,21 @@ func (p *Parameter) Parse(reader *reader.Reader, out *Parameter, hooks *hooks.Ho
 		return err
 	}
 
-	value, err := p.decode(reader, ParameterType(header.Type))
+	value, err := scanPayload(reader, header.Type)
 
 	if err != nil {
-		log.Println("err on parameter type", header.Type, err)
 		return err
 	}
 
 	out.Header = header
 	out.Value = value
 
-	//p.emit(reader, hooks, out)
+	p.emit(hooks, out)
 
 	return nil
 }
 
-func (p Parameter) emit(reader *reader.Reader, hooks *hooks.Hooks[Parameter], out *Parameter) {
+func (p Parameter) emit(hooks *hooks.Hooks[Parameter], out *Parameter) {
 	if hooks == nil {
 		return
 	}
@@ -89,243 +85,136 @@ func (p *Parameter) parseHeader(r *reader.Reader) (Header, error) {
 	return header, nil
 }
 
-func (p Parameter) decode(reader *reader.Reader, t ParameterType) (Value, error) {
-	res := Value{Kind: t}
+func scanPayload(reader *reader.Reader, t ParameterType) (Value, error) {
+	var err error
+	var res Value = Value{Kind: t}
 
 	switch t {
-	case Int8Positive:
-		b, err := reader.ReadByte()
-		if err != nil {
-			return Value{}, err
-		}
-		res.Num = uint64(uint(int32(b)))
-	case Int8Negative:
-		b, err := reader.ReadByte()
-		if err != nil {
-			return Value{}, err
-		}
-		res.Num = uint64(uint32(-int32(b)))
-	case Int16Type:
-		value, err := reader.ReadInt16(binary.LittleEndian)
-		if err != nil {
-			return Value{}, err
-		}
-		res.Num = uint64(uint16(value))
-	case Int16Positive:
-		value, err := reader.ReadUInt16(binary.LittleEndian)
-		if err != nil {
-			return Value{}, err
-		}
-		res.Num = uint64(uint32(int32(value)))
-	case Int16Negative:
-		value, err := reader.ReadUInt16(binary.LittleEndian)
-		if err != nil {
-			return Value{}, err
-		}
-		res.Num = uint64(uint32(-int32(value)))
-	case Long8Positive:
-		value, err := reader.ReadByte()
-		if err != nil {
-			return Value{}, err
-		}
-		res.Num = uint64(value)
-	case Long8Negative:
-		value, err := reader.ReadByte()
-		if err != nil {
-			return Value{}, err
-		}
-		res.Num = uint64(-int64(value))
-	case Long16Positive:
-		value, err := reader.ReadUInt16(binary.LittleEndian)
-		if err != nil {
-			return Value{}, err
-		}
-		res.Num = uint64(value)
-	case Long16Negative:
-		value, err := reader.ReadUInt16(binary.LittleEndian)
-		if err != nil {
-			return Value{}, err
-		}
-		res.Num = uint64(-int64(value))
-	case StringType:
-		value, err := p.readString(reader)
-		if err != nil {
-			return Value{}, err
-		}
-		res.Str = value
-	case CompressedInt32Type:
-		value, err := reader.ReadVarintInt32()
-		if err != nil {
-			return Value{}, err
-		}
-		res.Num = uint64(uint32(value))
-	case CompressedInt64Type:
-		value, err := reader.ReadVarintInt64()
-		if err != nil {
-			return Value{}, err
-		}
-		res.Num = uint64(value)
-	case Float32ArrayType:
-		count, err := reader.ReadVarintUInt32()
-		if err != nil {
-			return Value{}, err
-		}
-		blob, err := p.readBlob(reader, int(count)*4)
-		if err != nil {
-			return Value{}, err
-		}
-		res.Blob = blob
-		res.Num = uint64(count)
-	case Float32Type:
-		value, err := reader.ReadFloat32(binary.LittleEndian)
-		if err != nil {
-			return Value{}, err
-		}
-		res.Num = uint64(math.Float32bits(value))
 	case Int8Type:
-		value, err := reader.ReadInt8()
+		err = scanInt8(reader, &res)
 		if err != nil {
 			return Value{}, err
 		}
-		res.Num = uint64(uint8(value))
+	case Int8Positive:
+		err = scanInt8Positive(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Int8Negative:
+		err = scanInt8Negative(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Int16Type:
+		err = scanInt16Type(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Int16Positive:
+		err = scanInt16Positive(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Int16Negative:
+		err = scanInt16Negative(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Long8Positive:
+		err = scanLong8Positive(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Long8Negative:
+		err = scanLong8Negative(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Long16Positive:
+		err = scanLong16Positive(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Long16Negative:
+		err = scanLong16Negative(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case StringType:
+		err = scanString(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case CompressedInt32Type:
+		err = scanCompressedInt32(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case CompressedInt64Type:
+		err = scanCompressedInt64(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Float32ArrayType:
+		err = scanFloat32Array(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Float32Type:
+		err = scanFloat32(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
 	case BooleanTrueType:
 		res.Num = 1
 	case BooleanFalseType:
 		res.Num = 0
-	case IntZeroType, ShortZeroType, ByteZeroType:
+	case IntZeroType, ShortZeroType, LongZeroType, ByteZeroType:
 		break
 	case ArrayType:
-		count, err := reader.ReadVarintUInt32()
+		err = scanArray(reader, &res)
 		if err != nil {
 			return Value{}, err
 		}
-		start := reader.Cursor
-		for i := uint32(0); i < count; i++ {
-			ttype, err := reader.ReadByte()
-			if err != nil {
-				return Value{}, err
-			}
-			if _, err := p.decode(reader, ParameterType(ttype)); err != nil {
-				return Value{}, err
-			}
-		}
-		res.Blob = reader.Buffer[start:reader.Cursor]
-		res.Num = uint64(count)
 	case ShortArrayType:
-		count, err := reader.ReadVarintUInt32()
+		err = scanShortArray(reader, &res)
 		if err != nil {
 			return Value{}, err
 		}
-		blob, err := p.readBlob(reader, int(count)*2)
-		if err != nil {
-			return Value{}, err
-		}
-		res.Blob = blob
-		res.Num = uint64(count)
 	case ByteArrayType:
-		count, err := reader.ReadVarintUInt32()
+		err = scanByteArray(reader, &res)
 		if err != nil {
 			return Value{}, err
 		}
-		blob, err := p.readBlob(reader, int(count))
-		if err != nil {
-			return Value{}, err
-		}
-		res.Blob = blob
-		res.Num = uint64(count)
 	case BooleanArrayType:
-		count, err := reader.ReadVarintUInt32()
+		err = scanBooleanArray(reader, &res)
 		if err != nil {
 			return Value{}, err
 		}
-		packedBytes := (int(count) + 7) / 8
-		blob, err := p.readBlob(reader, packedBytes)
-		if err != nil {
-			return Value{}, err
-		}
-		res.Blob = blob
-		res.Num = uint64(count)
 	case StringArrayType:
-		count, err := reader.ReadVarintUInt32()
+		err = scanStringArray(reader, &res)
 		if err != nil {
 			return Value{}, err
 		}
-		start := reader.Cursor
-		for i := uint32(0); i < count; i++ {
-			if _, err := p.readString(reader); err != nil {
-				return Value{}, err
-			}
-		}
-		res.Blob = reader.Buffer[start:reader.Cursor]
-		res.Num = uint64(count)
 	case DictionaryType:
-		keyType, err := reader.ReadUInt8()
+		err = scanDictionary(reader, &res)
 		if err != nil {
 			return Value{}, err
 		}
-		valueType, err := reader.ReadUInt8()
-		if err != nil {
-			return Value{}, err
-		}
-		count, err := reader.ReadVarintUInt32()
-		if err != nil {
-			return Value{}, err
-		}
-		start := reader.Cursor
-		for i := uint32(0); i < count; i++ {
-			if _, err := p.decode(reader, ParameterType(keyType)); err != nil {
-				return Value{}, err
-			}
-			if _, err := p.decode(reader, ParameterType(valueType)); err != nil {
-				return Value{}, err
-			}
-		}
-		res.Blob = reader.Buffer[start:reader.Cursor]
-		res.Num = uint64(count)
-		res.KeyType = ParameterType(keyType)
-		res.ValType = ParameterType(valueType)
 	case CompressedIntArrayType:
-		count, err := reader.ReadVarintUInt32()
+		err = scanCompressedIntArray(reader, &res)
 		if err != nil {
 			return Value{}, err
 		}
-		blob := make([]byte, int(count)*4)
-		for i := 0; i < int(count); i++ {
-			n, err := reader.ReadVarintInt32()
-			if err != nil {
-				return Value{}, err
-			}
-			binary.BigEndian.PutUint32(blob[i*4:], uint32(n))
-		}
-		res.Blob = blob
-		res.Num = uint64(count)
 	case CompressedLongArrayType:
-		count, err := reader.ReadVarintUInt32()
+		err = scanCompressedLongArray(reader, &res)
 		if err != nil {
 			return Value{}, err
 		}
-		blob := make([]byte, int(count)*8)
-		for i := 0; i < int(count); i++ {
-			n, err := reader.ReadVarintInt64()
-			if err != nil {
-				return Value{}, err
-			}
-			binary.BigEndian.PutUint64(blob[i*8:], uint64(n))
-		}
-		res.Blob = blob
-		res.Num = uint64(count)
 	case NilType, UnknownType:
 		break
 	default:
 		return Value{}, fmt.Errorf("unsupported type: %d", t)
 	}
 	return res, nil
-}
-
-func (p Parameter) readBlob(r *reader.Reader, n int) ([]byte, error) {
-	raw, err := r.ReadBytes(n)
-	if err != nil {
-		return nil, err
-	}
-	return raw, nil
 }

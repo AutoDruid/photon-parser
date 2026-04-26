@@ -55,7 +55,7 @@ type Parameter struct {
 	Value  `json:"value"`
 }
 
-var _ types.VersionedParameter = (*Parameter)(nil)
+var _ types.ParameterView = (*Parameter)(nil)
 
 type Value struct {
 	Kind    ParameterType `json:"kind"`
@@ -129,4 +129,41 @@ func (p Parameter) MarshalJSON() ([]byte, error) {
 	}
 
 	return json.Marshal(out)
+}
+
+func (p Parameter) Float32ArrayValue() iter.Seq2[int, float32] {
+	return nil
+}
+func (p Parameter) Int32ArrayValue() iter.Seq2[int, int32] {
+	return nil
+}
+func (p Parameter) Int64ArrayValue() iter.Seq2[int, int64] {
+	return nil
+}
+func (p Parameter) ByteArrayValue() iter.Seq2[int, byte] {
+	return nil
+}
+func (p Parameter) Int16ArrayValue() iter.Seq2[int, int16] {
+	return nil
+}
+func (p Parameter) StringArrayValue() iter.Seq2[int, string] {
+	return nil
+}
+func (p Parameter) StringValue() string {
+	return ""
+}
+func (p Parameter) Float32Value() float32 {
+	return 0
+}
+func (p Parameter) IntValue() int64 {
+	return 0
+}
+func (p Parameter) BooleanValue() bool {
+	return false
+}
+func (p Parameter) ArrayValue() iter.Seq2[int, any] {
+	return nil
+}
+func (p Parameter) BooleanArrayValue() iter.Seq2[int, bool] {
+	return nil
 }

@@ -15,7 +15,7 @@ import (
 	"michelprogram/photon-parser/internal/types"
 )
 
-type Command[P types.VersionedParameter] struct {
+type Command[P types.ParameterView] struct {
 	types.Command
 }
 
@@ -31,7 +31,7 @@ type Command[P types.VersionedParameter] struct {
 // The returned Command struct contains all header fields and the raw payload
 // in the Data field. For SendReliable commands, the Data can be further parsed
 // using the reliable package.
-func Parse[P types.VersionedParameter](ctx *context.Context[P], out *types.Command) error {
+func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Command) error {
 	cmd := Command[P]{}
 	header, err := cmd.parseHeader(ctx.Reader)
 

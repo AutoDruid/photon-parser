@@ -14,7 +14,7 @@ import (
 	"michelprogram/photon-parser/internal/types"
 )
 
-type Session[P types.VersionedParameter] struct {
+type Session[P types.ParameterView] struct {
 	types.Session
 }
 
@@ -24,7 +24,7 @@ type Session[P types.VersionedParameter] struct {
 //
 // Returns a Session struct with all fields populated including the Commands slice,
 // or an error if any part of parsing fails.
-func Parse[P types.VersionedParameter](ctx *context.Context[P], out *types.Session) error {
+func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Session) error {
 	session := Session[P]{}
 	header, err := session.parseHeader(ctx.Reader)
 	if err != nil {
@@ -50,28 +50,9 @@ func Parse[P types.VersionedParameter](ctx *context.Context[P], out *types.Sessi
 
 	out.Header = header
 
-	session.emit(ctx.Reader, ctx.Hooks)
+	session.emit(ctx.Hooks, out)
 
 	return nil
-}
-
-func (s Session[P]) emit(reader *reader.Reader, hooks *hooks.Hooks[P]) {
-	if hooks == nil {
-		return
-	}
-
-	if hooks.SyncHooks.OnSession != nil {
-		hooks.SyncHooks.OnSession(s.Session)
-	}
-
-	if hooks.AsyncHooks.OnSession == nil {
-		return
-	}
-
-	select {
-	case hooks.AsyncHooks.OnSession <- s.Session:
-	default:
-	}
 }
 
 func (s *Session[P]) parseHeader(r *reader.Reader) (types.Header, error) {
@@ -104,4 +85,23 @@ func (s *Session[P]) parseHeader(r *reader.Reader) (types.Header, error) {
 	}
 
 	return header, nil
+}
+
+func (s Session[P]) emit(hooks *hooks.Hooks[P], out *types.Session) {
+	if hooks == nil {
+		return
+	}
+
+	if hooks.SyncHooks.OnSession != nil {
+		hooks.SyncHooks.OnSession(*out)
+	}
+
+	if hooks.AsyncHooks.OnSession == nil {
+		return
+	}
+
+	select {
+	case hooks.AsyncHooks.OnSession <- *out:
+	default:
+	}
 }

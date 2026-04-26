@@ -2,12 +2,12 @@ package hooks
 
 import "michelprogram/photon-parser/internal/types"
 
-type Hooks[P types.VersionedParameter] struct {
+type Hooks[P types.ParameterView] struct {
 	types.AsyncHooks[P]
 	types.SyncHooks[P]
 }
 
-func NewHooks[P types.VersionedParameter]() *Hooks[P] {
+func NewHooks[P types.ParameterView]() *Hooks[P] {
 	return &Hooks[P]{
 		AsyncHooks: types.AsyncHooks[P]{
 			OnSession:   nil,

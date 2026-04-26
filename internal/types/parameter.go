@@ -2,9 +2,21 @@ package types
 
 import "iter"
 
-type VersionedParameter interface {
+type ParameterView interface {
 	ID() uint8
-	Float32s() iter.Seq2[int, float32]
-	Float32() float32
+
+	Float32ArrayValue() iter.Seq2[int, float32]
+	Int32ArrayValue() iter.Seq2[int, int32]
+	Int64ArrayValue() iter.Seq2[int, int64]
+	ByteArrayValue() iter.Seq2[int, byte]
+	Int16ArrayValue() iter.Seq2[int, int16]
+	StringArrayValue() iter.Seq2[int, string]
+	BooleanArrayValue() iter.Seq2[int, bool]
+	ArrayValue() iter.Seq2[int, any]
+
+	BooleanValue() bool
+	StringValue() string
+	Float32Value() float32
+	IntValue() int64
 	MarshalJSON() ([]byte, error)
 }
