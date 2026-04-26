@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"michelprogram/photon-parser/internal/context"
 	"michelprogram/photon-parser/internal/errors"
-	"michelprogram/photon-parser/internal/pool"
 	"michelprogram/photon-parser/internal/types"
 )
 
@@ -39,9 +38,8 @@ type Header struct {
 // Reliable represents a complete reliable message with header and parameters.
 // Parameters contain the actual game data as key-value pairs where each
 // parameter has an ID, type, and value.
-type Reliable[P types.VersionedParameter] struct {
+type Reliable[P types.ParameterView] struct {
 	Header
-	params     *pool.Params[P]
 	Parameters []P // Slice of decoded parameters
 }
 
@@ -68,7 +66,7 @@ func (r *Reliable[P]) String() string {
 //
 // Returns a Reliable struct with all fields populated including the Parameters slice,
 // or an error if any part of parsing fails.
-func Parse[P types.VersionedParameter](ctx *context.Context[P], length uint32) (*Reliable[P], error) {
+func Parse[P types.ParameterView](ctx *context.Context[P], length uint32) (*Reliable[P], error) {
 	reliable := Reliable[P]{}
 	header, err := reliable.parseHeader(ctx, length)
 	if err != nil {
@@ -85,15 +83,11 @@ func Parse[P types.VersionedParameter](ctx *context.Context[P], length uint32) (
 		return nil, errors.EncryptedPacket
 	}
 
-	//reliable.Parameters = pool.GetParams(header.ParameterCount)
-
 	reliable.Parameters = make([]P, header.ParameterCount)
-	//reliable.params = pool.Get(reliable.ParameterCount)
-	//reliable.Parameters = reliable.params.S
+
 	for i := 0; i < reliable.ParameterCount; i++ {
 		err := ctx.Decoders.ParameterParser.Parse(ctx.Reader, &reliable.Parameters[i], ctx.Hooks)
 		if err != nil {
-			//pool.Put(reliable.params)
 			return nil, err
 		}
 	}
@@ -156,13 +150,4 @@ func (r *Reliable[P]) parseHeader(ctx *context.Context[P], length uint32) (Heade
 	}
 
 	return header, nil
-}
-
-func (r *Reliable[P]) Release() {
-	if r == nil {
-		return
-	}
-	//pool.Put(r.params)
-	r.params = nil
-	r.Parameters = nil
 }

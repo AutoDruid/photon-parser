@@ -44,7 +44,7 @@ func TestAcknowledgeChainedWithPing(t *testing.T) {
 	if err != nil {
 		log.Println(err)
 	}
-	log.Println(sess.Commands[0].Payload.(*reliable.Reliable[v18.Parameter]).Parameters[1])
+	log.Println(sess)
 }
 
 func TestLongSendReliable(t *testing.T) {

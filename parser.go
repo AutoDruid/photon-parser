@@ -2,7 +2,6 @@ package photon
 
 import (
 	"michelprogram/photon-parser/internal/assembler"
-	"michelprogram/photon-parser/internal/command/reliable"
 	"michelprogram/photon-parser/internal/context"
 	"michelprogram/photon-parser/internal/hooks"
 	v16 "michelprogram/photon-parser/internal/parameters/v16"
@@ -12,7 +11,7 @@ import (
 	"michelprogram/photon-parser/internal/types"
 )
 
-type Parser[P types.VersionedParameter] struct {
+type Parser[P types.ParameterView] struct {
 	Ctx *context.Context[P]
 }
 
@@ -84,15 +83,4 @@ func (p *Parser[P]) OnParameterAsync(options types.HookOptions) <-chan P {
 
 func (p *Parser[P]) Close() {
 	p.Ctx.Hooks.CloseAsyncHooks()
-}
-
-func (p *Parser[P]) Release(s *Session) {
-	if s == nil {
-		return
-	}
-	for _, cmd := range s.Commands {
-		if rel, ok := cmd.Payload.(*reliable.Reliable[P]); ok {
-			rel.Release()
-		}
-	}
 }

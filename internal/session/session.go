@@ -14,7 +14,7 @@ import (
 	"michelprogram/photon-parser/internal/types"
 )
 
-type Session[P types.VersionedParameter] struct {
+type Session[P types.ParameterView] struct {
 	types.Session
 }
 
@@ -24,7 +24,7 @@ type Session[P types.VersionedParameter] struct {
 //
 // Returns a Session struct with all fields populated including the Commands slice,
 // or an error if any part of parsing fails.
-func Parse[P types.VersionedParameter](ctx *context.Context[P], out *types.Session) error {
+func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Session) error {
 	session := Session[P]{}
 	header, err := session.parseHeader(ctx.Reader)
 	if err != nil {
