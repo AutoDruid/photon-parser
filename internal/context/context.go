@@ -4,17 +4,18 @@ import (
 	"michelprogram/photon-parser/internal/assembler"
 	"michelprogram/photon-parser/internal/hooks"
 	"michelprogram/photon-parser/internal/reader"
+	"michelprogram/photon-parser/internal/types"
 )
 
-type Context struct {
+type Context[P types.ParameterView] struct {
 	Reader    *reader.Reader
 	Assembler *assembler.Assembler
-	Hooks     *hooks.Hooks
-	Decoders  Decoders
+	Hooks     *hooks.Hooks[P]
+	Decoders  Decoders[P]
 }
 
-func NewContext(reader *reader.Reader, assembler *assembler.Assembler, hooks *hooks.Hooks, decoders Decoders) *Context {
-	return &Context{
+func NewContext[P types.ParameterView](reader *reader.Reader, assembler *assembler.Assembler, hooks *hooks.Hooks[P], decoders Decoders[P]) *Context[P] {
+	return &Context[P]{
 		Reader:    reader,
 		Assembler: assembler,
 		Hooks:     hooks,

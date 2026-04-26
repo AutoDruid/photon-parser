@@ -1,19 +1,12 @@
 package v16
 
 import (
-	"encoding/binary"
-	"fmt"
 	"michelprogram/photon-parser/internal/context"
 	"michelprogram/photon-parser/internal/hooks"
 	"michelprogram/photon-parser/internal/reader"
-	"michelprogram/photon-parser/internal/types"
 )
 
-type Parameter struct {
-	types.Parameter
-}
-
-var _ context.ParameterParser = (*Parameter)(nil)
+var _ context.ParameterParser[Parameter] = (*Parameter)(nil)
 
 // Parse reads a complete parameter from the reader.
 // Format: Header (1 byte ID + 1 byte Type), followed by the typed value.
@@ -32,7 +25,7 @@ var _ context.ParameterParser = (*Parameter)(nil)
 //	    return err
 //	}
 //	fmt.Printf("Parameter %d has value: %v\n", param.ID, param.Value)
-func (p *Parameter) Parse(reader *reader.Reader, out *types.Parameter, hooks *hooks.Hooks) error {
+func (p *Parameter) Parse(reader *reader.Reader, out *Parameter, hooks *hooks.Hooks[Parameter]) error {
 
 	header, err := p.parseHeader(reader)
 	if err != nil {
@@ -45,7 +38,7 @@ func (p *Parameter) Parse(reader *reader.Reader, out *types.Parameter, hooks *ho
 		return err
 	}
 
-	out.ParameterHeader = header
+	out.Header = header
 	out.Value = value
 
 	p.emit(reader, hooks)
@@ -53,13 +46,13 @@ func (p *Parameter) Parse(reader *reader.Reader, out *types.Parameter, hooks *ho
 	return nil
 }
 
-func (p Parameter) emit(reader *reader.Reader, hooks *hooks.Hooks) {
+func (p Parameter) emit(reader *reader.Reader, hooks *hooks.Hooks[Parameter]) {
 	if hooks == nil {
 		return
 	}
 
 	if hooks.SyncHooks.OnParameter != nil {
-		hooks.SyncHooks.OnParameter(p.Parameter)
+		hooks.SyncHooks.OnParameter(p)
 	}
 
 	if hooks.AsyncHooks.OnParameter == nil {
@@ -67,26 +60,26 @@ func (p Parameter) emit(reader *reader.Reader, hooks *hooks.Hooks) {
 	}
 
 	select {
-	case hooks.AsyncHooks.OnParameter <- p.Parameter:
+	case hooks.AsyncHooks.OnParameter <- p:
 	default:
 	}
 }
 
-func (p *Parameter) parseHeader(r *reader.Reader) (types.ParameterHeader, error) {
+func (p *Parameter) parseHeader(r *reader.Reader) (Header, error) {
 	var err error
-	var header types.ParameterHeader
+	var header Header
 
 	header.ID, err = r.ReadUInt8()
 	if err != nil {
-		return types.ParameterHeader{}, err
+		return Header{}, err
 	}
 
 	b, err := r.ReadUInt8()
 	if err != nil {
-		return types.ParameterHeader{}, err
+		return Header{}, err
 	}
 
-	header.Type = types.ParameterType(b)
+	header.Type = ParameterType(b)
 
 	return header, nil
 }
@@ -101,8 +94,8 @@ func (p *Parameter) parseHeader(r *reader.Reader) (types.ParameterHeader, error)
 //
 // For NilType and UnknownType, returns nil without error.
 // For unsupported type codes, returns an error.
-func (p Parameter) decode(reader *reader.Reader, ttype types.ParameterType) (any, error) {
-	switch ttype {
+func (p Parameter) decode(reader *reader.Reader, ttype ParameterType) (Value, error) {
+	/* switch ttype {
 	case types.Int8Type:
 		return reader.ReadInt8()
 	case types.Int16Type:
@@ -135,11 +128,6 @@ func (p Parameter) decode(reader *reader.Reader, ttype types.ParameterType) (any
 		return nil, nil
 	default:
 		return nil, fmt.Errorf("unsupported type: 0x%02x", ttype)
-	}
-}
-
-// String returns a human-readable representation of the parameter.
-// Format: "ID: <id>\nType: <type>\nValue: <value>\n"
-func (p Parameter) String() string {
-	return fmt.Sprintf("ID: %d\nType: %d\nValue: %v\n", p.ID, p.Type, p.Value)
+	} */
+	return Value{}, nil
 }

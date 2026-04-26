@@ -220,6 +220,7 @@ func (r *Reader) ReadString(n int) (string, error) {
 	}
 
 	str := string(r.Buffer[r.Cursor:size])
+	//str := unsafe.String(&r.Buffer[r.Cursor], n)
 	r.Cursor = size
 
 	return str, nil

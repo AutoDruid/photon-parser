@@ -1,20 +1,13 @@
 package v18
 
 import (
-	"encoding/binary"
 	"fmt"
-	"log"
 	"michelprogram/photon-parser/internal/context"
 	"michelprogram/photon-parser/internal/hooks"
 	"michelprogram/photon-parser/internal/reader"
-	"michelprogram/photon-parser/internal/types"
 )
 
-type Parameter struct {
-	types.Parameter
-}
-
-var _ context.ParameterParser = (*Parameter)(nil)
+var _ context.ParameterParser[Parameter] = (*Parameter)(nil)
 
 // Parse reads a complete parameter from the reader.
 // Format: Header (1 byte ID + 1 byte Type), followed by the typed value.
@@ -33,29 +26,28 @@ var _ context.ParameterParser = (*Parameter)(nil)
 //	    return err
 //	}
 //	fmt.Printf("Parameter %d has value: %v\n", param.ID, param.Value)
-func (p *Parameter) Parse(reader *reader.Reader, out *types.Parameter, hooks *hooks.Hooks) error {
+func (p *Parameter) Parse(reader *reader.Reader, out *Parameter, hooks *hooks.Hooks[Parameter]) error {
 
 	header, err := p.parseHeader(reader)
 	if err != nil {
 		return err
 	}
 
-	value, err := p.decode(reader, ParameterType(header.Type))
+	value, err := scanPayload(reader, header.Type)
 
 	if err != nil {
-		log.Println("err on parameter type", header.Type, err)
 		return err
 	}
 
-	out.ParameterHeader = header
+	out.Header = header
 	out.Value = value
 
-	p.emit(reader, hooks, out)
+	p.emit(hooks, out)
 
 	return nil
 }
 
-func (p Parameter) emit(reader *reader.Reader, hooks *hooks.Hooks, out *types.Parameter) {
+func (p Parameter) emit(hooks *hooks.Hooks[Parameter], out *Parameter) {
 	if hooks == nil {
 		return
 	}
@@ -74,134 +66,155 @@ func (p Parameter) emit(reader *reader.Reader, hooks *hooks.Hooks, out *types.Pa
 	}
 }
 
-func (p *Parameter) parseHeader(r *reader.Reader) (types.ParameterHeader, error) {
+func (p *Parameter) parseHeader(r *reader.Reader) (Header, error) {
 	var err error
-	var header types.ParameterHeader
+	var header Header
 
 	header.ID, err = r.ReadUInt8()
 	if err != nil {
-		return types.ParameterHeader{}, err
+		return Header{}, err
 	}
 
 	b, err := r.ReadUInt8()
 	if err != nil {
-		return types.ParameterHeader{}, err
+		return Header{}, err
 	}
 
-	header.Type = types.ParameterType(b)
+	header.Type = ParameterType(b)
 
 	return header, nil
 }
 
-// Decode reads a value of the specified Photon Protocol16 type from the reader.
-// It dispatches to the appropriate type-specific reader based on ttype.
-// Returns the decoded value as any, or an error if the type is unsupported
-// or if reading fails.
-//
-// Supported types include all primitives (int8, int16, int32, int64, float32, float64,
-// string, boolean), arrays, dictionaries, and hashtables.
-//
-// For NilType and UnknownType, returns nil without error.
-// For unsupported type codes, returns an error.
-func (p Parameter) decode(reader *reader.Reader, ttype ParameterType) (any, error) {
-	switch ttype {
-	case Int8Positive:
-		value, err := reader.ReadByte()
-		if err != nil {
-			return nil, err
-		}
-		return int32(value), nil
-	case Int8Negative:
-		value, err := reader.ReadByte()
-		if err != nil {
-			return nil, err
-		}
-		return -int32(value), nil
-	case Int16Type:
-		return reader.ReadInt16(binary.LittleEndian)
-	case Int16Positive:
-		value, err := reader.ReadUInt16(binary.LittleEndian)
-		if err != nil {
-			return nil, err
-		}
-		return int32(value), nil
-	case Int16Negative:
-		value, err := reader.ReadUInt16(binary.LittleEndian)
-		if err != nil {
-			return nil, err
-		}
-		return -int32(value), nil
-	case Long8Positive:
-		value, err := reader.ReadByte()
-		if err != nil {
-			return nil, err
-		}
-		return int64(value), nil
-	case Long8Negative:
-		value, err := reader.ReadByte()
-		if err != nil {
-			return nil, err
-		}
-		return -int64(value), nil
-	case Long16Positive:
-		value, err := reader.ReadUInt16(binary.LittleEndian)
-		if err != nil {
-			return nil, err
-		}
-		return int64(value), nil
-	case Long16Negative:
-		value, err := reader.ReadUInt16(binary.LittleEndian)
-		if err != nil {
-			return nil, err
-		}
-		return -int64(value), nil
-	case StringType:
-		return p.readString(reader)
-	case CompressedInt32Type:
-		return reader.ReadVarintInt32()
-	case CompressedInt64Type:
-		return reader.ReadVarintInt64()
-	case Float32ArrayType:
-		return p.readFloatArray(reader)
-	case Float32Type:
-		return reader.ReadFloat32(binary.BigEndian)
-	case Int8Type:
-		return reader.ReadInt8()
-	case BooleanTrueType:
-		return true, nil
-	case BooleanFalseType:
-		return false, nil
-	case IntZeroType:
-		return int32(0), nil
-	case ShortZeroType:
-		return int16(0), nil
-	case ByteZeroType:
-		return byte(0), nil
-	case ArrayType:
-		return p.readArray(reader)
-	case ShortArrayType:
-		return p.readInt16Array(reader)
-	case ByteArrayType:
-		return p.readInt8Array(reader)
-	case BooleanArrayType:
-		return p.readBooleanArray(reader)
-	case StringArrayType:
-		return p.readStringArray(reader)
-	case DictionaryType:
-		return p.readDictionary(reader)
-	case CompressedIntArrayType:
-		return p.readCompressedInt32Array(reader)
-	case CompressedLongArrayType:
-		return p.readCompressedInt64Array(reader)
-	case NilType, UnknownType:
-		return nil, nil
-	default:
-		return nil, fmt.Errorf("unsupported type: %d", ttype)
-	}
-}
+func scanPayload(reader *reader.Reader, t ParameterType) (Value, error) {
+	var err error
+	var res Value = Value{Kind: t}
 
-// String returns a human-readable representation of the parameter.
-// Format: "ID: <id>\nType: <type>\nValue: <value>\n"
-func (p Parameter) String() string {
-	return fmt.Sprintf("ID: %d\nType: %d\nValue: %v\n", p.ID, p.Type, p.Value)
+	switch t {
+	case Int8Type:
+		err = scanInt8(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Int8Positive:
+		err = scanInt8Positive(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Int8Negative:
+		err = scanInt8Negative(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Int16Type:
+		err = scanInt16Type(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Int16Positive:
+		err = scanInt16Positive(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Int16Negative:
+		err = scanInt16Negative(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Long8Positive:
+		err = scanLong8Positive(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Long8Negative:
+		err = scanLong8Negative(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Long16Positive:
+		err = scanLong16Positive(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Long16Negative:
+		err = scanLong16Negative(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case StringType:
+		err = scanString(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case CompressedInt32Type:
+		err = scanCompressedInt32(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case CompressedInt64Type:
+		err = scanCompressedInt64(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Float32ArrayType:
+		err = scanFloat32Array(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Float32Type:
+		err = scanFloat32(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case BooleanTrueType:
+		res.Num = 1
+	case BooleanFalseType:
+		res.Num = 0
+	case IntZeroType, ShortZeroType, LongZeroType, ByteZeroType:
+		break
+	case ArrayType:
+		err = scanArray(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case ShortArrayType:
+		err = scanShortArray(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case ByteArrayType:
+		err = scanByteArray(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case BooleanArrayType:
+		err = scanBooleanArray(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case StringArrayType:
+		err = scanStringArray(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case DictionaryType:
+		err = scanDictionary(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case CompressedIntArrayType:
+		err = scanCompressedIntArray(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case CompressedLongArrayType:
+		err = scanCompressedLongArray(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case NilType, UnknownType:
+		break
+	default:
+		return Value{}, fmt.Errorf("unsupported type: %d", t)
+	}
+	return res, nil
 }

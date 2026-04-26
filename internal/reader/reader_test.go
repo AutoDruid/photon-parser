@@ -1,11 +1,133 @@
 package reader_test
 
 import (
+	"bytes"
 	"encoding/binary"
 	"math"
 	"michelprogram/photon-parser/internal/reader"
 	"testing"
 )
+
+func TestReadRemaining(t *testing.T) {
+	tests := []struct {
+		name       string
+		input      []byte
+		advance    int
+		want       []byte
+		wantCursor int
+	}{
+		{
+			name:       "all bytes from start",
+			input:      []byte{0x01, 0x02, 0x03},
+			want:       []byte{0x01, 0x02, 0x03},
+			wantCursor: 3,
+		},
+		{
+			name:       "remaining bytes after cursor advances",
+			input:      []byte{0x01, 0x02, 0x03, 0x04},
+			advance:    2,
+			want:       []byte{0x03, 0x04},
+			wantCursor: 4,
+		},
+		{
+			name:       "no remaining bytes",
+			input:      []byte{0x01, 0x02},
+			advance:    2,
+			want:       []byte{},
+			wantCursor: 2,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := reader.NewReader(tt.input)
+
+			for i := 0; i < tt.advance; i++ {
+				if _, err := r.ReadByte(); err != nil {
+					t.Fatalf("ReadByte() error = %v", err)
+				}
+			}
+
+			got := r.ReadRemaining()
+
+			if !bytes.Equal(got, tt.want) {
+				t.Errorf("ReadRemaining() = %v, want %v", got, tt.want)
+			}
+
+			if r.Cursor != tt.wantCursor {
+				t.Errorf("Cursor = %d, want %d", r.Cursor, tt.wantCursor)
+			}
+		})
+	}
+}
+
+func TestReadBytes(t *testing.T) {
+	tests := []struct {
+		name       string
+		input      []byte
+		advance    int
+		size       int
+		want       []byte
+		wantCursor int
+		wantErr    bool
+	}{
+		{
+			name:       "empty byte slice",
+			input:      []byte{},
+			size:       0,
+			want:       []byte{},
+			wantCursor: 0,
+		},
+		{
+			name:       "read exact bytes",
+			input:      []byte{0x01, 0x02, 0x03},
+			size:       3,
+			want:       []byte{0x01, 0x02, 0x03},
+			wantCursor: 3,
+		},
+		{
+			name:       "read bytes after cursor advances",
+			input:      []byte{0x01, 0x02, 0x03, 0x04},
+			advance:    1,
+			size:       2,
+			want:       []byte{0x02, 0x03},
+			wantCursor: 3,
+		},
+		{
+			name:       "not enough bytes",
+			input:      []byte{0x01, 0x02},
+			size:       3,
+			wantErr:    true,
+			wantCursor: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := reader.NewReader(tt.input)
+
+			for i := 0; i < tt.advance; i++ {
+				if _, err := r.ReadByte(); err != nil {
+					t.Fatalf("ReadByte() error = %v", err)
+				}
+			}
+
+			got, err := r.ReadBytes(tt.size)
+
+			if (err != nil) != tt.wantErr {
+				t.Fatalf("ReadBytes() error = %v, wantErr %v", err, tt.wantErr)
+			}
+
+			if !tt.wantErr && !bytes.Equal(got, tt.want) {
+				t.Errorf("ReadBytes() = %v, want %v", got, tt.want)
+			}
+
+			if r.Cursor != tt.wantCursor {
+				t.Errorf("Cursor = %d, want %d", r.Cursor, tt.wantCursor)
+			}
+		})
+	}
+}
 
 func TestReadByte(t *testing.T) {
 	tests := []struct {

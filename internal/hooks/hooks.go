@@ -2,19 +2,19 @@ package hooks
 
 import "michelprogram/photon-parser/internal/types"
 
-type Hooks struct {
-	types.AsyncHooks
-	types.SyncHooks
+type Hooks[P types.ParameterView] struct {
+	types.AsyncHooks[P]
+	types.SyncHooks[P]
 }
 
-func NewHooks() *Hooks {
-	return &Hooks{
-		AsyncHooks: types.AsyncHooks{
+func NewHooks[P types.ParameterView]() *Hooks[P] {
+	return &Hooks[P]{
+		AsyncHooks: types.AsyncHooks[P]{
 			OnSession:   nil,
 			OnCommand:   nil,
 			OnParameter: nil,
 		},
-		SyncHooks: types.SyncHooks{
+		SyncHooks: types.SyncHooks[P]{
 			OnSession:   nil,
 			OnCommand:   nil,
 			OnParameter: nil,
@@ -22,7 +22,7 @@ func NewHooks() *Hooks {
 	}
 }
 
-func ensureChan[T types.Hookable](slot *chan T, size uint16) <-chan T {
+func ensureChan[T any](slot *chan T, size uint16) <-chan T {
 	var minSize uint16 = 1
 
 	if size != 0 {
@@ -34,17 +34,17 @@ func ensureChan[T types.Hookable](slot *chan T, size uint16) <-chan T {
 	}
 	return *slot
 }
-func (h *Hooks) OnSessionAsync(options types.HookOptions) <-chan types.Session {
+func (h *Hooks[P]) OnSessionAsync(options types.HookOptions) <-chan types.Session {
 	return ensureChan(&h.AsyncHooks.OnSession, options.Size)
 }
-func (h *Hooks) OnCommandAsync(options types.HookOptions) <-chan types.Command {
+func (h *Hooks[P]) OnCommandAsync(options types.HookOptions) <-chan types.Command {
 	return ensureChan(&h.AsyncHooks.OnCommand, options.Size)
 }
-func (h *Hooks) OnParameterAsync(options types.HookOptions) <-chan types.Parameter {
+func (h *Hooks[P]) OnParameterAsync(options types.HookOptions) <-chan P {
 	return ensureChan(&h.AsyncHooks.OnParameter, options.Size)
 }
 
-func (h *Hooks) CloseAsyncHooks() {
+func (h *Hooks[P]) CloseAsyncHooks() {
 
 	if h.AsyncHooks.OnSession != nil {
 		close(h.AsyncHooks.OnSession)

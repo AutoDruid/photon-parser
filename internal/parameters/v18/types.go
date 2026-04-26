@@ -11,7 +11,7 @@ const (
 	Float64Type         ParameterType = 6
 	StringType          ParameterType = 7 //Tested
 	NilType             ParameterType = 8
-	CompressedInt32Type ParameterType = 9 //Tested
+	CompressedInt32Type ParameterType = 9  //Tested
 	CompressedInt64Type ParameterType = 10 //Tested
 
 	Int8Positive  ParameterType = 11 // 1 byte unsigned, cast to +int32

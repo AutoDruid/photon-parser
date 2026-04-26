@@ -11,17 +11,17 @@ import (
 	"michelprogram/photon-parser/internal/types"
 )
 
-type Parser struct {
-	Ctx *context.Context
+type Parser[P types.ParameterView] struct {
+	Ctx *context.Context[P]
 }
 
-func NewParserV16() *Parser {
-	return &Parser{
-		Ctx: context.NewContext(
+func NewParserV16() *Parser[v16.Parameter] {
+	return &Parser[v16.Parameter]{
+		Ctx: context.NewContext[v16.Parameter](
 			reader.NewReader(nil),
 			assembler.NewAssembler(),
-			hooks.NewHooks(),
-			context.Decoders{
+			hooks.NewHooks[v16.Parameter](),
+			context.Decoders[v16.Parameter]{
 				ParameterParser:              &v16.Parameter{},
 				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
 			},
@@ -29,13 +29,13 @@ func NewParserV16() *Parser {
 	}
 }
 
-func NewParserV18() *Parser {
-	return &Parser{
+func NewParserV18() *Parser[v18.Parameter] {
+	return &Parser[v18.Parameter]{
 		Ctx: context.NewContext(
 			reader.NewReader(nil),
 			assembler.NewAssembler(),
-			hooks.NewHooks(),
-			context.Decoders{
+			hooks.NewHooks[v18.Parameter](),
+			context.Decoders[v18.Parameter]{
 				ParameterParser:              &v18.Parameter{},
 				ReliableHeaderParameterCount: &v18.ReliableHeaderParameterCountV18{},
 			},
@@ -43,42 +43,44 @@ func NewParserV18() *Parser {
 	}
 }
 
-func (p *Parser) ParsePacket(data []byte) (*Session, error) {
+func (p *Parser[P]) ParsePacket(data []byte) (*Session, error) {
 
 	p.Ctx.Reader.Reset(data)
 
-	sess, err := session.Parse(p.Ctx)
+	var sess Session
+
+	err := session.Parse(p.Ctx, &sess)
 	if err != nil {
 		return nil, err
 	}
 
-	return &sess.Session, nil
+	return &sess, nil
 }
 
-func (p *Parser) OnSessionSync(fn func(Session)) {
+func (p *Parser[P]) OnSessionSync(fn func(Session)) {
 	p.Ctx.Hooks.SyncHooks.OnSession = fn
 }
 
-func (p *Parser) OnCommandSync(fn func(Command)) {
+func (p *Parser[P]) OnCommandSync(fn func(Command)) {
 	p.Ctx.Hooks.SyncHooks.OnCommand = fn
 }
 
-func (p *Parser) OnParameterSync(fn func(Parameter)) {
+func (p *Parser[P]) OnParameterSync(fn func(P)) {
 	p.Ctx.Hooks.SyncHooks.OnParameter = fn
 }
 
-func (p *Parser) OnSessionAsync(options types.HookOptions) <-chan Session {
+func (p *Parser[P]) OnSessionAsync(options types.HookOptions) <-chan Session {
 	return p.Ctx.Hooks.OnSessionAsync(options)
 }
 
-func (p *Parser) OnCommandAsync(options types.HookOptions) <-chan Command {
+func (p *Parser[P]) OnCommandAsync(options types.HookOptions) <-chan Command {
 	return p.Ctx.Hooks.OnCommandAsync(options)
 }
 
-func (p *Parser) OnParameterAsync(options types.HookOptions) <-chan Parameter {
+func (p *Parser[P]) OnParameterAsync(options types.HookOptions) <-chan P {
 	return p.Ctx.Hooks.OnParameterAsync(options)
 }
 
-func (p *Parser) Close() {
+func (p *Parser[P]) Close() {
 	p.Ctx.Hooks.CloseAsyncHooks()
 }
