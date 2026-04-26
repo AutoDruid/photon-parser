@@ -85,7 +85,8 @@ func (p Parameter) Int16ArrayValue() iter.Seq2[int, int16] {
 	}
 	return func(yield func(int, int16) bool) {
 		for i := 0; i < n; i++ {
-			if !yield(i, int16(p.Blob[(i+1)*2])<<8|int16(p.Blob[i*2])) {
+			value := int16(binary.LittleEndian.Uint16(p.Blob[i*2 : i*2+2]))
+			if !yield(i, value) {
 				return
 			}
 		}

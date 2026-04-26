@@ -18,14 +18,28 @@ func (p Parameter) Float32Value() float32 {
 
 func (p Parameter) IntValue() int64 {
 	switch p.Value.Kind {
-	case Int8Type, Int8Positive, Int8Negative,
-		Int16Type, Int16Positive, Int16Negative,
-		CompressedInt32Type,
-		Long8Positive, Long8Negative,
-		Long16Positive, Long16Negative,
-		CompressedInt64Type,
-		IntZeroType, ShortZeroType, LongZeroType, ByteZeroType:
+	case Int8Type:
+		return int64(int8(uint8(p.Value.Num)))
+	case Int8Positive:
+		return int64(uint8(p.Value.Num))
+	case Int8Negative:
+		return int64(int32(p.Value.Num))
+	case Int16Type:
+		return int64(int16(uint16(p.Value.Num)))
+	case Int16Positive:
+		return int64(uint16(p.Value.Num))
+	case Int16Negative, CompressedInt32Type:
+		return int64(int32(uint32(p.Value.Num)))
+	case Long8Positive:
+		return int64(uint8(p.Value.Num))
+	case Long8Negative:
 		return int64(p.Value.Num)
+	case Long16Positive:
+		return int64(uint16(p.Value.Num))
+	case Long16Negative, CompressedInt64Type:
+		return int64(p.Value.Num)
+	case IntZeroType, ShortZeroType, LongZeroType, ByteZeroType:
+		return 0
 	default:
 		return 0
 	}

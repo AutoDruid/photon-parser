@@ -16,6 +16,3 @@ type HookOptions struct {
 	Size uint16
 }
 
-type Hookable interface {
-	Session | Command
-}

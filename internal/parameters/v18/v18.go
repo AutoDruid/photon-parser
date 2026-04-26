@@ -2,7 +2,6 @@ package v18
 
 import (
 	"encoding/json"
-	"fmt"
 	"michelprogram/photon-parser/internal/types"
 )
 
@@ -33,19 +32,6 @@ type Value struct {
 
 func (p Parameter) ID() uint8 {
 	return p.Header.ID
-}
-
-func (p Parameter) String() string {
-	param := struct {
-		Parameter `json:"parameter"`
-	}{
-		Parameter: p,
-	}
-	b, err := json.MarshalIndent(param, "", "  ")
-	if err != nil {
-		fmt.Println("error:", err)
-	}
-	return string(b)
 }
 
 func (p Parameter) MarshalJSON() ([]byte, error) {

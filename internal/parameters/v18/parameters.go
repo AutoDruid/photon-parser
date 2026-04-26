@@ -2,7 +2,6 @@ package v18
 
 import (
 	"fmt"
-	"log"
 	"michelprogram/photon-parser/internal/context"
 	"michelprogram/photon-parser/internal/hooks"
 	"michelprogram/photon-parser/internal/reader"
@@ -37,7 +36,6 @@ func (p *Parameter) Parse(reader *reader.Reader, out *Parameter, hooks *hooks.Ho
 	value, err := scanPayload(reader, header.Type)
 
 	if err != nil {
-		log.Println("err on parameter type", header.Type, err)
 		return err
 	}
 
