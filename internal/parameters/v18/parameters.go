@@ -42,12 +42,12 @@ func (p *Parameter) Parse(reader *reader.Reader, out *Parameter, hooks *hooks.Ho
 	out.Header = header
 	out.Value = value
 
-	//p.emit(reader, hooks, out)
+	p.emit(hooks, out)
 
 	return nil
 }
 
-func (p Parameter) emit(reader *reader.Reader, hooks *hooks.Hooks[Parameter], out *Parameter) {
+func (p Parameter) emit(hooks *hooks.Hooks[Parameter], out *Parameter) {
 	if hooks == nil {
 		return
 	}
@@ -169,7 +169,7 @@ func scanPayload(reader *reader.Reader, t ParameterType) (Value, error) {
 		res.Num = 1
 	case BooleanFalseType:
 		res.Num = 0
-	case IntZeroType, ShortZeroType, ByteZeroType:
+	case IntZeroType, ShortZeroType, LongZeroType, ByteZeroType:
 		break
 	case ArrayType:
 		err = scanArray(reader, &res)

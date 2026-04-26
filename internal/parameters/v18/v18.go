@@ -44,16 +44,37 @@ func (p Parameter) MarshalJSON() ([]byte, error) {
 		Alias: Alias(p),
 	}
 
-	// Example: special behavior by parameter kind/type
 	switch p.Kind {
-	case 5:
+	case Int8Type, Int8Positive, Int8Negative,
+		Int16Type, Int16Positive, Int16Negative,
+		CompressedInt32Type,
+		Long8Positive, Long8Negative,
+		Long16Positive, Long16Negative,
+		CompressedInt64Type,
+		IntZeroType, ShortZeroType, LongZeroType, ByteZeroType:
+		out.Decoded = p.IntValue()
+	case StringType:
+		out.Decoded = p.StringValue()
+	case Float32Type:
 		out.Decoded = p.Float32Value()
-	case 69:
-		res := make([]float32, p.Num)
-		for index, fl := range p.Float32ArrayValue() {
-			res[index] = fl
-		}
-		out.Decoded = res
+	case BooleanType:
+		out.Decoded = p.BooleanValue()
+	case Float32ArrayType:
+		out.Decoded = collect(p.Float32ArrayValue(), p.Num)
+	case CompressedIntArrayType:
+		out.Decoded = collect(p.Int32ArrayValue(), p.Num)
+	case CompressedLongArrayType:
+		out.Decoded = collect(p.Int64ArrayValue(), p.Num)
+	case ByteArrayType:
+		out.Decoded = collect(p.ByteArrayValue(), p.Num)
+	case ShortArrayType:
+		out.Decoded = collect(p.Int16ArrayValue(), p.Num)
+	case StringArrayType:
+		out.Decoded = collect(p.StringArrayValue(), p.Num)
+	case ArrayType:
+		out.Decoded = collect(p.ArrayValue(), p.Num)
+	case BooleanArrayType:
+		out.Decoded = collect(p.BooleanArrayValue(), p.Num)
 	default:
 		out.Decoded = p.Num
 	}

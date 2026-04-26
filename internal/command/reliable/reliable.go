@@ -2,7 +2,6 @@ package reliable
 
 import (
 	"encoding/binary"
-	"encoding/json"
 	"michelprogram/photon-parser/internal/context"
 	"michelprogram/photon-parser/internal/errors"
 	"michelprogram/photon-parser/internal/types"
@@ -41,19 +40,6 @@ type Header struct {
 type Reliable[P types.ParameterView] struct {
 	Header
 	Parameters []P // Slice of decoded parameters
-}
-
-func (r *Reliable[P]) String() string {
-	reliable := struct {
-		Reliable[P] `json:"reliable"`
-	}{
-		Reliable: *r,
-	}
-	b, err := json.MarshalIndent(reliable, "", "  ")
-	if err != nil {
-		return ""
-	}
-	return string(b)
 }
 
 // ParseFromReader parses a Photon reliable message from a parser.Reader.

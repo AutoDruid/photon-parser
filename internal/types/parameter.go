@@ -8,10 +8,13 @@ type ParameterView interface {
 	Float32ArrayValue() iter.Seq2[int, float32]
 	Int32ArrayValue() iter.Seq2[int, int32]
 	Int64ArrayValue() iter.Seq2[int, int64]
-	Int8ArrayValue() iter.Seq2[int, int8]
+	ByteArrayValue() iter.Seq2[int, byte]
 	Int16ArrayValue() iter.Seq2[int, int16]
 	StringArrayValue() iter.Seq2[int, string]
+	BooleanArrayValue() iter.Seq2[int, bool]
+	ArrayValue() iter.Seq2[int, any]
 
+	BooleanValue() bool
 	StringValue() string
 	Float32Value() float32
 	IntValue() int64

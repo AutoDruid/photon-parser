@@ -44,3 +44,10 @@ func (p Parameter) IntValue() int64 {
 		return 0
 	}
 }
+
+func (p Parameter) BooleanValue() bool {
+	if p.Kind != BooleanTrueType && p.Kind != BooleanFalseType && p.Kind != BooleanType {
+		return false
+	}
+	return p.Num == 1
+}

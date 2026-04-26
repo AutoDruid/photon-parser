@@ -111,22 +111,21 @@ func scanCompressedLongArray(reader *reader.Reader, value *Value) error {
 }
 
 func scanArray(r *reader.Reader, value *Value) error {
-    count, err := r.ReadVarintUInt32()
-    if err != nil {
-        return err
-    }
-    start := r.Cursor
-    for i := uint32(0); i < count; i++ {
-        ttype, err := r.ReadByte()
-        if err != nil {
-            return err
-        }
-        if _, err := scanPayload(r, ParameterType(ttype)); err != nil {
-            return err
-        }
-    }
-    value.Blob = r.Buffer[start:r.Cursor]
-    value.Num = uint64(count)
-    return nil
+	count, err := r.ReadVarintUInt32()
+	if err != nil {
+		return err
+	}
+	start := r.Cursor
+	for i := uint32(0); i < count; i++ {
+		ttype, err := r.ReadByte()
+		if err != nil {
+			return err
+		}
+		if _, err := scanPayload(r, ParameterType(ttype)); err != nil {
+			return err
+		}
+	}
+	value.Blob = r.Buffer[start:r.Cursor]
+	value.Num = uint64(count)
+	return nil
 }
-

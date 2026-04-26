@@ -399,3 +399,117 @@ func TestParseCompressedInt32AndInt64ParameterAndAccessor(t *testing.T) {
 		})
 	}
 }
+
+func TestParseZeroTypeParameterAndAccessor(t *testing.T) {
+	tests := []struct {
+		name      string
+		input     []byte
+		wantID    uint8
+		wantKind  v18.ParameterType
+		wantValue int64
+	}{
+		{
+			name:      "int zero",
+			input:     []byte{0x01, byte(v18.IntZeroType)},
+			wantID:    1,
+			wantKind:  v18.IntZeroType,
+			wantValue: 0,
+		},
+		{
+			name:      "short zero",
+			input:     []byte{0x02, byte(v18.ShortZeroType)},
+			wantID:    2,
+			wantKind:  v18.ShortZeroType,
+			wantValue: 0,
+		},
+		{
+			name:      "long zero",
+			input:     []byte{0x03, byte(v18.LongZeroType)},
+			wantID:    3,
+			wantKind:  v18.LongZeroType,
+			wantValue: 0,
+		},
+		{
+			name:      "byte zero",
+			input:     []byte{0x04, byte(v18.ByteZeroType)},
+			wantID:    4,
+			wantKind:  v18.ByteZeroType,
+			wantValue: 0,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := reader.NewReader(tt.input)
+
+			var parser v18.Parameter
+			var got v18.Parameter
+
+			if err := parser.Parse(r, &got, nil); err != nil {
+				t.Fatalf("Parse() error = %v", err)
+			}
+
+			if got.ID() != tt.wantID {
+				t.Errorf("ID() = %d, want %d", got.ID(), tt.wantID)
+			}
+
+			if got.Kind != tt.wantKind {
+				t.Errorf("Kind = %d, want %d", got.Kind, tt.wantKind)
+			}
+
+			if got.IntValue() != tt.wantValue {
+				t.Errorf("IntValue() = %d, want %d", got.IntValue(), tt.wantValue)
+			}
+		})
+	}
+}
+
+func TestParseBooleanParameterAndAccessor(t *testing.T) {
+	tests := []struct {
+		name      string
+		input     []byte
+		wantID    uint8
+		wantKind  v18.ParameterType
+		wantValue bool
+	}{
+		{
+			name:      "boolean true",
+			input:     []byte{0x01, byte(v18.BooleanTrueType)},
+			wantID:    1,
+			wantKind:  v18.BooleanTrueType,
+			wantValue: true,
+		},
+		{
+			name:      "boolean false",
+			input:     []byte{0x02, byte(v18.BooleanFalseType)},
+			wantID:    2,
+			wantKind:  v18.BooleanFalseType,
+			wantValue: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := reader.NewReader(tt.input)
+
+			var parser v18.Parameter
+			var got v18.Parameter
+
+			if err := parser.Parse(r, &got, nil); err != nil {
+				t.Fatalf("Parse() error = %v", err)
+			}
+
+			if got.ID() != tt.wantID {
+				t.Errorf("ID() = %d, want %d", got.ID(), tt.wantID)
+			}
+
+			if got.Kind != tt.wantKind {
+				t.Errorf("Kind = %d, want %d", got.Kind, tt.wantKind)
+			}
+
+			if got.BooleanValue() != tt.wantValue {
+				t.Errorf("BooleanValue() = %t, want %t", got.BooleanValue(), tt.wantValue)
+			}
+		})
+	}
+}

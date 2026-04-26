@@ -140,7 +140,7 @@ func (p Parameter) Int32ArrayValue() iter.Seq2[int, int32] {
 func (p Parameter) Int64ArrayValue() iter.Seq2[int, int64] {
 	return nil
 }
-func (p Parameter) Int8ArrayValue() iter.Seq2[int, int8] {
+func (p Parameter) ByteArrayValue() iter.Seq2[int, byte] {
 	return nil
 }
 func (p Parameter) Int16ArrayValue() iter.Seq2[int, int16] {
@@ -157,4 +157,13 @@ func (p Parameter) Float32Value() float32 {
 }
 func (p Parameter) IntValue() int64 {
 	return 0
+}
+func (p Parameter) BooleanValue() bool {
+	return false
+}
+func (p Parameter) ArrayValue() iter.Seq2[int, any] {
+	return nil
+}
+func (p Parameter) BooleanArrayValue() iter.Seq2[int, bool] {
+	return nil
 }

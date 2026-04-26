@@ -64,14 +64,14 @@ func (p Parameter) Int64ArrayValue() iter.Seq2[int, int64] {
 	}
 }
 
-func (p Parameter) Int8ArrayValue() iter.Seq2[int, int8] {
+func (p Parameter) ByteArrayValue() iter.Seq2[int, byte] {
 	n := int(p.Num)
 	if n <= 0 || len(p.Blob) < n || p.Kind != ByteArrayType {
 		return nil
 	}
-	return func(yield func(int, int8) bool) {
+	return func(yield func(int, byte) bool) {
 		for i := 0; i < n; i++ {
-			if !yield(i, int8(p.Blob[i])) {
+			if !yield(i, p.Blob[i]) {
 				return
 			}
 		}
@@ -119,24 +119,106 @@ func (p Parameter) StringArrayValue() iter.Seq2[int, string] {
 	}
 }
 
-func (p Parameter) ArrayValue() iter.Seq2[int, Value] {
-    if p.Kind != ArrayType || p.Num == 0 || len(p.Blob) == 0 {
-        return nil
-    }
-    return func(yield func(int, Value) bool) {
-        r := reader.NewReader(p.Blob)
-        for i := 0; i < int(p.Num); i++ {
-            ttype, err := r.ReadByte()
-            if err != nil {
-                return
-            }
-            v, err := scanPayload(r, ParameterType(ttype))
-            if err != nil {
-                return
-            }
-            if !yield(i, v) {
-                return
-            }
-        }
-    }
+func (p Parameter) ArrayValue() iter.Seq2[int, any] {
+	if p.Kind != ArrayType || p.Num == 0 || len(p.Blob) == 0 {
+		return nil
+	}
+	return func(yield func(int, any) bool) {
+		r := reader.NewReader(p.Blob)
+		for i := 0; i < int(p.Num); i++ {
+			ttype, err := r.ReadByte()
+			if err != nil {
+				return
+			}
+
+			v, err := scanPayload(r, ParameterType(ttype))
+			if err != nil {
+				return
+			}
+
+			if !yield(i, decodeValue(v)) {
+				return
+			}
+		}
+	}
+}
+
+func (p Parameter) BooleanArrayValue() iter.Seq2[int, bool] {
+	if p.Kind != BooleanArrayType || p.Num == 0 || len(p.Blob) == 0 {
+		return nil
+	}
+
+	return func(yield func(int, bool) bool) {
+		for i := 0; i < int(p.Num); i++ {
+			out := (p.Blob[i/8] & (1 << uint(i%8))) != 0
+			if !yield(i, out) {
+				return
+			}
+		}
+	}
+}
+
+func decodeValue(v Value) any {
+	p := Parameter{Value: v}
+
+	switch v.Kind {
+	case StringType:
+		return p.StringValue()
+	case Float32Type:
+		return p.Float32Value()
+	case BooleanTrueType, BooleanFalseType, BooleanType:
+		return p.BooleanValue()
+	case Int8Type, Int8Positive, Int8Negative,
+		Int16Type, Int16Positive, Int16Negative,
+		CompressedInt32Type, CompressedInt64Type,
+		Long8Positive, Long8Negative, Long16Positive, Long16Negative,
+		IntZeroType, ShortZeroType, LongZeroType, ByteZeroType:
+		return p.IntValue()
+	case ByteArrayType:
+		return collect(p.ByteArrayValue(), v.Num)
+	case ShortArrayType:
+		return collect(p.Int16ArrayValue(), v.Num)
+	case CompressedIntArrayType:
+		return collect(p.Int32ArrayValue(), v.Num)
+	case CompressedLongArrayType:
+		return collect(p.Int64ArrayValue(), v.Num)
+	case Float32ArrayType:
+		return collect(p.Float32ArrayValue(), v.Num)
+	case StringArrayType:
+		return collect(p.StringArrayValue(), v.Num)
+	case BooleanArrayType:
+		return collect(p.BooleanArrayValue(), v.Num)
+	case ArrayType:
+		return collect(p.ArrayValue(), v.Num)
+	case NilType:
+		return nil
+	case DictionaryType:
+		return collectDictionary(p.DictionaryValue(), v.Num)
+	default:
+		return v
+	}
+}
+
+func collectDictionary(seq iter.Seq2[any, any], n uint64) map[any]any {
+	if seq == nil {
+		return nil
+	}
+
+	out := make(map[any]any, n)
+	for key, value := range seq {
+		out[key] = value
+	}
+	return out
+}
+
+func collect[T any](seq iter.Seq2[int, T], n uint64) []T {
+	if seq == nil {
+		return nil
+	}
+
+	out := make([]T, 0, n)
+	for _, value := range seq {
+		out = append(out, value)
+	}
+	return out
 }
