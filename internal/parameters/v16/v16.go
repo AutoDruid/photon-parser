@@ -149,17 +149,17 @@ func (p Parameter) Int16ArrayValue() iter.Seq2[int, int16] {
 func (p Parameter) StringArrayValue() iter.Seq2[int, string] {
 	return nil
 }
-func (p Parameter) StringValue() string {
-	return ""
+func (p Parameter) StringValue() (string, bool) {
+	return "", false
 }
-func (p Parameter) Float32Value() float32 {
-	return 0
+func (p Parameter) Float32Value() (float32, bool) {
+	return 0, false
 }
-func (p Parameter) IntValue() int64 {
-	return 0
+func (p Parameter) IntValue() (int64, bool) {
+	return 0, false
 }
-func (p Parameter) BooleanValue() bool {
-	return false
+func (p Parameter) BooleanValue() (bool, bool) {
+	return false, false
 }
 func (p Parameter) ArrayValue() iter.Seq2[int, any] {
 	return nil

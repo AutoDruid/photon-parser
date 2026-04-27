@@ -14,9 +14,11 @@ type ParameterView interface {
 	BooleanArrayValue() iter.Seq2[int, bool]
 	ArrayValue() iter.Seq2[int, any]
 
-	BooleanValue() bool
-	StringValue() string
-	Float32Value() float32
-	IntValue() int64
+	BooleanValue() (bool, bool)
+	StringValue() (string, bool)
+	Float32Value() (float32, bool)
+	IntValue() (int64, bool)
+
+	
 	MarshalJSON() ([]byte, error)
 }

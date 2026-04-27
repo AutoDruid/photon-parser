@@ -52,8 +52,8 @@ func TestParseStringParameterAndAccessor(t *testing.T) {
 			if got.Num != tt.wantNum {
 				t.Errorf("Num = %d, want %d", got.Num, tt.wantNum)
 			}
-			if got.StringValue() != tt.wantString {
-				t.Errorf("StringValue() = %q, want %q", got.StringValue(), tt.wantString)
+			if gotString, ok := got.StringValue(); !ok || gotString != tt.wantString {
+				t.Errorf("StringValue() = %q, want %q", gotString, tt.wantString)
 			}
 			if r.Cursor != tt.wantCursor {
 				t.Errorf("Cursor = %d, want %d", r.Cursor, tt.wantCursor)
@@ -105,8 +105,8 @@ func TestParseFloat32ParameterAndAccessor(t *testing.T) {
 				t.Errorf("Kind = %d, want %d", got.Kind, v18.Float32Type)
 			}
 
-			if got.Float32Value() != tt.wantValue {
-				t.Errorf("Float32Value() = %v, want %v", got.Float32Value(), tt.wantValue)
+			if value, ok := got.Float32Value(); !ok || value != tt.wantValue {
+				t.Errorf("Float32Value() = %v, want %v", value, tt.wantValue)
 			}
 
 			if r.Cursor != tt.wantCursor {
@@ -170,8 +170,8 @@ func TestParseInt8ParameterAndAccessor(t *testing.T) {
 				t.Errorf("Kind = %d, want %d", got.Kind, tt.wantKind)
 			}
 
-			if got.IntValue() != tt.wantValue {
-				t.Errorf("IntValue() = %d, want %d", got.IntValue(), tt.wantValue)
+			if value, ok := got.IntValue(); !ok || value != tt.wantValue {
+				t.Errorf("IntValue() = %d, want %d", value, tt.wantValue)
 			}
 
 			if r.Cursor != tt.wantCursor {
@@ -243,8 +243,8 @@ func TestParseInt16ParameterAndAccessor(t *testing.T) {
 				t.Errorf("Kind = %d, want %d", got.Kind, tt.wantKind)
 			}
 
-			if got.IntValue() != tt.wantValue {
-				t.Errorf("IntValue() = %d, want %d", got.IntValue(), tt.wantValue)
+			if value, ok := got.IntValue(); !ok || value != tt.wantValue {
+				t.Errorf("IntValue() = %d, want %d", value, tt.wantValue)
 			}
 
 			if r.Cursor != tt.wantCursor {
@@ -316,8 +316,8 @@ func TestParseLong8AndLong16ParameterAndAccessor(t *testing.T) {
 				t.Errorf("Kind = %d, want %d", got.Kind, tt.wantKind)
 			}
 
-			if got.IntValue() != tt.wantValue {
-				t.Errorf("IntValue() = %d, want %d", got.IntValue(), tt.wantValue)
+			if value, ok := got.IntValue(); !ok || value != tt.wantValue {
+				t.Errorf("IntValue() = %d, want %d", value, tt.wantValue)
 			}
 
 			if r.Cursor != tt.wantCursor {
@@ -389,8 +389,8 @@ func TestParseCompressedInt32AndInt64ParameterAndAccessor(t *testing.T) {
 				t.Errorf("Kind = %d, want %d", got.Kind, tt.wantKind)
 			}
 
-			if got.IntValue() != tt.wantValue {
-				t.Errorf("IntValue() = %d, want %d", got.IntValue(), tt.wantValue)
+			if value, ok := got.IntValue(); !ok || value != tt.wantValue {
+				t.Errorf("IntValue() = %d, want %d", value, tt.wantValue)
 			}
 
 			if r.Cursor != tt.wantCursor {
@@ -457,8 +457,8 @@ func TestParseZeroTypeParameterAndAccessor(t *testing.T) {
 				t.Errorf("Kind = %d, want %d", got.Kind, tt.wantKind)
 			}
 
-			if got.IntValue() != tt.wantValue {
-				t.Errorf("IntValue() = %d, want %d", got.IntValue(), tt.wantValue)
+			if value, ok := got.IntValue(); !ok || value != tt.wantValue {
+				t.Errorf("IntValue() = %d, want %d", value, tt.wantValue)
 			}
 		})
 	}
@@ -507,8 +507,8 @@ func TestParseBooleanParameterAndAccessor(t *testing.T) {
 				t.Errorf("Kind = %d, want %d", got.Kind, tt.wantKind)
 			}
 
-			if got.BooleanValue() != tt.wantValue {
-				t.Errorf("BooleanValue() = %t, want %t", got.BooleanValue(), tt.wantValue)
+			if value, ok := got.BooleanValue(); !ok || value != tt.wantValue {
+				t.Errorf("BooleanValue() = %t, want %t", value, tt.wantValue)
 			}
 		})
 	}

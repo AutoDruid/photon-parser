@@ -75,7 +75,7 @@ func loadCapturesB(path string, b *testing.B) []json.RawMessage {
 
 func TestParseUDP1(t *testing.T) {
 
-	parser := photon.NewParserV18()
+	parser := photon.NewV18()
 
 	frames := loadCaptures("resources/v18.json", t)
 
@@ -109,7 +109,7 @@ func TestParseUDP1(t *testing.T) {
 
 func TestParseUDP2(t *testing.T) {
 
-	parser := photon.NewParserV18()
+	parser := photon.NewV18()
 
 	frames := loadCaptures("resources/v181.json", t)
 
@@ -143,7 +143,7 @@ func TestParseUDP2(t *testing.T) {
 
 func TestParseUDP3(t *testing.T) {
 
-	parser := photon.NewParserV18()
+	parser := photon.NewV18()
 
 	frames := loadCaptures("resources/v182.json", t)
 
@@ -177,7 +177,7 @@ func TestParseUDP3(t *testing.T) {
 
 func BenchmarkParseUDP1(b *testing.B) {
 
-	parser := photon.NewParserV18()
+	parser := photon.NewV18()
 
 	frames := loadCapturesB("ressources/v18.json", b)
 

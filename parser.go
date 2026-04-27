@@ -12,12 +12,12 @@ import (
 )
 
 type Parser[P types.ParameterView] struct {
-	Ctx *context.Context[P]
+	ctx *context.Context[P]
 }
 
-func NewParserV16() *Parser[v16.Parameter] {
+func NewV16() *Parser[v16.Parameter] {
 	return &Parser[v16.Parameter]{
-		Ctx: context.NewContext[v16.Parameter](
+		ctx: context.NewContext[v16.Parameter](
 			reader.NewReader(nil),
 			assembler.NewAssembler(),
 			hooks.NewHooks[v16.Parameter](),
@@ -29,9 +29,15 @@ func NewParserV16() *Parser[v16.Parameter] {
 	}
 }
 
-func NewParserV18() *Parser[v18.Parameter] {
+func ParseV16(data []byte) (*Session, error) {
+	p := NewV16()
+	return p.ParsePacket(data)
+}
+
+
+func NewV18() *Parser[v18.Parameter] {
 	return &Parser[v18.Parameter]{
-		Ctx: context.NewContext(
+		ctx: context.NewContext(
 			reader.NewReader(nil),
 			assembler.NewAssembler(),
 			hooks.NewHooks[v18.Parameter](),
@@ -43,13 +49,18 @@ func NewParserV18() *Parser[v18.Parameter] {
 	}
 }
 
+func ParseV18(data []byte) (*Session, error) {
+	p := NewV18()
+	return p.ParsePacket(data)
+}
+
 func (p *Parser[P]) ParsePacket(data []byte) (*Session, error) {
 
-	p.Ctx.Reader.Reset(data)
+	p.ctx.Reader.Reset(data)
 
 	var sess Session
 
-	err := session.Parse(p.Ctx, &sess)
+	err := session.Parse(p.ctx, &sess)
 	if err != nil {
 		return nil, err
 	}
@@ -58,29 +69,29 @@ func (p *Parser[P]) ParsePacket(data []byte) (*Session, error) {
 }
 
 func (p *Parser[P]) OnSessionSync(fn func(Session)) {
-	p.Ctx.Hooks.SyncHooks.OnSession = fn
+	p.ctx.Hooks.SyncHooks.OnSession = fn
 }
 
 func (p *Parser[P]) OnCommandSync(fn func(Command)) {
-	p.Ctx.Hooks.SyncHooks.OnCommand = fn
+	p.ctx.Hooks.SyncHooks.OnCommand = fn
 }
 
 func (p *Parser[P]) OnParameterSync(fn func(P)) {
-	p.Ctx.Hooks.SyncHooks.OnParameter = fn
+	p.ctx.Hooks.SyncHooks.OnParameter = fn
 }
 
 func (p *Parser[P]) OnSessionAsync(options types.HookOptions) <-chan Session {
-	return p.Ctx.Hooks.OnSessionAsync(options)
+	return p.ctx.Hooks.OnSessionAsync(options)
 }
 
 func (p *Parser[P]) OnCommandAsync(options types.HookOptions) <-chan Command {
-	return p.Ctx.Hooks.OnCommandAsync(options)
+	return p.ctx.Hooks.OnCommandAsync(options)
 }
 
 func (p *Parser[P]) OnParameterAsync(options types.HookOptions) <-chan P {
-	return p.Ctx.Hooks.OnParameterAsync(options)
+	return p.ctx.Hooks.OnParameterAsync(options)
 }
 
 func (p *Parser[P]) Close() {
-	p.Ctx.Hooks.CloseAsyncHooks()
+	p.ctx.Hooks.CloseAsyncHooks()
 }

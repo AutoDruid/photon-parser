@@ -52,13 +52,13 @@ func (p Parameter) MarshalJSON() ([]byte, error) {
 		Long16Positive, Long16Negative,
 		CompressedInt64Type,
 		IntZeroType, ShortZeroType, LongZeroType, ByteZeroType:
-		out.Decoded = p.IntValue()
+		out.Decoded, _ = p.IntValue()
 	case StringType:
-		out.Decoded = p.StringValue()
+		out.Decoded, _ = p.StringValue()
 	case Float32Type:
-		out.Decoded = p.Float32Value()
+		out.Decoded, _ = p.Float32Value()
 	case BooleanType:
-		out.Decoded = p.BooleanValue()
+		out.Decoded, _ = p.BooleanValue()
 	case Float32ArrayType:
 		out.Decoded = collect(p.Float32ArrayValue(), p.Num)
 	case CompressedIntArrayType:

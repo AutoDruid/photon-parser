@@ -163,17 +163,21 @@ func decodeValue(v Value) any {
 
 	switch v.Kind {
 	case StringType:
-		return p.StringValue()
+		v, _ := p.StringValue()
+		return v
 	case Float32Type:
-		return p.Float32Value()
+		v, _ := p.Float32Value()
+		return v
 	case BooleanTrueType, BooleanFalseType, BooleanType:
-		return p.BooleanValue()
+		v, _ := p.BooleanValue()
+		return v
 	case Int8Type, Int8Positive, Int8Negative,
 		Int16Type, Int16Positive, Int16Negative,
 		CompressedInt32Type, CompressedInt64Type,
 		Long8Positive, Long8Negative, Long16Positive, Long16Negative,
 		IntZeroType, ShortZeroType, LongZeroType, ByteZeroType:
-		return p.IntValue()
+		v, _ := p.IntValue()
+		return v
 	case ByteArrayType:
 		return collect(p.ByteArrayValue(), v.Num)
 	case ShortArrayType:
