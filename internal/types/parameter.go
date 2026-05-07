@@ -17,8 +17,8 @@ type ParameterView interface {
 	BooleanValue() (bool, bool)
 	StringValue() (string, bool)
 	Float32Value() (float32, bool)
+	Float64Value() (float64, bool)
 	IntValue() (int64, bool)
 
-	
 	MarshalJSON() ([]byte, error)
 }

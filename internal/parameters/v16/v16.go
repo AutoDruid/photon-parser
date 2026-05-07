@@ -63,7 +63,6 @@ type Value struct {
 	ValType ParameterType `json:"val_type"`
 	_pad    [5]byte       `json:"-"`
 	Num     uint64        `json:"num"`
-	Str     string        `json:"str,omitempty"`
 	Blob    []byte        `json:"blob,omitempty"`
 }
 
@@ -134,36 +133,11 @@ func (p Parameter) MarshalJSON() ([]byte, error) {
 func (p Parameter) Float32ArrayValue() iter.Seq2[int, float32] {
 	return nil
 }
-func (p Parameter) Int32ArrayValue() iter.Seq2[int, int32] {
-	return nil
-}
+
 func (p Parameter) Int64ArrayValue() iter.Seq2[int, int64] {
 	return nil
 }
-func (p Parameter) ByteArrayValue() iter.Seq2[int, byte] {
-	return nil
-}
+
 func (p Parameter) Int16ArrayValue() iter.Seq2[int, int16] {
-	return nil
-}
-func (p Parameter) StringArrayValue() iter.Seq2[int, string] {
-	return nil
-}
-func (p Parameter) StringValue() (string, bool) {
-	return "", false
-}
-func (p Parameter) Float32Value() (float32, bool) {
-	return 0, false
-}
-func (p Parameter) IntValue() (int64, bool) {
-	return 0, false
-}
-func (p Parameter) BooleanValue() (bool, bool) {
-	return false, false
-}
-func (p Parameter) ArrayValue() iter.Seq2[int, any] {
-	return nil
-}
-func (p Parameter) BooleanArrayValue() iter.Seq2[int, bool] {
 	return nil
 }

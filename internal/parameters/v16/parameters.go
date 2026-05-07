@@ -1,6 +1,7 @@
 package v16
 
 import (
+	"fmt"
 	"michelprogram/photon-parser/internal/context"
 	"michelprogram/photon-parser/internal/hooks"
 	"michelprogram/photon-parser/internal/reader"
@@ -32,7 +33,7 @@ func (p *Parameter) Parse(reader *reader.Reader, out *Parameter, hooks *hooks.Ho
 		return err
 	}
 
-	value, err := p.decode(reader, header.Type)
+	value, err := scanPayload(reader, header.Type)
 
 	if err != nil {
 		return err
@@ -94,38 +95,82 @@ func (p *Parameter) parseHeader(r *reader.Reader) (Header, error) {
 //
 // For NilType and UnknownType, returns nil without error.
 // For unsupported type codes, returns an error.
-func (p Parameter) decode(reader *reader.Reader, ttype ParameterType) (Value, error) {
+func scanPayload(reader *reader.Reader, t ParameterType) (Value, error) {
+	var err error
+	var res Value = Value{Kind: t}
+
+	switch t {
+	case StringType:
+		err = scanString(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Float32Type:
+		err = scanFloat32(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Float64Type:
+		err = scanFloat64(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Int8Type:
+		err = scanInt8(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Int16Type:
+		err = scanInt16(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Int32Type:
+		err = scanInt32(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Int64Type:
+		err = scanInt64(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case BooleanType:
+		err = scanBoolean(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Int8ArrayType:
+		err = scanInt8Array(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case Int32ArrayType:
+		err = scanInt32Array(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case StringArrayType:
+		err = scanStringArray(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case ArrayType:
+		err = scanArray(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
+	case NilType, UnknownType:
+		break
+	default:
+		return Value{}, fmt.Errorf("unsupported type: %d", t)
+	}
+
 	/* switch ttype {
-	case types.Int8Type:
-		return reader.ReadInt8()
-	case types.Int16Type:
-		return reader.ReadInt16(binary.BigEndian)
-	case types.Int32Type:
-		return reader.ReadInt32(binary.BigEndian)
-	case types.Int64Type:
-		return reader.ReadInt64(binary.BigEndian)
-	case types.Float32Type:
-		return reader.ReadFloat32(binary.BigEndian)
-	case types.Float64Type:
-		return reader.ReadFloat64(binary.BigEndian)
-	case types.StringType:
-		return p.readString(reader)
-	case types.BooleanType:
-		return reader.ReadBoolean()
-	case types.Int8ArrayType:
-		return p.readInt8Array(reader)
-	case types.Int32ArrayType:
-		return p.readInt32Array(reader)
-	case types.ArrayType:
-		return p.readArray(reader)
-	case types.StringArrayType:
-		return p.readStringArray(reader)
 	case types.DictionaryType:
 		return p.readDictionary(reader)
 	case types.HashTableType:
 		return p.readHashTable(reader)
-	case types.NilType, types.UnknownType:
-		return nil, nil
 	default:
 		return nil, fmt.Errorf("unsupported type: 0x%02x", ttype)
 	} */
