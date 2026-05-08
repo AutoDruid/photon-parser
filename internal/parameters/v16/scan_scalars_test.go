@@ -318,4 +318,3 @@ func TestParseBooleanParameterAndAccessor(t *testing.T) {
 		})
 	}
 }
-

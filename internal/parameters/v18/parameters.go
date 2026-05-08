@@ -87,7 +87,7 @@ func (p *Parameter) parseHeader(r *reader.Reader) (Header, error) {
 
 func scanPayload(reader *reader.Reader, t ParameterType) (Value, error) {
 	var err error
-	var res Value = Value{Kind: t}
+	res := Value{Kind: t}
 
 	switch t {
 	case Int8Type:

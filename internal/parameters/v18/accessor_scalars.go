@@ -24,27 +24,27 @@ func (p Parameter) Float64Value() (float64, bool) {
 }
 
 func (p Parameter) IntValue() (int64, bool) {
-	switch p.Value.Kind {
+	switch p.Kind {
 	case Int8Type:
-		return int64(int8(uint8(p.Value.Num))), true
+		return int64(int8(uint8(p.Num))), true
 	case Int8Positive:
-		return int64(uint8(p.Value.Num)), true
+		return int64(uint8(p.Num)), true
 	case Int8Negative:
-		return int64(int32(p.Value.Num)), true
+		return int64(int32(p.Num)), true
 	case Int16Type:
-		return int64(int16(uint16(p.Value.Num))), true
+		return int64(int16(uint16(p.Num))), true
 	case Int16Positive:
-		return int64(uint16(p.Value.Num)), true
+		return int64(uint16(p.Num)), true
 	case Int16Negative, CompressedInt32Type:
-		return int64(int32(uint32(p.Value.Num))), true
+		return int64(int32(uint32(p.Num))), true
 	case Long8Positive:
-		return int64(uint8(p.Value.Num)), true
+		return int64(uint8(p.Num)), true
 	case Long8Negative:
-		return int64(p.Value.Num), true
+		return int64(p.Num), true
 	case Long16Positive:
-		return int64(uint16(p.Value.Num)), true
+		return int64(uint16(p.Num)), true
 	case Long16Negative, CompressedInt64Type:
-		return int64(p.Value.Num), true
+		return int64(p.Num), true
 	case IntZeroType, ShortZeroType, LongZeroType, ByteZeroType:
 		return 0, true
 	default:

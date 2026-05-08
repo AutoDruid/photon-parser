@@ -11,7 +11,7 @@ func scanString(reader *reader.Reader, value *Value) error {
 	if err != nil {
 		return err
 	}
-	
+
 	value.Blob, err = reader.ReadBytes(int(size))
 	if err != nil {
 		return err

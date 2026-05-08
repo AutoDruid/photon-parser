@@ -36,7 +36,7 @@ func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Session) e
 	for i := uint8(0); i < header.CommandCount; i++ {
 		err := command.Parse(ctx, &out.Commands[i])
 
-		if errors.Is(err, photonErrors.HeaderSize) {
+		if errors.Is(err, photonErrors.ErrHeaderSize) {
 			break
 		}
 		if err != nil {

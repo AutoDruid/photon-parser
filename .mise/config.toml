@@ -1,0 +1,23 @@
+[tools]
+golang = "1.25.0"
+golangci-lint = "2.12.2"
+
+[tasks.build]
+description = "Build the library"
+run = "go build ./..."
+
+[tasks.test]
+description = "Run the tests"
+run = "go test ./..."
+
+[tasks.coverage]
+description = "Run the tests with coverage"
+run = "go test -cover ./..."
+
+[tasks.lint]
+description = "Run the linter"
+run = "golangci-lint run ./..."
+
+[tasks.format]
+description = "Format the code"
+run = "go fmt ./..."

@@ -1,0 +1,25 @@
+project_name: photon-parser
+
+builds:
+  - skip: true
+
+changelog:
+  disable: false
+  use: github
+  sort: asc
+
+  groups:
+    - title: Features
+      regexp: "^.*feat[(\\w)]*:+.*$"
+      order: 0
+    - title: "Bug fixes"
+      regexp: "^.*fix[(\\w)]*:+.*$"
+      order: 1
+    - title: "Refactor"
+      regexp: "^.*refactor[(\\w)]*:+.*$"
+      order: 2
+    - title: "Documentation updates"
+      regexp: ^.*?docs?(\(.+\))??!?:.+$
+      order: 3
+    - title: Others
+      order: 4

@@ -42,25 +42,26 @@ func (r *Reader) ReadRemaining() []byte {
 func (r *Reader) Skip(n int) error {
 
 	if n < 0 {
-		return errors.InvalidNegativeSkip
+		return errors.ErrInvalidNegativeSkip
 	}
 
 	size := r.Cursor + n
 
 	if size > r.Max {
-		return errors.NotEnoughBytesBytes
+		return errors.ErrNotEnoughBytesBytes
 	}
 
 	r.Cursor += n
 	return nil
 }
+
 // ReadInt8 reads an 8-bit signed integer from the reader.
 // Returns an error if fewer than 1 byte is available.
 func (r *Reader) ReadInt8() (int8, error) {
 	size := r.Cursor + INT8_SIZE
 
 	if size > r.Max {
-		return 0, errors.NotEnoughBytesInt8
+		return 0, errors.ErrNotEnoughBytesInt8
 	}
 
 	b := r.Buffer[r.Cursor:size]
@@ -74,7 +75,7 @@ func (r *Reader) ReadUInt8() (uint8, error) {
 	size := r.Cursor + INT8_SIZE
 
 	if size > r.Max {
-		return 0, errors.NotEnoughBytesUInt8
+		return 0, errors.ErrNotEnoughBytesUInt8
 	}
 
 	b := r.Buffer[r.Cursor:size]
@@ -89,7 +90,7 @@ func (r *Reader) ReadInt16(order binary.ByteOrder) (int16, error) {
 	size := r.Cursor + INT16_SIZE
 
 	if size > r.Max {
-		return 0, errors.NotEnoughBytesInt16
+		return 0, errors.ErrNotEnoughBytesInt16
 	}
 
 	b := r.Buffer[r.Cursor:size]
@@ -105,7 +106,7 @@ func (r *Reader) ReadUInt16(order binary.ByteOrder) (uint16, error) {
 	size := r.Cursor + INT16_SIZE
 
 	if size > r.Max {
-		return 0, errors.NotEnoughBytesUInt16
+		return 0, errors.ErrNotEnoughBytesUInt16
 	}
 
 	b := r.Buffer[r.Cursor:size]
@@ -120,7 +121,7 @@ func (r *Reader) ReadInt32(order binary.ByteOrder) (int32, error) {
 	size := r.Cursor + INT32_SIZE
 
 	if size > r.Max {
-		return 0, errors.NotEnoughBytesInt32
+		return 0, errors.ErrNotEnoughBytesInt32
 	}
 
 	b := r.Buffer[r.Cursor:size]
@@ -135,7 +136,7 @@ func (r *Reader) ReadUInt32(order binary.ByteOrder) (uint32, error) {
 	size := r.Cursor + INT32_SIZE
 
 	if size > r.Max {
-		return 0, errors.NotEnoughBytesUInt32
+		return 0, errors.ErrNotEnoughBytesUInt32
 	}
 
 	b := r.Buffer[r.Cursor:size]
@@ -150,7 +151,7 @@ func (r *Reader) ReadInt64(order binary.ByteOrder) (int64, error) {
 	size := r.Cursor + INT64_SIZE
 
 	if size > r.Max {
-		return 0, errors.NotEnoughBytesInt64
+		return 0, errors.ErrNotEnoughBytesInt64
 	}
 
 	b := r.Buffer[r.Cursor:size]
@@ -165,7 +166,7 @@ func (r *Reader) ReadUInt64(order binary.ByteOrder) (uint64, error) {
 	size := r.Cursor + INT64_SIZE
 
 	if size > r.Max {
-		return 0, errors.NotEnoughBytesUInt64
+		return 0, errors.ErrNotEnoughBytesUInt64
 	}
 
 	b := r.Buffer[r.Cursor:size]
@@ -179,7 +180,7 @@ func (r *Reader) ReadFloat32(order binary.ByteOrder) (float32, error) {
 	size := r.Cursor + FLOAT32_SIZE
 
 	if size > r.Max {
-		return 0, errors.NotEnoughBytesFloat32
+		return 0, errors.ErrNotEnoughBytesFloat32
 	}
 
 	b := r.Buffer[r.Cursor:size]
@@ -194,7 +195,7 @@ func (r *Reader) ReadFloat64(order binary.ByteOrder) (float64, error) {
 	size := r.Cursor + FLOAT64_SIZE
 
 	if size > r.Max {
-		return 0, errors.NotEnoughBytesFloat64
+		return 0, errors.ErrNotEnoughBytesFloat64
 	}
 
 	b := r.Buffer[r.Cursor:size]
@@ -221,7 +222,7 @@ func (r *Reader) ReadBoolean() (bool, error) {
 		return true, nil
 	}
 
-	return false, errors.InvalidBooleanValue
+	return false, errors.ErrInvalidBooleanValue
 }
 
 // ReadString reads a string of n size from the reader.
@@ -231,7 +232,7 @@ func (r *Reader) ReadString(n int) (string, error) {
 	size := r.Cursor + n
 
 	if size > r.Max {
-		return "", errors.NotEnoughBytesString
+		return "", errors.ErrNotEnoughBytesString
 	}
 
 	str := string(r.Buffer[r.Cursor:size])
@@ -246,7 +247,7 @@ func (r *Reader) ReadByte() (byte, error) {
 	size := r.Cursor + 1
 
 	if size > r.Max {
-		return 0, errors.NotEnoughBytesByte
+		return 0, errors.ErrNotEnoughBytesByte
 	}
 
 	c := r.Buffer[r.Cursor]
@@ -262,7 +263,7 @@ func (r *Reader) ReadBytes(n int) ([]byte, error) {
 	size := r.Cursor + n
 
 	if size > r.Max {
-		return []byte{}, errors.NotEnoughBytesBytes
+		return []byte{}, errors.ErrNotEnoughBytesBytes
 	}
 
 	buff := r.Buffer[r.Cursor:size]
