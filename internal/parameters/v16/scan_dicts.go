@@ -21,14 +21,19 @@ func scanDictionary(reader *reader.Reader, value *Value) error {
 		return err
 	}
 
-	value.Blob, err = reader.ReadBytes(int(size))
-	if err != nil {
-		return err
+	start := reader.Cursor
+	for i := uint16(0); i < size; i++ {
+		if _, err := scanPayload(reader, ParameterType(keyType)); err != nil {
+			return err
+		}
+		if _, err := scanPayload(reader, ParameterType(valueType)); err != nil {
+			return err
+		}
 	}
-
+	value.Blob = reader.Buffer[start:reader.Cursor]
 	value.Num = uint64(size)
 	value.KeyType = ParameterType(keyType)
 	value.ValType = ParameterType(valueType)
-	
+
 	return nil
 }

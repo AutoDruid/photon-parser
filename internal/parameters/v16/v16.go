@@ -1,12 +1,8 @@
 package v16
 
 import (
-	"encoding/binary"
 	"encoding/json"
 	"fmt"
-	"iter"
-	"log"
-	"math"
 	"michelprogram/photon-parser/internal/types"
 )
 
@@ -83,25 +79,6 @@ func (p Parameter) String() string {
 	return string(b)
 }
 
-func (p Parameter) Float32s() iter.Seq2[int, float32] {
-	n := int(p.Num)
-	if n <= 0 || len(p.Blob) < n*4 {
-		return nil
-	}
-	return func(yield func(int, float32) bool) {
-		for i := 0; i < n; i++ {
-			bits := binary.LittleEndian.Uint32(p.Blob[i*4 : (i+1)*4])
-			if !yield(i, math.Float32frombits(bits)) {
-				return
-			}
-		}
-	}
-}
-
-func (p Parameter) Float32() float32 {
-	return math.Float32frombits(uint32(p.Num))
-}
-
 func (p Parameter) MarshalJSON() ([]byte, error) {
 	type Alias Parameter
 
@@ -113,31 +90,19 @@ func (p Parameter) MarshalJSON() ([]byte, error) {
 	}
 
 	// Example: special behavior by parameter kind/type
-	switch p.Kind {
-	case 5:
-		log.Println("test")
-		out.Decoded = p.Float32()
-	case 69:
-		res := make([]float32, p.Num)
-		for index, fl := range p.Float32s() {
-			res[index] = fl
-		}
-		out.Decoded = res
-	default:
-		out.Decoded = p.Num
-	}
+	/* 	switch p.Kind {
+	   	case 5:
+	   		log.Println("test")
+	   		out.Decoded = p.Float32()
+	   	case 69:
+	   		res := make([]float32, p.Num)
+	   		for index, fl := range p.Float32s() {
+	   			res[index] = fl
+	   		}
+	   		out.Decoded = res
+	   	default:
+	   		out.Decoded = p.Num
+	   	} */
 
 	return json.Marshal(out)
-}
-
-func (p Parameter) Float32ArrayValue() iter.Seq2[int, float32] {
-	return nil
-}
-
-func (p Parameter) Int64ArrayValue() iter.Seq2[int, int64] {
-	return nil
-}
-
-func (p Parameter) Int16ArrayValue() iter.Seq2[int, int16] {
-	return nil
 }

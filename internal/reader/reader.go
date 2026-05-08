@@ -39,6 +39,16 @@ func (r *Reader) ReadRemaining() []byte {
 	return r.Buffer[tmp:]
 }
 
+func (r *Reader) Skip(n int) error {
+	size := r.Cursor + n
+
+	if size > r.Max {
+		return errors.NotEnoughBytesBytes
+	}
+
+	r.Cursor += n
+	return nil
+}
 // ReadInt8 reads an 8-bit signed integer from the reader.
 // Returns an error if fewer than 1 byte is available.
 func (r *Reader) ReadInt8() (int8, error) {
