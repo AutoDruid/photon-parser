@@ -1,9 +1,28 @@
 package reader
 
 import (
-	"fmt"
+	"encoding/binary"
 	"math"
+	"michelprogram/photon-parser/internal/errors"
 )
+
+const (
+	INT8_SIZE       = 1
+	INT16_SIZE      = 2
+	INT32_SIZE      = 4
+	INT64_SIZE      = 8
+	FLOAT32_SIZE    = 4
+	FLOAT64_SIZE    = 8
+	VARINT_SHIFT    = 7
+	VARINT_MASK     = 0x7F
+	VARINT_MSB_MASK = 0x80
+)
+
+type Reader struct {
+	Buffer []byte
+	Max    int
+	Cursor int
+}
 
 func NewReader(data []byte) *Reader {
 	return &Reader{
@@ -13,13 +32,36 @@ func NewReader(data []byte) *Reader {
 	}
 }
 
+// Read Remaining bytes from the reader.
+func (r *Reader) ReadRemaining() []byte {
+	tmp := r.Cursor
+	r.Cursor = r.Max
+	return r.Buffer[tmp:]
+}
+
+func (r *Reader) Skip(n int) error {
+
+	if n < 0 {
+		return errors.ErrInvalidNegativeSkip
+	}
+
+	size := r.Cursor + n
+
+	if size > r.Max {
+		return errors.ErrNotEnoughBytesBytes
+	}
+
+	r.Cursor += n
+	return nil
+}
+
 // ReadInt8 reads an 8-bit signed integer from the reader.
 // Returns an error if fewer than 1 byte is available.
 func (r *Reader) ReadInt8() (int8, error) {
 	size := r.Cursor + INT8_SIZE
 
 	if size > r.Max {
-		return 0, fmt.Errorf("not enough bytes to read int8")
+		return 0, errors.ErrNotEnoughBytesInt8
 	}
 
 	b := r.Buffer[r.Cursor:size]
@@ -33,7 +75,7 @@ func (r *Reader) ReadUInt8() (uint8, error) {
 	size := r.Cursor + INT8_SIZE
 
 	if size > r.Max {
-		return 0, fmt.Errorf("not enough bytes to read uint8")
+		return 0, errors.ErrNotEnoughBytesUInt8
 	}
 
 	b := r.Buffer[r.Cursor:size]
@@ -41,155 +83,125 @@ func (r *Reader) ReadUInt8() (uint8, error) {
 	return uint8(b[0]), nil
 }
 
-// ReadInt16 reads a 16-bit signed integer from the reader in big-endian format.
+// ReadInt16 reads a 16-bit signed integer from the reader in the given byte order.
 // Returns an error if fewer than 2 bytes are available.
-func (r *Reader) ReadInt16() (int16, error) {
+func (r *Reader) ReadInt16(order binary.ByteOrder) (int16, error) {
 
 	size := r.Cursor + INT16_SIZE
 
 	if size > r.Max {
-		return 0, fmt.Errorf("not enough bytes to read int16")
+		return 0, errors.ErrNotEnoughBytesInt16
 	}
 
 	b := r.Buffer[r.Cursor:size]
 	r.Cursor += INT16_SIZE
 
-	return int16(b[0])<<8 | int16(b[1]), nil
+	return int16(order.Uint16(b)), nil
 }
 
-// ReadUInt16 reads a 16-bit unsigned integer from the reader in big-endian format.
+// ReadUInt16 reads a 16-bit unsigned integer from the reader in the given byte order.
 // Returns an error if fewer than 2 bytes are available.
-func (r *Reader) ReadUInt16() (uint16, error) {
+func (r *Reader) ReadUInt16(order binary.ByteOrder) (uint16, error) {
 
 	size := r.Cursor + INT16_SIZE
 
 	if size > r.Max {
-		return 0, fmt.Errorf("not enough bytes to read uint16")
+		return 0, errors.ErrNotEnoughBytesUInt16
 	}
 
 	b := r.Buffer[r.Cursor:size]
 	r.Cursor += INT16_SIZE
 
-	return uint16(b[0])<<8 | uint16(b[1]), nil
+	return order.Uint16(b), nil
 }
 
-// ReadInt32 reads a 32-bit signed integer from the reader in big-endian format.
+// ReadInt32 reads a 32-bit signed integer from the reader in the given byte order.
 // Returns an error if fewer than 4 bytes are available.
-func (r *Reader) ReadInt32() (int32, error) {
+func (r *Reader) ReadInt32(order binary.ByteOrder) (int32, error) {
 	size := r.Cursor + INT32_SIZE
 
 	if size > r.Max {
-		return 0, fmt.Errorf("not enough bytes to read int32")
+		return 0, errors.ErrNotEnoughBytesInt32
 	}
 
 	b := r.Buffer[r.Cursor:size]
 	r.Cursor += INT32_SIZE
-	return int32(b[0])<<24 |
-		int32(b[1])<<16 |
-		int32(b[2])<<8 |
-		int32(b[3]), nil
+
+	return int32(order.Uint32(b)), nil
 }
 
-// ReadUInt32 reads a 32-bit unsigned integer from the reader in big-endian format.
+// ReadUInt32 reads a 32-bit unsigned integer from the reader in the given byte order.
 // Returns an error if fewer than 4 bytes are available.
-func (r *Reader) ReadUInt32() (uint32, error) {
+func (r *Reader) ReadUInt32(order binary.ByteOrder) (uint32, error) {
 	size := r.Cursor + INT32_SIZE
 
 	if size > r.Max {
-		return 0, fmt.Errorf("not enough bytes to read uint32")
+		return 0, errors.ErrNotEnoughBytesUInt32
 	}
 
 	b := r.Buffer[r.Cursor:size]
 	r.Cursor += INT32_SIZE
-	return uint32(b[0])<<24 |
-		uint32(b[1])<<16 |
-		uint32(b[2])<<8 |
-		uint32(b[3]), nil
+
+	return order.Uint32(b), nil
 }
 
-// ReadInt64 reads a 64-bit signed integer from the reader in big-endian format.
+// ReadInt64 reads a 64-bit signed integer from the reader in the given byte order.
 // Returns an error if fewer than 8 bytes are available.
-func (r *Reader) ReadInt64() (int64, error) {
+func (r *Reader) ReadInt64(order binary.ByteOrder) (int64, error) {
 	size := r.Cursor + INT64_SIZE
 
 	if size > r.Max {
-		return 0, fmt.Errorf("not enough bytes to read int64")
+		return 0, errors.ErrNotEnoughBytesInt64
 	}
 
 	b := r.Buffer[r.Cursor:size]
 	r.Cursor += INT64_SIZE
-	return int64(b[0])<<56 |
-		int64(b[1])<<48 |
-		int64(b[2])<<40 |
-		int64(b[3])<<32 |
-		int64(b[4])<<24 |
-		int64(b[5])<<16 |
-		int64(b[6])<<8 |
-		int64(b[7]), nil
+
+	return int64(order.Uint64(b)), nil
 }
 
-// ReadUInt64 reads a 64-bit unsigned integer from the reader in big-endian format.
+// ReadUInt64 reads a 64-bit unsigned integer from the reader in the given byte order.
 // Returns an error if fewer than 8 bytes are available.
-func (r *Reader) ReadUInt64() (uint64, error) {
+func (r *Reader) ReadUInt64(order binary.ByteOrder) (uint64, error) {
 	size := r.Cursor + INT64_SIZE
 
 	if size > r.Max {
-		return 0, fmt.Errorf("not enough bytes to read uint64")
+		return 0, errors.ErrNotEnoughBytesUInt64
 	}
 
 	b := r.Buffer[r.Cursor:size]
 	r.Cursor += INT64_SIZE
-	return uint64(b[0])<<56 |
-		uint64(b[1])<<48 |
-		uint64(b[2])<<40 |
-		uint64(b[3])<<32 |
-		uint64(b[4])<<24 |
-		uint64(b[5])<<16 |
-		uint64(b[6])<<8 |
-		uint64(b[7]), nil
+	return order.Uint64(b), nil
 }
 
-// ReadFloat32 reads a 32-bit floating point number from the reader in big-endian format.
+// ReadFloat32 reads a 32-bit floating point number from the reader in the given byte order.
 // Returns an error if fewer than 4 bytes are available.
-func (r *Reader) ReadFloat32() (float32, error) {
+func (r *Reader) ReadFloat32(order binary.ByteOrder) (float32, error) {
 	size := r.Cursor + FLOAT32_SIZE
 
 	if size > r.Max {
-		return 0, fmt.Errorf("not enough bytes to read float32")
+		return 0, errors.ErrNotEnoughBytesFloat32
 	}
 
 	b := r.Buffer[r.Cursor:size]
 	r.Cursor += FLOAT32_SIZE
 
-	bits := uint32(b[0])<<24 |
-		uint32(b[1])<<16 |
-		uint32(b[2])<<8 |
-		uint32(b[3])
-
-	return math.Float32frombits(bits), nil
+	return math.Float32frombits(order.Uint32(b)), nil
 }
 
-// ReadFloat64 reads a 64-bit floating point number from the reader in big-endian format.
+// ReadFloat64 reads a 64-bit floating point number from the reader in the given byte order.
 // Returns an error if fewer than 8 bytes are available.
-func (r *Reader) ReadFloat64() (float64, error) {
+func (r *Reader) ReadFloat64(order binary.ByteOrder) (float64, error) {
 	size := r.Cursor + FLOAT64_SIZE
 
 	if size > r.Max {
-		return 0, fmt.Errorf("not enough bytes to read float64")
+		return 0, errors.ErrNotEnoughBytesFloat64
 	}
 
 	b := r.Buffer[r.Cursor:size]
 	r.Cursor += INT64_SIZE
-	bits := uint64(b[0])<<56 |
-		uint64(b[1])<<48 |
-		uint64(b[2])<<40 |
-		uint64(b[3])<<32 |
-		uint64(b[4])<<24 |
-		uint64(b[5])<<16 |
-		uint64(b[6])<<8 |
-		uint64(b[7])
 
-	return math.Float64frombits(bits), nil
+	return math.Float64frombits(order.Uint64(b)), nil
 }
 
 // ReadBoolean reads a boolean value from the reader.
@@ -199,7 +211,7 @@ func (r *Reader) ReadBoolean() (bool, error) {
 	bit, err := r.ReadUInt8()
 
 	if err != nil {
-		return false, fmt.Errorf("not enough bytes to read boolean")
+		return false, err
 	}
 
 	if bit == 0 {
@@ -210,7 +222,7 @@ func (r *Reader) ReadBoolean() (bool, error) {
 		return true, nil
 	}
 
-	return false, fmt.Errorf("invalid value for boolean: %d (expected 0 or 1)", bit)
+	return false, errors.ErrInvalidBooleanValue
 }
 
 // ReadString reads a string of n size from the reader.
@@ -220,13 +232,27 @@ func (r *Reader) ReadString(n int) (string, error) {
 	size := r.Cursor + n
 
 	if size > r.Max {
-		return "", fmt.Errorf("not enough bytes to read string of size %d", n)
+		return "", errors.ErrNotEnoughBytesString
 	}
 
 	str := string(r.Buffer[r.Cursor:size])
+	//str := unsafe.String(&r.Buffer[r.Cursor], n)
 	r.Cursor = size
 
 	return str, nil
+}
+
+func (r *Reader) ReadByte() (byte, error) {
+
+	size := r.Cursor + 1
+
+	if size > r.Max {
+		return 0, errors.ErrNotEnoughBytesByte
+	}
+
+	c := r.Buffer[r.Cursor]
+	r.Cursor++
+	return c, nil
 }
 
 // ReadBytes reads a []bytes of n size from the reader.
@@ -237,10 +263,87 @@ func (r *Reader) ReadBytes(n int) ([]byte, error) {
 	size := r.Cursor + n
 
 	if size > r.Max {
-		return []byte{}, fmt.Errorf("not enough bytes to read []byte of size %d", n)
+		return []byte{}, errors.ErrNotEnoughBytesBytes
 	}
 
 	buff := r.Buffer[r.Cursor:size]
 	r.Cursor += n
 	return buff, nil
+}
+
+// ReadVarintUInt32 reads a 32-bit unsigned integer from the reader in varint format.
+func (r *Reader) ReadVarintUInt32() (uint32, error) {
+
+	var res uint32
+	var shift uint8
+	for {
+
+		buff, err := r.ReadByte()
+		if err != nil {
+			return 0, err
+		}
+
+		res |= uint32(buff&VARINT_MASK) << shift
+
+		if buff&VARINT_MSB_MASK == 0 {
+			break
+		}
+		shift += VARINT_SHIFT
+	}
+
+	return res, nil
+}
+
+// ReadVarintInt32 reads a 32-bit signed integer from the reader in varint format.
+func (r *Reader) ReadVarintInt32() (int32, error) {
+
+	res, err := r.ReadVarintUInt32()
+	if err != nil {
+		return 0, err
+	}
+
+	//ZigZag decode
+	return int32((res >> 1) ^ uint32(-(int32(res & 1)))), nil
+}
+
+// ReadVarintUInt64 reads a 64-bit unsigned integer from the reader in varint format.
+func (r *Reader) ReadVarintUInt64() (uint64, error) {
+
+	var res uint64
+	var shift uint8
+	for {
+
+		buff, err := r.ReadByte()
+		if err != nil {
+			return 0, err
+		}
+
+		res |= uint64(buff&VARINT_MASK) << shift
+
+		if buff&VARINT_MSB_MASK == 0 {
+			break
+		}
+		shift += VARINT_SHIFT
+	}
+
+	return res, nil
+}
+
+// ReadVarintInt64 reads a 64-bit signed integer from the reader in varint format.
+func (r *Reader) ReadVarintInt64() (int64, error) {
+
+	res, err := r.ReadVarintUInt64()
+	if err != nil {
+		return 0, err
+	}
+
+	//ZigZag decode
+	return int64((res >> 1) ^ uint64(-(int64(res & 1)))), nil
+}
+
+// Reset resets the reader to the beginning of the buffer.
+func (r *Reader) Reset(data []byte) {
+	r.Buffer = data
+	r.Cursor = 0
+	r.Max = len(data)
 }
