@@ -2,8 +2,9 @@ name: Publish
 
 on:
   push:
-    branches:
-      - 'main'
+    # run only against tags
+    tags:
+      - "*"
 
 permissions:
   contents: write
