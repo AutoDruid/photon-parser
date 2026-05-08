@@ -15,4 +15,3 @@ type AsyncHooks[P ParameterView] struct {
 type HookOptions struct {
 	Size uint16
 }
-

@@ -2,7 +2,6 @@ package v16_test
 
 import (
 	"maps"
-	. "michelprogram/photon-parser/internal/parameters/v16"
 	v16 "michelprogram/photon-parser/internal/parameters/v16"
 	"michelprogram/photon-parser/internal/reader"
 	"reflect"
@@ -20,7 +19,7 @@ func TestParseDictsParametersAndAccessor(t *testing.T) {
 			name: "int32 to int32 dictionary",
 			input: []byte{
 				0x00, 0x44,
-				byte(Int32Type), byte(Int32Type), // keyType, valueType
+				byte(v16.Int32Type), byte(v16.Int32Type), // keyType, valueType
 				0x00, 0x02, // size = 2
 				0x00, 0x00, 0x00, 0x01, // key = 1
 				0x00, 0x00, 0x28, 0xC1, // value = 10433
@@ -36,7 +35,7 @@ func TestParseDictsParametersAndAccessor(t *testing.T) {
 			name: "empty dictionary",
 			input: []byte{
 				0x00, 0x44,
-				byte(Int32Type), byte(Int32Type),
+				byte(v16.Int32Type), byte(v16.Int32Type),
 				0x00, 0x00, // size = 0
 			},
 			want: map[any]any{},
@@ -45,7 +44,7 @@ func TestParseDictsParametersAndAccessor(t *testing.T) {
 			name: "string to boolean dictionary",
 			input: []byte{
 				0x00, 0x44,
-				byte(StringType), byte(BooleanType),
+				byte(v16.StringType), byte(v16.BooleanType),
 				0x00, 0x02, // size = 2
 				0x00, 0x01, 'a', // key = "a"
 				0x01,                 // value = true

@@ -26,7 +26,7 @@ func TestSkip(t *testing.T) {
 			name:  "negative skip",
 			input: []byte{0x01, 0x02, 0x03},
 			skip:  -1,
-			want:  errors.InvalidNegativeSkip,
+			want:  errors.ErrInvalidNegativeSkip,
 		},
 	}
 	for _, tt := range tests {

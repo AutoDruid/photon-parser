@@ -25,7 +25,7 @@ type Value struct {
 	Kind    ParameterType `json:"kind"`
 	KeyType ParameterType `json:"key_type"`
 	ValType ParameterType `json:"val_type"`
-	_pad    [5]byte       `json:"-"`
+	_    [5]byte       `json:"-"`
 	Num     uint64        `json:"num"`
 	Blob    []byte        `json:"blob,omitempty"`
 }

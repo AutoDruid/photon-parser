@@ -17,7 +17,7 @@ type Parser[P types.ParameterView] struct {
 
 func NewV16() *Parser[v16.Parameter] {
 	return &Parser[v16.Parameter]{
-		ctx: context.NewContext[v16.Parameter](
+		ctx: context.NewContext(
 			reader.NewReader(nil),
 			assembler.NewAssembler(),
 			hooks.NewHooks[v16.Parameter](),
@@ -33,7 +33,6 @@ func ParseV16(data []byte) (*Session, error) {
 	p := NewV16()
 	return p.ParsePacket(data)
 }
-
 
 func NewV18() *Parser[v18.Parameter] {
 	return &Parser[v18.Parameter]{

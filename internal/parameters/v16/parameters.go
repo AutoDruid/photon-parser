@@ -97,7 +97,7 @@ func (p *Parameter) parseHeader(r *reader.Reader) (Header, error) {
 // For unsupported type codes, returns an error.
 func scanPayload(reader *reader.Reader, t ParameterType) (Value, error) {
 	var err error
-	var res Value = Value{Kind: t}
+	res := Value{Kind: t}
 
 	switch t {
 	case StringType:

@@ -51,7 +51,7 @@ func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Command) e
 	}
 
 	if header.Length < types.COMMAND_HEADER_SIZE {
-		return errors.HeaderSize
+		return errors.ErrHeaderSize
 	}
 
 	parsed, err := cmd.parsePayload(header.Type, ctx, header.Length)

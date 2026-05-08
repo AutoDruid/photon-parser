@@ -193,7 +193,7 @@ func BenchmarkParseUDP1(b *testing.B) {
 		payloads[i] = payload
 	}
 
-	sess:= &types.Session{}
+	sess := &types.Session{}
 
 	for b.Loop() {
 		for _, payload := range payloads {

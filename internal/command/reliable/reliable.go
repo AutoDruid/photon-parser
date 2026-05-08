@@ -66,7 +66,7 @@ func Parse[P types.ParameterView](ctx *context.Context[P], length uint32) (*Reli
 	reliable.Header = header
 
 	if reliable.Signature != 0xF3 {
-		return nil, errors.EncryptedPacket
+		return nil, errors.ErrEncryptedPacket
 	}
 
 	reliable.Parameters = make([]P, header.ParameterCount)
