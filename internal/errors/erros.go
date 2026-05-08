@@ -18,3 +18,4 @@ var InvalidBooleanValue = errors.New("invalid value for boolean: (expected 0 or 
 var NotEnoughBytesString = errors.New("not enough bytes to read string")
 var NotEnoughBytesByte = errors.New("not enough bytes to read byte")
 var NotEnoughBytesBytes = errors.New("not enough bytes to read []byte")
+var InvalidNegativeSkip = errors.New("negative skip")

@@ -165,6 +165,11 @@ func scanPayload(reader *reader.Reader, t ParameterType) (Value, error) {
 		if err != nil {
 			return Value{}, err
 		}
+	case Float64Type:
+		err = scanFloat64(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
 	case BooleanTrueType:
 		res.Num = 1
 	case BooleanFalseType:

@@ -203,6 +203,10 @@ func decodeValue(v Value) any {
 	}
 }
 
+func (p Parameter) Int8ArrayValue() iter.Seq2[int, int8] {
+	return nil
+}
+
 func collectDictionary(seq iter.Seq2[any, any], n uint64) map[any]any {
 	if seq == nil {
 		return nil

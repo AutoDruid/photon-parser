@@ -29,6 +29,15 @@ func scanFloat32(reader *reader.Reader, value *Value) error {
 	return nil
 }
 
+func scanFloat64(reader *reader.Reader, value *Value) error {
+	res, err := reader.ReadFloat64(binary.LittleEndian)
+	if err != nil {
+		return err
+	}
+	value.Num = uint64(math.Float64bits(res))
+	return nil
+}
+
 func scanInt8(reader *reader.Reader, value *Value) error {
 	b, err := reader.ReadByte()
 	if err != nil {

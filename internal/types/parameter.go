@@ -8,8 +8,9 @@ type ParameterView interface {
 	Float32ArrayValue() iter.Seq2[int, float32]
 	Int32ArrayValue() iter.Seq2[int, int32]
 	Int64ArrayValue() iter.Seq2[int, int64]
-	ByteArrayValue() iter.Seq2[int, byte]
 	Int16ArrayValue() iter.Seq2[int, int16]
+	Int8ArrayValue() iter.Seq2[int, int8]
+	ByteArrayValue() iter.Seq2[int, byte]
 	StringArrayValue() iter.Seq2[int, string]
 	BooleanArrayValue() iter.Seq2[int, bool]
 	ArrayValue() iter.Seq2[int, any]
@@ -17,8 +18,8 @@ type ParameterView interface {
 	BooleanValue() (bool, bool)
 	StringValue() (string, bool)
 	Float32Value() (float32, bool)
+	Float64Value() (float64, bool)
 	IntValue() (int64, bool)
 
-	
 	MarshalJSON() ([]byte, error)
 }
