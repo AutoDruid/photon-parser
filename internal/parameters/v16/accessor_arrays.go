@@ -161,7 +161,7 @@ func decodeValue(v Value) any {
 	case ArrayType:
 		return collect(p.ArrayValue(), p.Num)
 	default:
-		return fmt.Errorf("unknown type: %d\n", v.Kind)
+		return fmt.Sprintf("unknown type: %d\n", v.Kind)
 	}
 }
 
