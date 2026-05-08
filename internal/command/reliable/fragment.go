@@ -1,0 +1,64 @@
+package reliable
+
+import (
+	"encoding/binary"
+	"michelprogram/photon-parser/internal/context"
+	"michelprogram/photon-parser/internal/reader"
+	"michelprogram/photon-parser/internal/types"
+)
+
+type Fragment struct {
+	types.Fragment
+}
+
+func ParseFragment[P types.ParameterView](ctx *context.Context[P], length uint32) (*Reliable[P], error) {
+
+	fragment, err := parseMetadata(ctx.Reader)
+	if err != nil {
+		return nil, err
+	}
+
+	data, completed := ctx.Assembler.Feed(fragment.Fragment)
+
+	if completed {
+		ctx.Reader.Reset(data)
+		return Parse(ctx, length)
+	}
+
+	return nil, nil
+}
+
+func parseMetadata(reader *reader.Reader) (*Fragment, error) {
+	var fragment Fragment
+	var err error
+
+	fragment.ID, err = reader.ReadUInt32(binary.BigEndian)
+	if err != nil {
+		return nil, err
+	}
+
+	fragment.Count, err = reader.ReadUInt32(binary.BigEndian)
+	if err != nil {
+		return nil, err
+	}
+
+	fragment.Index, err = reader.ReadUInt32(binary.BigEndian)
+	if err != nil {
+		return nil, err
+	}
+
+	fragment.Size, err = reader.ReadUInt32(binary.BigEndian)
+	if err != nil {
+		return nil, err
+	}
+
+	fragment.Offset, err = reader.ReadUInt32(binary.BigEndian)
+	if err != nil {
+		return nil, err
+	}
+
+	fragment.Data = reader.ReadRemaining()
+
+	return &fragment, nil
+
+}

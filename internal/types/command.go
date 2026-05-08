@@ -34,12 +34,20 @@ type CommandHeader struct {
 // The Data field contains the command-specific payload, which may be empty
 // for some command types (e.g., Acknowledge, Ping).
 type Command struct {
-	CommandHeader
-
-	Payload Payload `json:"payload"` // Command payload (interpretation depends on Type)
+	CommandHeader `json:"header"`
+	Payload       Payload `json:"payload"` // Command payload (interpretation depends on Type)
 }
 
 type UnknownPayload struct {
 	Raw  []byte
 	Kind CommandType
+}
+
+type Fragment struct {
+	ID     uint32
+	Count  uint32
+	Index  uint32
+	Size   uint32
+	Offset uint32
+	Data   []byte
 }

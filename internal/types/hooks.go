@@ -1,21 +1,18 @@
 package types
 
-type SyncHooks struct {
+type SyncHooks[P ParameterView] struct {
 	OnSession   func(Session)
 	OnCommand   func(Command)
-	OnParameter func(Parameter)
+	OnParameter func(P)
 }
 
-type AsyncHooks struct {
+type AsyncHooks[P ParameterView] struct {
 	OnSession   chan Session
 	OnCommand   chan Command
-	OnParameter chan Parameter
+	OnParameter chan P
 }
 
 type HookOptions struct {
 	Size uint16
 }
 
-type Hookable interface {
-	Session | Command | Parameter
-}

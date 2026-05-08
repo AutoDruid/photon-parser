@@ -4,17 +4,19 @@
 package session
 
 import (
-	"fmt"
+	"encoding/binary"
+	"errors"
 	"michelprogram/photon-parser/internal/command"
+	"michelprogram/photon-parser/internal/context"
+	photonErrors "michelprogram/photon-parser/internal/errors"
+	"michelprogram/photon-parser/internal/hooks"
 	"michelprogram/photon-parser/internal/reader"
 	"michelprogram/photon-parser/internal/types"
 )
 
-type Session struct {
+type Session[P types.ParameterView] struct {
 	types.Session
 }
-
-var _ reader.Parseable = (*Session)(nil)
 
 // Parse parses a Photon session packet from a parser.Reader.
 // This function reads the session header, then iterates through and parses
@@ -22,51 +24,42 @@ var _ reader.Parseable = (*Session)(nil)
 //
 // Returns a Session struct with all fields populated including the Commands slice,
 // or an error if any part of parsing fails.
-func (s *Session) Parse(r *reader.Reader) error {
-	header, err := s.parseHeader(r)
+func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Session) error {
+	session := Session[P]{}
+	header, err := session.parseHeader(ctx.Reader)
 	if err != nil {
 		return err
 	}
 
-	s.Commands = make([]*types.Command, header.CommandCount)
+	out.Commands = make([]types.Command, header.CommandCount)
 
 	for i := uint8(0); i < header.CommandCount; i++ {
-		cmd := &command.Command{}
-		err := cmd.Parse(r)
+		err := command.Parse(ctx, &out.Commands[i])
+
+		if errors.Is(err, photonErrors.HeaderSize) {
+			break
+		}
 		if err != nil {
 			return err
 		}
-		s.Commands[i] = &cmd.Command
+
+		if out.Commands[i].Type > types.SendReliableFragmentCommand {
+			break
+		}
 	}
 
-	s.Header = header
+	out.Header = header
 
-	s.emit(r)
+	session.emit(ctx.Hooks, out)
 
 	return nil
 }
 
-func (s Session) emit(r *reader.Reader) {
-
-	if r.SyncHooks.OnSession != nil {
-		r.SyncHooks.OnSession(s.Session)
-	}
-
-	if r.AsyncHooks.OnSession == nil {
-		return
-	}
-
-	select {
-	case r.AsyncHooks.OnSession <- s.Session:
-	default:
-	}
-}
-
-func (s *Session) parseHeader(r *reader.Reader) (types.Header, error) {
+func (s *Session[P]) parseHeader(r *reader.Reader) (types.Header, error) {
 	var err error
 	var header types.Header
 
-	header.PeerID, err = r.ReadUInt16()
+	header.PeerID, err = r.ReadUInt16(binary.BigEndian)
 	if err != nil {
 		return types.Header{}, err
 	}
@@ -81,12 +74,12 @@ func (s *Session) parseHeader(r *reader.Reader) (types.Header, error) {
 		return types.Header{}, err
 	}
 
-	header.Timestamp, err = r.ReadUInt32()
+	header.Timestamp, err = r.ReadUInt32(binary.BigEndian)
 	if err != nil {
 		return types.Header{}, err
 	}
 
-	header.Challenge, err = r.ReadInt32()
+	header.Challenge, err = r.ReadInt32(binary.BigEndian)
 	if err != nil {
 		return types.Header{}, err
 	}
@@ -94,10 +87,21 @@ func (s *Session) parseHeader(r *reader.Reader) (types.Header, error) {
 	return header, nil
 }
 
-func (s Session) String() string {
-	res := fmt.Sprintf("Session: PeerID: %d, CRCEnabled: %d, CommandCount: %d, Timestamp: %d, Challenge: %d", s.PeerID, s.CRCEnabled, s.CommandCount, s.Timestamp, s.Challenge)
-	for i, cmd := range s.Commands {
-		res += fmt.Sprintf("\n  Command %d: Type: %d, Payload: %v", i, cmd.Type, cmd.Payload)
+func (s Session[P]) emit(hooks *hooks.Hooks[P], out *types.Session) {
+	if hooks == nil {
+		return
 	}
-	return res
+
+	if hooks.SyncHooks.OnSession != nil {
+		hooks.SyncHooks.OnSession(*out)
+	}
+
+	if hooks.AsyncHooks.OnSession == nil {
+		return
+	}
+
+	select {
+	case hooks.AsyncHooks.OnSession <- *out:
+	default:
+	}
 }
