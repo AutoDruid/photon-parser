@@ -40,6 +40,11 @@ func (r *Reader) ReadRemaining() []byte {
 }
 
 func (r *Reader) Skip(n int) error {
+
+	if n < 0 {
+		return errors.InvalidNegativeSkip
+	}
+
 	size := r.Cursor + n
 
 	if size > r.Max {

@@ -94,7 +94,7 @@ func TestParseInt8ParameterAndAccessor(t *testing.T) {
 				t.Errorf("ID() = %d, want %d", got.ID(), tt.wantID)
 			}
 			if got.Kind != v16.Int8Type {
-				t.Errorf("Kind = %d, want %d", got.Kind, v16.StringType)
+				t.Errorf("Kind = %d, want %d", got.Kind, v16.Int8Type)
 			}
 			if gotInt8, ok := got.IntValue(); !ok || gotInt8 != int64(tt.want) {
 				t.Errorf("IntValue() = %d, want %d", gotInt8, tt.want)

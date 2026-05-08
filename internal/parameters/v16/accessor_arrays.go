@@ -114,21 +114,12 @@ func (p Parameter) ArrayValue() iter.Seq2[int, any] {
 }
 
 func (p Parameter) BooleanArrayValue() iter.Seq2[int, bool] {
-	if p.Kind != ArrayType || p.Num == 0 || len(p.Blob) == 0 {
-		return nil
-	}
-
-	r := reader.NewReader(p.Blob)
-	ttype, err := r.ReadUInt8()
-	if err != nil {
-		return nil
-	}
-
-	if ParameterType(ttype) != BooleanType {
-		return nil
-	}
-
 	return func(yield func(int, bool) bool) {
+		if p.Kind != ArrayType && p.KeyType != BooleanType || p.Num == 0 || len(p.Blob) == 0 {
+			return
+		}
+
+		r := reader.NewReader(p.Blob)
 		for i := 0; i < int(p.Num); i++ {
 			b, err := r.ReadBoolean()
 			if err != nil {

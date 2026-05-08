@@ -4,9 +4,41 @@ import (
 	"bytes"
 	"encoding/binary"
 	"math"
+	"michelprogram/photon-parser/internal/errors"
 	"michelprogram/photon-parser/internal/reader"
 	"testing"
 )
+
+func TestSkip(t *testing.T) {
+	tests := []struct {
+		name  string
+		input []byte
+		skip  int
+		want  error
+	}{
+		{
+			name:  "positive skip",
+			input: []byte{0x01, 0x02, 0x03},
+			skip:  1,
+			want:  nil,
+		},
+		{
+			name:  "negative skip",
+			input: []byte{0x01, 0x02, 0x03},
+			skip:  -1,
+			want:  errors.InvalidNegativeSkip,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := reader.NewReader(tt.input)
+			err := r.Skip(tt.skip)
+			if err != tt.want {
+				t.Errorf("Skip() error = %v, want %v", err, tt.want)
+			}
+		})
+	}
+}
 
 func TestReadRemaining(t *testing.T) {
 	tests := []struct {
