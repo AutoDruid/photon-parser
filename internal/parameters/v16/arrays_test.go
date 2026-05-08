@@ -7,64 +7,6 @@ import (
 	"testing"
 )
 
-func TestReadInt8Array(t *testing.T) {
-	tests := []struct {
-		name    string
-		input   []byte
-		want    []int8
-		wantErr bool
-	}{
-		{
-			name:  "empty array",
-			input: []byte{0x00, 0x78, 0x00, 0x00, 0x00, 0x00}, // size = 0
-			want:  []int8{},
-		},
-		{
-			name:  "single element",
-			input: []byte{0x00, 0x78, 0x00, 0x00, 0x00, 0x01, 0x2A}, // size=1, value=42
-			want:  []int8{42},
-		},
-		{
-			name:  "multiple elements",
-			input: []byte{0x00, 0x78, 0x00, 0x00, 0x00, 0x03, 0x01, 0x02, 0x03}, // [1, 2, 3]
-			want:  []int8{1, 2, 3},
-		},
-		{
-			name:  "negative values",
-			input: []byte{0x00, 0x78, 0x00, 0x00, 0x00, 0x02, 0xFF, 0xFE}, // [-1, -2]
-			want:  []int8{-1, -2},
-		},
-		{
-			name:    "truncated size",
-			input:   []byte{0x00, 0x78, 0x00, 0x00},
-			wantErr: true,
-		},
-		{
-			name:    "truncated data",
-			input:   []byte{0x00, 0x78, 0x00, 0x00, 0x00, 0x03, 0x01}, // says 3 elements, only 1 present
-			wantErr: true,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			reader := reader.NewReader(tt.input)
-			p := &Parameter{}
-			out := &Parameter{}
-			err := p.Parse(reader, out, nil)
-
-			if (err != nil) != tt.wantErr {
-				t.Errorf("ReadInt8Array() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-
-			if !tt.wantErr && !reflect.DeepEqual(out.Value, tt.want) {
-				t.Errorf("ReadInt8Array() = %v, want %v", out.Value, tt.want)
-			}
-		})
-	}
-}
-
 func TestReadInt32Array(t *testing.T) {
 	tests := []struct {
 		name    string

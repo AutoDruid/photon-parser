@@ -3,6 +3,7 @@ package v16
 import (
 	"encoding/binary"
 	"iter"
+	"log"
 	"michelprogram/photon-parser/internal/reader"
 )
 
@@ -20,12 +21,33 @@ func (p Parameter) ByteArrayValue() iter.Seq2[int, byte] {
 	}
 }
 
-func (p Parameter) Int32ArrayValue() iter.Seq2[int, int32] {
-	if p.Kind != Int32ArrayType || p.Num == 0 || len(p.Blob) == 0 {
-		return nil
-	}
+func (p Parameter) Int8ArrayValue() iter.Seq2[int, int8] {
+	return func(yield func(int, int8) bool) {
+		if p.Kind != Int8ArrayType || p.Num == 0 || len(p.Blob) == 0 {
+			return
+		}
 
+		r := reader.NewReader(p.Blob)
+
+		for i := 0; i < int(p.Num); i++ {
+			output, err := r.ReadInt8()
+			if err != nil {
+				return
+			}
+
+			if !yield(i, output) {
+				return
+			}
+		}
+	}
+}
+
+func (p Parameter) Int32ArrayValue() iter.Seq2[int, int32] {
 	return func(yield func(int, int32) bool) {
+		if p.Kind != Int32ArrayType || p.Num == 0 || len(p.Blob) == 0 {
+			return
+		}
+
 		r := reader.NewReader(p.Blob)
 
 		for i := 0; i < int(p.Num); i++ {
@@ -42,14 +64,13 @@ func (p Parameter) Int32ArrayValue() iter.Seq2[int, int32] {
 }
 
 func (p Parameter) StringArrayValue() iter.Seq2[int, string] {
-	if p.Kind != StringArrayType || p.Num == 0 || len(p.Blob) == 0 {
-		return nil
-	}
-
 	return func(yield func(int, string) bool) {
-		r := reader.NewReader(p.Blob)
+		if p.Kind != StringArrayType || p.Num == 0 || len(p.Blob) == 0 {
+			return
+		}
 
 		for i := 0; i < int(p.Num); i++ {
+			r := reader.NewReader(p.Blob)
 
 			size, err := r.ReadUInt16(binary.BigEndian)
 			if err != nil {
@@ -60,6 +81,8 @@ func (p Parameter) StringArrayValue() iter.Seq2[int, string] {
 			if err != nil {
 				return
 			}
+
+			log.Println("Readed", s, size)
 
 			if !yield(i, s) {
 				return

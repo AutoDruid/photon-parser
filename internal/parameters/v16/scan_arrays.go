@@ -15,6 +15,7 @@ func scanInt8Array(reader *reader.Reader, value *Value) error {
 	if err != nil {
 		return err
 	}
+
 	value.Num = uint64(size)
 	return nil
 }

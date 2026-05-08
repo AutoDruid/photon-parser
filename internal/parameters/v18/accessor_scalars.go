@@ -16,6 +16,13 @@ func (p Parameter) Float32Value() (float32, bool) {
 	return math.Float32frombits(uint32(p.Num)), true
 }
 
+func (p Parameter) Float64Value() (float64, bool) {
+	if p.Kind != Float64Type {
+		return 0, false
+	}
+	return math.Float64frombits(uint64(p.Num)), true
+}
+
 func (p Parameter) IntValue() (int64, bool) {
 	switch p.Value.Kind {
 	case Int8Type:

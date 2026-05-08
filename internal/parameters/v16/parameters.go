@@ -2,6 +2,7 @@ package v16
 
 import (
 	"fmt"
+	"log"
 	"michelprogram/photon-parser/internal/context"
 	"michelprogram/photon-parser/internal/hooks"
 	"michelprogram/photon-parser/internal/reader"
@@ -34,6 +35,8 @@ func (p *Parameter) Parse(reader *reader.Reader, out *Parameter, hooks *hooks.Ho
 	}
 
 	value, err := scanPayload(reader, header.Type)
+
+	log.Printf("Value@%v\n", value)
 
 	if err != nil {
 		return err
@@ -162,17 +165,14 @@ func scanPayload(reader *reader.Reader, t ParameterType) (Value, error) {
 		}
 	case NilType, UnknownType:
 		break
+	case DictionaryType:
+		err = scanDictionary(reader, &res)
+		if err != nil {
+			return Value{}, err
+		}
 	default:
 		return Value{}, fmt.Errorf("unsupported type: %d", t)
 	}
 
-	/* switch ttype {
-	case types.DictionaryType:
-		return p.readDictionary(reader)
-	case types.HashTableType:
-		return p.readHashTable(reader)
-	default:
-		return nil, fmt.Errorf("unsupported type: 0x%02x", ttype)
-	} */
-	return Value{}, nil
+	return res, nil
 }
