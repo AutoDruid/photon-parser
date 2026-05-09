@@ -1,12 +1,13 @@
 package reliable_test
 
 import (
-	"AutoDruid/photon-parser/internal/command/reliable"
-	"AutoDruid/photon-parser/internal/context"
-	v16 "AutoDruid/photon-parser/internal/parameters/v16"
-	"AutoDruid/photon-parser/internal/reader"
 	"log"
 	"testing"
+
+	"github.com/AutoDruid/photon-parser/internal/command/reliable"
+	"github.com/AutoDruid/photon-parser/internal/context"
+	v16 "github.com/AutoDruid/photon-parser/internal/parameters/v16"
+	"github.com/AutoDruid/photon-parser/internal/reader"
 )
 
 func TestReliableParsing(t *testing.T) {

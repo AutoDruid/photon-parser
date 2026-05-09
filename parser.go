@@ -1,14 +1,14 @@
 package photon
 
 import (
-	"AutoDruid/photon-parser/internal/assembler"
-	"AutoDruid/photon-parser/internal/context"
-	"AutoDruid/photon-parser/internal/hooks"
-	v16 "AutoDruid/photon-parser/internal/parameters/v16"
-	v18 "AutoDruid/photon-parser/internal/parameters/v18"
-	"AutoDruid/photon-parser/internal/reader"
-	"AutoDruid/photon-parser/internal/session"
-	"AutoDruid/photon-parser/internal/types"
+	"github.com/AutoDruid/photon-parser/internal/assembler"
+	"github.com/AutoDruid/photon-parser/internal/context"
+	"github.com/AutoDruid/photon-parser/internal/hooks"
+	v16 "github.com/AutoDruid/photon-parser/internal/parameters/v16"
+	v18 "github.com/AutoDruid/photon-parser/internal/parameters/v18"
+	"github.com/AutoDruid/photon-parser/internal/reader"
+	"github.com/AutoDruid/photon-parser/internal/session"
+	"github.com/AutoDruid/photon-parser/internal/types"
 )
 
 type Parser[P types.ParameterView] struct {

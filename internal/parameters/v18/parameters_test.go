@@ -1,12 +1,13 @@
 package v18_test
 
 import (
-	photonparser "AutoDruid/photon-parser"
-	"AutoDruid/photon-parser/internal/command/reliable"
-	v18 "AutoDruid/photon-parser/internal/parameters/v18"
 	"encoding/json"
 	"log"
 	"testing"
+
+	photonparser "github.com/AutoDruid/photon-parser"
+	"github.com/AutoDruid/photon-parser/internal/command/reliable"
+	v18 "github.com/AutoDruid/photon-parser/internal/parameters/v18"
 )
 
 func TestDecode(t *testing.T) {

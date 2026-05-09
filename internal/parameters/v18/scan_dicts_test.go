@@ -1,11 +1,12 @@
 package v18_test
 
 import (
-	v18 "AutoDruid/photon-parser/internal/parameters/v18"
-	"AutoDruid/photon-parser/internal/reader"
 	"maps"
 	"reflect"
 	"testing"
+
+	v18 "github.com/AutoDruid/photon-parser/internal/parameters/v18"
+	"github.com/AutoDruid/photon-parser/internal/reader"
 )
 
 func TestParseDictsParametersAndAccessor(t *testing.T) {

@@ -1,10 +1,11 @@
 package v18
 
 import (
-	"AutoDruid/photon-parser/internal/context"
-	"AutoDruid/photon-parser/internal/hooks"
-	"AutoDruid/photon-parser/internal/reader"
 	"fmt"
+
+	"github.com/AutoDruid/photon-parser/internal/context"
+	"github.com/AutoDruid/photon-parser/internal/hooks"
+	"github.com/AutoDruid/photon-parser/internal/reader"
 )
 
 var _ context.ParameterParser[Parameter] = (*Parameter)(nil)

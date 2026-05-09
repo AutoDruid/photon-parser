@@ -1,9 +1,9 @@
 package context
 
 import (
-	"AutoDruid/photon-parser/internal/hooks"
-	"AutoDruid/photon-parser/internal/reader"
-	"AutoDruid/photon-parser/internal/types"
+	"github.com/AutoDruid/photon-parser/internal/hooks"
+	"github.com/AutoDruid/photon-parser/internal/reader"
+	"github.com/AutoDruid/photon-parser/internal/types"
 )
 
 // ParameterParser is implemented by each protocol-version parameters package

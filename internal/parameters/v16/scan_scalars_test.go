@@ -1,11 +1,12 @@
 package v16_test
 
 import (
-	v16 "AutoDruid/photon-parser/internal/parameters/v16"
-	"AutoDruid/photon-parser/internal/reader"
 	"bytes"
 	"math"
 	"testing"
+
+	v16 "github.com/AutoDruid/photon-parser/internal/parameters/v16"
+	"github.com/AutoDruid/photon-parser/internal/reader"
 )
 
 func TestParseStringParameterAndAccessor(t *testing.T) {

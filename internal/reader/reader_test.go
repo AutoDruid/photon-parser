@@ -1,12 +1,13 @@
 package reader_test
 
 import (
-	"AutoDruid/photon-parser/internal/errors"
-	"AutoDruid/photon-parser/internal/reader"
 	"bytes"
 	"encoding/binary"
 	"math"
 	"testing"
+
+	"github.com/AutoDruid/photon-parser/internal/errors"
+	"github.com/AutoDruid/photon-parser/internal/reader"
 )
 
 func TestSkip(t *testing.T) {

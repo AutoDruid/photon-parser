@@ -1,18 +1,19 @@
 package command
 
 import (
-	"AutoDruid/photon-parser/internal/command/acknowledge"
-	"AutoDruid/photon-parser/internal/command/connect"
-	"AutoDruid/photon-parser/internal/command/disconnect"
-	"AutoDruid/photon-parser/internal/command/ping"
-	"AutoDruid/photon-parser/internal/command/reliable"
-	"AutoDruid/photon-parser/internal/context"
-	"AutoDruid/photon-parser/internal/errors"
-	"AutoDruid/photon-parser/internal/hooks"
-	"AutoDruid/photon-parser/internal/reader"
-	"AutoDruid/photon-parser/internal/types"
 	"encoding/binary"
 	"fmt"
+
+	"github.com/AutoDruid/photon-parser/internal/command/acknowledge"
+	"github.com/AutoDruid/photon-parser/internal/command/connect"
+	"github.com/AutoDruid/photon-parser/internal/command/disconnect"
+	"github.com/AutoDruid/photon-parser/internal/command/ping"
+	"github.com/AutoDruid/photon-parser/internal/command/reliable"
+	"github.com/AutoDruid/photon-parser/internal/context"
+	"github.com/AutoDruid/photon-parser/internal/errors"
+	"github.com/AutoDruid/photon-parser/internal/hooks"
+	"github.com/AutoDruid/photon-parser/internal/reader"
+	"github.com/AutoDruid/photon-parser/internal/types"
 )
 
 type Command[P types.ParameterView] struct {

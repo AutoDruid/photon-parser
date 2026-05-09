@@ -1,9 +1,10 @@
 package v16
 
 import (
-	"AutoDruid/photon-parser/internal/types"
 	"encoding/json"
 	"fmt"
+
+	"github.com/AutoDruid/photon-parser/internal/types"
 )
 
 // Type represents a Photon Protocol16 type code.

@@ -1,8 +1,9 @@
 package connect
 
 import (
-	"AutoDruid/photon-parser/internal/reader"
 	"encoding/binary"
+
+	"github.com/AutoDruid/photon-parser/internal/reader"
 )
 
 type Connect struct {

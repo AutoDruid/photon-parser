@@ -1,9 +1,10 @@
 package v16
 
 import (
-	"AutoDruid/photon-parser/internal/reader"
 	"encoding/binary"
 	"math"
+
+	"github.com/AutoDruid/photon-parser/internal/reader"
 )
 
 func scanString(reader *reader.Reader, value *Value) error {

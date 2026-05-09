@@ -1,6 +1,6 @@
 package hooks
 
-import "AutoDruid/photon-parser/internal/types"
+import "github.com/AutoDruid/photon-parser/internal/types"
 
 type Hooks[P types.ParameterView] struct {
 	types.AsyncHooks[P]

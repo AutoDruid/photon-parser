@@ -1,10 +1,11 @@
 package reliable
 
 import (
-	"AutoDruid/photon-parser/internal/context"
-	"AutoDruid/photon-parser/internal/reader"
-	"AutoDruid/photon-parser/internal/types"
 	"encoding/binary"
+
+	"github.com/AutoDruid/photon-parser/internal/context"
+	"github.com/AutoDruid/photon-parser/internal/reader"
+	"github.com/AutoDruid/photon-parser/internal/types"
 )
 
 type Fragment struct {

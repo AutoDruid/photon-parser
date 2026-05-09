@@ -1,7 +1,7 @@
 package v18
 
 import (
-	"AutoDruid/photon-parser/internal/reader"
+	"github.com/AutoDruid/photon-parser/internal/reader"
 )
 
 func scanFloat32Array(reader *reader.Reader, value *Value) error {

@@ -1,8 +1,8 @@
 package v18
 
 import (
-	"AutoDruid/photon-parser/internal/context"
-	"AutoDruid/photon-parser/internal/reader"
+	"github.com/AutoDruid/photon-parser/internal/context"
+	"github.com/AutoDruid/photon-parser/internal/reader"
 )
 
 type ReliableHeaderParameterCountV18 struct{}

@@ -1,12 +1,13 @@
 package command_test
 
 import (
-	"AutoDruid/photon-parser/internal/command"
-	"AutoDruid/photon-parser/internal/context"
-	v16 "AutoDruid/photon-parser/internal/parameters/v16"
-	"AutoDruid/photon-parser/internal/reader"
-	"AutoDruid/photon-parser/internal/types"
 	"testing"
+
+	"github.com/AutoDruid/photon-parser/internal/command"
+	"github.com/AutoDruid/photon-parser/internal/context"
+	v16 "github.com/AutoDruid/photon-parser/internal/parameters/v16"
+	"github.com/AutoDruid/photon-parser/internal/reader"
+	"github.com/AutoDruid/photon-parser/internal/types"
 )
 
 func TestParseSession(t *testing.T) {

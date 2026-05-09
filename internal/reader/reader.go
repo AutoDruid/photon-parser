@@ -1,9 +1,10 @@
 package reader
 
 import (
-	"AutoDruid/photon-parser/internal/errors"
 	"encoding/binary"
 	"math"
+
+	"github.com/AutoDruid/photon-parser/internal/errors"
 )
 
 const (

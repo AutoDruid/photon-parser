@@ -5,8 +5,8 @@ import (
 	"slices"
 	"testing"
 
-	v16 "AutoDruid/photon-parser/internal/parameters/v16"
-	"AutoDruid/photon-parser/internal/reader"
+	v16 "github.com/AutoDruid/photon-parser/internal/parameters/v16"
+	"github.com/AutoDruid/photon-parser/internal/reader"
 )
 
 func TestParseInt8ArrayParameterAndAccessor(t *testing.T) {

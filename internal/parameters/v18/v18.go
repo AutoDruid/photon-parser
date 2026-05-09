@@ -1,8 +1,9 @@
 package v18
 
 import (
-	"AutoDruid/photon-parser/internal/types"
 	"encoding/json"
+
+	"github.com/AutoDruid/photon-parser/internal/types"
 )
 
 // Header represents the parameter header containing the parameter ID and type.

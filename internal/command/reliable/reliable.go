@@ -1,10 +1,11 @@
 package reliable
 
 import (
-	"AutoDruid/photon-parser/internal/context"
-	"AutoDruid/photon-parser/internal/errors"
-	"AutoDruid/photon-parser/internal/types"
 	"encoding/binary"
+
+	"github.com/AutoDruid/photon-parser/internal/context"
+	"github.com/AutoDruid/photon-parser/internal/errors"
+	"github.com/AutoDruid/photon-parser/internal/types"
 )
 
 // HEADER_SIZE is the size in bytes of a reliable message header (5 bytes).
