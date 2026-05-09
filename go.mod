@@ -1,3 +1,3 @@
-module AutoDruid/photon-parser
+module github.com/AutoDruid/photon-parser
 
 go 1.25.0
