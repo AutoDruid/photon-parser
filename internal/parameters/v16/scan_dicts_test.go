@@ -1,9 +1,9 @@
 package v16_test
 
 import (
+	v16 "AutoDruid/photon-parser/internal/parameters/v16"
+	"AutoDruid/photon-parser/internal/reader"
 	"maps"
-	v16 "michelprogram/photon-parser/internal/parameters/v16"
-	"michelprogram/photon-parser/internal/reader"
 	"reflect"
 	"testing"
 )

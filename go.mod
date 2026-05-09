@@ -1,3 +1,3 @@
-module michelprogram/photon-parser
+module AutoDruid/photon-parser
 
 go 1.25.0

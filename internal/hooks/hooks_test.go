@@ -3,10 +3,10 @@ package hooks_test
 import (
 	"testing"
 
-	"michelprogram/photon-parser/internal/hooks"
-	v16 "michelprogram/photon-parser/internal/parameters/v16"
-	v18 "michelprogram/photon-parser/internal/parameters/v18"
-	"michelprogram/photon-parser/internal/types"
+	"AutoDruid/photon-parser/internal/hooks"
+	v16 "AutoDruid/photon-parser/internal/parameters/v16"
+	v18 "AutoDruid/photon-parser/internal/parameters/v18"
+	"AutoDruid/photon-parser/internal/types"
 )
 
 func TestNewHooks(t *testing.T) {

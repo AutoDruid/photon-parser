@@ -1,8 +1,8 @@
 package acknowledge
 
 import (
+	"AutoDruid/photon-parser/internal/reader"
 	"encoding/binary"
-	"michelprogram/photon-parser/internal/reader"
 )
 
 type Acknowledge struct {

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"michelprogram/photon-parser/internal/types"
+	"AutoDruid/photon-parser/internal/types"
 )
 
 func TestFeedSingleFragmentCompletes(t *testing.T) {

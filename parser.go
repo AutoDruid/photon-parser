@@ -1,14 +1,14 @@
 package photon
 
 import (
-	"michelprogram/photon-parser/internal/assembler"
-	"michelprogram/photon-parser/internal/context"
-	"michelprogram/photon-parser/internal/hooks"
-	v16 "michelprogram/photon-parser/internal/parameters/v16"
-	v18 "michelprogram/photon-parser/internal/parameters/v18"
-	"michelprogram/photon-parser/internal/reader"
-	"michelprogram/photon-parser/internal/session"
-	"michelprogram/photon-parser/internal/types"
+	"AutoDruid/photon-parser/internal/assembler"
+	"AutoDruid/photon-parser/internal/context"
+	"AutoDruid/photon-parser/internal/hooks"
+	v16 "AutoDruid/photon-parser/internal/parameters/v16"
+	v18 "AutoDruid/photon-parser/internal/parameters/v18"
+	"AutoDruid/photon-parser/internal/reader"
+	"AutoDruid/photon-parser/internal/session"
+	"AutoDruid/photon-parser/internal/types"
 )
 
 type Parser[P types.ParameterView] struct {

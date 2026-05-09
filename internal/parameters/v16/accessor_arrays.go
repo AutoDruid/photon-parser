@@ -1,10 +1,10 @@
 package v16
 
 import (
+	"AutoDruid/photon-parser/internal/reader"
 	"encoding/binary"
 	"fmt"
 	"iter"
-	"michelprogram/photon-parser/internal/reader"
 )
 
 func (p Parameter) ByteArrayValue() iter.Seq2[int, byte] {

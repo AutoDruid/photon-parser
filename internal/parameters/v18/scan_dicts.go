@@ -1,7 +1,7 @@
 package v18
 
 import (
-	"michelprogram/photon-parser/internal/reader"
+	"AutoDruid/photon-parser/internal/reader"
 )
 
 func scanDictionary(r *reader.Reader, value *Value) error {

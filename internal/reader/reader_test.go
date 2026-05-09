@@ -1,11 +1,11 @@
 package reader_test
 
 import (
+	"AutoDruid/photon-parser/internal/errors"
+	"AutoDruid/photon-parser/internal/reader"
 	"bytes"
 	"encoding/binary"
 	"math"
-	"michelprogram/photon-parser/internal/errors"
-	"michelprogram/photon-parser/internal/reader"
 	"testing"
 )
 

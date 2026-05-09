@@ -4,14 +4,14 @@
 package session
 
 import (
+	"AutoDruid/photon-parser/internal/command"
+	"AutoDruid/photon-parser/internal/context"
+	photonErrors "AutoDruid/photon-parser/internal/errors"
+	"AutoDruid/photon-parser/internal/hooks"
+	"AutoDruid/photon-parser/internal/reader"
+	"AutoDruid/photon-parser/internal/types"
 	"encoding/binary"
 	"errors"
-	"michelprogram/photon-parser/internal/command"
-	"michelprogram/photon-parser/internal/context"
-	photonErrors "michelprogram/photon-parser/internal/errors"
-	"michelprogram/photon-parser/internal/hooks"
-	"michelprogram/photon-parser/internal/reader"
-	"michelprogram/photon-parser/internal/types"
 )
 
 type Session[P types.ParameterView] struct {

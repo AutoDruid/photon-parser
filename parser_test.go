@@ -1,12 +1,12 @@
 package photon_test
 
 import (
+	"AutoDruid/photon-parser"
+	"AutoDruid/photon-parser/internal/types"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
-	"michelprogram/photon-parser"
-	"michelprogram/photon-parser/internal/types"
 	"os"
 	"strings"
 	"testing"

@@ -1,11 +1,11 @@
 package reliable_test
 
 import (
+	"AutoDruid/photon-parser/internal/command/reliable"
+	"AutoDruid/photon-parser/internal/context"
+	v16 "AutoDruid/photon-parser/internal/parameters/v16"
+	"AutoDruid/photon-parser/internal/reader"
 	"log"
-	"michelprogram/photon-parser/internal/command/reliable"
-	"michelprogram/photon-parser/internal/context"
-	v16 "michelprogram/photon-parser/internal/parameters/v16"
-	"michelprogram/photon-parser/internal/reader"
 	"testing"
 )
 

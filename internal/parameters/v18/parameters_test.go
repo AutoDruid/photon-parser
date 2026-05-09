@@ -1,11 +1,11 @@
 package v18_test
 
 import (
+	photonparser "AutoDruid/photon-parser"
+	"AutoDruid/photon-parser/internal/command/reliable"
+	v18 "AutoDruid/photon-parser/internal/parameters/v18"
 	"encoding/json"
 	"log"
-	photonparser "michelprogram/photon-parser"
-	"michelprogram/photon-parser/internal/command/reliable"
-	v18 "michelprogram/photon-parser/internal/parameters/v18"
 	"testing"
 )
 

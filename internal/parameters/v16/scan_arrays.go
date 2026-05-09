@@ -1,8 +1,8 @@
 package v16
 
 import (
+	"AutoDruid/photon-parser/internal/reader"
 	"encoding/binary"
-	"michelprogram/photon-parser/internal/reader"
 )
 
 func scanInt8Array(reader *reader.Reader, value *Value) error {

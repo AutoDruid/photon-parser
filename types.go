@@ -1,9 +1,9 @@
 package photon
 
 import (
-	v16 "michelprogram/photon-parser/internal/parameters/v16"
-	v18 "michelprogram/photon-parser/internal/parameters/v18"
-	"michelprogram/photon-parser/internal/types"
+	v16 "AutoDruid/photon-parser/internal/parameters/v16"
+	v18 "AutoDruid/photon-parser/internal/parameters/v18"
+	"AutoDruid/photon-parser/internal/types"
 )
 
 type Session = types.Session

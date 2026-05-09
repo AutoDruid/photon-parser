@@ -1,10 +1,10 @@
 package context
 
 import (
-	"michelprogram/photon-parser/internal/assembler"
-	"michelprogram/photon-parser/internal/hooks"
-	"michelprogram/photon-parser/internal/reader"
-	"michelprogram/photon-parser/internal/types"
+	"AutoDruid/photon-parser/internal/assembler"
+	"AutoDruid/photon-parser/internal/hooks"
+	"AutoDruid/photon-parser/internal/reader"
+	"AutoDruid/photon-parser/internal/types"
 )
 
 type Context[P types.ParameterView] struct {

@@ -1,6 +1,6 @@
 package assembler
 
-import "michelprogram/photon-parser/internal/types"
+import "AutoDruid/photon-parser/internal/types"
 
 type PacketBuffer struct {
 	totalSize uint32

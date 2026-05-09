@@ -1,8 +1,8 @@
 package v18
 
 import (
+	"AutoDruid/photon-parser/internal/types"
 	"encoding/json"
-	"michelprogram/photon-parser/internal/types"
 )
 
 // Header represents the parameter header containing the parameter ID and type.
@@ -25,7 +25,7 @@ type Value struct {
 	Kind    ParameterType `json:"kind"`
 	KeyType ParameterType `json:"key_type"`
 	ValType ParameterType `json:"val_type"`
-	_    [5]byte       `json:"-"`
+	_       [5]byte       `json:"-"`
 	Num     uint64        `json:"num"`
 	Blob    []byte        `json:"blob,omitempty"`
 }

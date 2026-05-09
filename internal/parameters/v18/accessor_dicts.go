@@ -1,8 +1,8 @@
 package v18
 
 import (
+	"AutoDruid/photon-parser/internal/reader"
 	"iter"
-	"michelprogram/photon-parser/internal/reader"
 )
 
 func (p Parameter) DictionaryValue() iter.Seq2[any, any] {

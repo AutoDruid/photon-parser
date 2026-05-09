@@ -1,11 +1,11 @@
 package command_test
 
 import (
-	"michelprogram/photon-parser/internal/command"
-	"michelprogram/photon-parser/internal/context"
-	v16 "michelprogram/photon-parser/internal/parameters/v16"
-	"michelprogram/photon-parser/internal/reader"
-	"michelprogram/photon-parser/internal/types"
+	"AutoDruid/photon-parser/internal/command"
+	"AutoDruid/photon-parser/internal/context"
+	v16 "AutoDruid/photon-parser/internal/parameters/v16"
+	"AutoDruid/photon-parser/internal/reader"
+	"AutoDruid/photon-parser/internal/types"
 	"testing"
 )
 
