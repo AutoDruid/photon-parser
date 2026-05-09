@@ -20,6 +20,7 @@ type ReliableHeaderParameterCount interface {
 	Count(*reader.Reader) (int, error)
 }
 
+// Decoders groups protocol-specific decoder implementations used by the parser.
 type Decoders[P types.ParameterView] struct {
 	ParameterParser              ParameterParser[P]
 	ReliableHeaderParameterCount ReliableHeaderParameterCount

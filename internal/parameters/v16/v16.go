@@ -53,19 +53,22 @@ type Parameter struct {
 
 var _ types.ParameterView = (*Parameter)(nil)
 
+// Value stores a normalized parameter payload for protocol v16.
 type Value struct {
 	Kind    ParameterType `json:"kind"`
 	KeyType ParameterType `json:"key_type"`
 	ValType ParameterType `json:"val_type"`
-	_    [5]byte       `json:"-"`
+	_       [5]byte       `json:"-"`
 	Num     uint64        `json:"num"`
 	Blob    []byte        `json:"blob,omitempty"`
 }
 
+// ID returns the parameter identifier.
 func (p Parameter) ID() uint8 {
 	return p.Header.ID
 }
 
+// String returns an indented JSON representation of the parameter.
 func (p Parameter) String() string {
 	param := struct {
 		Parameter `json:"parameter"`
@@ -79,6 +82,7 @@ func (p Parameter) String() string {
 	return string(b)
 }
 
+// MarshalJSON marshals a v16 parameter to JSON.
 func (p Parameter) MarshalJSON() ([]byte, error) {
 	type Alias Parameter
 

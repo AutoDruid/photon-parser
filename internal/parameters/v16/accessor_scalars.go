@@ -2,6 +2,7 @@ package v16
 
 import "math"
 
+// StringValue returns the decoded string when the parameter kind is StringType.
 func (p Parameter) StringValue() (string, bool) {
 	if p.Kind != StringType {
 		return "", false
@@ -9,6 +10,7 @@ func (p Parameter) StringValue() (string, bool) {
 	return string(p.Blob), true
 }
 
+// Float32Value returns the decoded float32 when the parameter kind is Float32Type.
 func (p Parameter) Float32Value() (float32, bool) {
 	if p.Kind != Float32Type {
 		return 0, false
@@ -16,6 +18,7 @@ func (p Parameter) Float32Value() (float32, bool) {
 	return math.Float32frombits(uint32(p.Num)), true
 }
 
+// Float64Value returns the decoded float64 when the parameter kind is Float64Type.
 func (p Parameter) Float64Value() (float64, bool) {
 	if p.Kind != Float64Type {
 		return 0, false
@@ -23,6 +26,7 @@ func (p Parameter) Float64Value() (float64, bool) {
 	return math.Float64frombits(uint64(p.Num)), true
 }
 
+// IntValue returns the decoded integer for supported integer kinds.
 func (p Parameter) IntValue() (int64, bool) {
 	switch p.Kind {
 	case Int8Type:
@@ -38,6 +42,7 @@ func (p Parameter) IntValue() (int64, bool) {
 	}
 }
 
+// BooleanValue returns the decoded boolean when the parameter kind is BooleanType.
 func (p Parameter) BooleanValue() (bool, bool) {
 	if p.Kind != BooleanType {
 		return false, false

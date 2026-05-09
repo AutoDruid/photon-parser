@@ -7,10 +7,12 @@ import (
 	"michelprogram/photon-parser/internal/types"
 )
 
+// Fragment is a reliable fragment payload enriched with fragment metadata fields.
 type Fragment struct {
 	types.Fragment
 }
 
+// ParseFragment parses one reliable fragment and reassembles payloads when complete.
 func ParseFragment[P types.ParameterView](ctx *context.Context[P], length uint32) (*Reliable[P], error) {
 
 	fragment, err := parseMetadata(ctx.Reader)

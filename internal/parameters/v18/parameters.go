@@ -14,7 +14,7 @@ var _ context.ParameterParser[Parameter] = (*Parameter)(nil)
 //
 // The function first reads the parameter header to determine the parameter ID
 // and type code, then decodes the value according to that type using the
-// Protocol16 decoder.
+// Protocol18 decoder.
 //
 // Returns a Parameters struct containing the ID, Type, and decoded Value,
 // or an error if parsing fails.
@@ -85,6 +85,7 @@ func (p *Parameter) parseHeader(r *reader.Reader) (Header, error) {
 	return header, nil
 }
 
+// scanPayload reads one v18 payload value for the given parameter type.
 func scanPayload(reader *reader.Reader, t ParameterType) (Value, error) {
 	var err error
 	res := Value{Kind: t}

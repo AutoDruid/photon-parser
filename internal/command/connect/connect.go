@@ -5,6 +5,7 @@ import (
 	"michelprogram/photon-parser/internal/reader"
 )
 
+// Connect represents the payload of a connect or verify-connect command.
 type Connect struct {
 	Mtu                        uint32
 	WindowSize                 uint32
@@ -16,6 +17,7 @@ type Connect struct {
 	PacketThrottleDeceleration uint32
 }
 
+// Parse decodes a connect payload from reader.
 func Parse(reader *reader.Reader) (*Connect, error) {
 	var err error
 	connect := Connect{}

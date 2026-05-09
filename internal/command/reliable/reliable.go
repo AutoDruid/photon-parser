@@ -10,6 +10,7 @@ import (
 // HEADER_SIZE is the size in bytes of a reliable message header (5 bytes).
 const HEADER_SIZE = 5
 
+// READED_HEADER_SIZE is the number of bytes consumed before parameter parsing in reliable commands.
 const READED_HEADER_SIZE = 14
 
 // Type represents a Photon reliable message type.
@@ -42,7 +43,7 @@ type Reliable[P types.ParameterView] struct {
 	Parameters []P // Slice of decoded parameters
 }
 
-// ParseFromReader parses a Photon reliable message from a parser.Reader.
+// Parse parses a Photon reliable message from the parsing context.
 // It reads the 5-byte header, then iterates through and parses each parameter
 // as specified by the ParameterCount field.
 //

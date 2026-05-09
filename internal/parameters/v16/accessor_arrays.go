@@ -7,6 +7,7 @@ import (
 	"michelprogram/photon-parser/internal/reader"
 )
 
+// ByteArrayValue iterates over bytes when the parameter kind is Int8ArrayType.
 func (p Parameter) ByteArrayValue() iter.Seq2[int, byte] {
 	return func(yield func(int, byte) bool) {
 		n := int(p.Num)
@@ -23,6 +24,7 @@ func (p Parameter) ByteArrayValue() iter.Seq2[int, byte] {
 	}
 }
 
+// Int8ArrayValue iterates over int8 values when the parameter kind is Int8ArrayType.
 func (p Parameter) Int8ArrayValue() iter.Seq2[int, int8] {
 	return func(yield func(int, int8) bool) {
 		if p.Kind != Int8ArrayType || p.Num == 0 || len(p.Blob) == 0 {
@@ -44,6 +46,7 @@ func (p Parameter) Int8ArrayValue() iter.Seq2[int, int8] {
 	}
 }
 
+// Int32ArrayValue iterates over int32 values when the parameter kind is Int32ArrayType.
 func (p Parameter) Int32ArrayValue() iter.Seq2[int, int32] {
 	return func(yield func(int, int32) bool) {
 		if p.Kind != Int32ArrayType || p.Num == 0 || len(p.Blob) == 0 {
@@ -65,6 +68,7 @@ func (p Parameter) Int32ArrayValue() iter.Seq2[int, int32] {
 	}
 }
 
+// StringArrayValue iterates over strings when the parameter kind is StringArrayType.
 func (p Parameter) StringArrayValue() iter.Seq2[int, string] {
 	return func(yield func(int, string) bool) {
 		if p.Kind != StringArrayType || p.Num == 0 || len(p.Blob) == 0 {
@@ -91,6 +95,7 @@ func (p Parameter) StringArrayValue() iter.Seq2[int, string] {
 	}
 }
 
+// ArrayValue iterates over decoded values when the parameter kind is ArrayType.
 func (p Parameter) ArrayValue() iter.Seq2[int, any] {
 	return func(yield func(int, any) bool) {
 		if p.Kind != ArrayType || p.Num == 0 || len(p.Blob) == 0 {
@@ -113,6 +118,7 @@ func (p Parameter) ArrayValue() iter.Seq2[int, any] {
 	}
 }
 
+// BooleanArrayValue iterates over booleans for array parameters with BooleanType elements.
 func (p Parameter) BooleanArrayValue() iter.Seq2[int, bool] {
 	return func(yield func(int, bool) bool) {
 		if p.Kind != ArrayType && p.KeyType != BooleanType || p.Num == 0 || len(p.Blob) == 0 {
@@ -133,14 +139,17 @@ func (p Parameter) BooleanArrayValue() iter.Seq2[int, bool] {
 	}
 }
 
+// Float32ArrayValue iterates over float32 values for supported parameter kinds.
 func (p Parameter) Float32ArrayValue() iter.Seq2[int, float32] {
 	return nil
 }
 
+// Int64ArrayValue iterates over int64 values for supported parameter kinds.
 func (p Parameter) Int64ArrayValue() iter.Seq2[int, int64] {
 	return nil
 }
 
+// Int16ArrayValue iterates over int16 values for supported parameter kinds.
 func (p Parameter) Int16ArrayValue() iter.Seq2[int, int16] {
 	return nil
 }

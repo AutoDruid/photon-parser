@@ -14,11 +14,12 @@ import (
 	"michelprogram/photon-parser/internal/types"
 )
 
+// Session is an internal wrapper used while parsing one session packet.
 type Session[P types.ParameterView] struct {
 	types.Session
 }
 
-// Parse parses a Photon session packet from a parser.Reader.
+// Parse parses a Photon session packet from the parsing context.
 // This function reads the session header, then iterates through and parses
 // each command as specified by the CommandCount field.
 //

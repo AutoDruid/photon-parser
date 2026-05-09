@@ -7,6 +7,7 @@ import (
 	"michelprogram/photon-parser/internal/types"
 )
 
+// Context bundles parser state and protocol-specific decoders for one parse flow.
 type Context[P types.ParameterView] struct {
 	Reader    *reader.Reader
 	Assembler *assembler.Assembler
@@ -14,6 +15,7 @@ type Context[P types.ParameterView] struct {
 	Decoders  Decoders[P]
 }
 
+// NewContext creates a parsing context with shared reader, hooks, and decoders.
 func NewContext[P types.ParameterView](reader *reader.Reader, assembler *assembler.Assembler, hooks *hooks.Hooks[P], decoders Decoders[P]) *Context[P] {
 	return &Context[P]{
 		Reader:    reader,

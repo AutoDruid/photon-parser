@@ -1,7 +1,9 @@
 package v18
 
+// ParameterType identifies the binary encoding used for a protocol v18 parameter value.
 type ParameterType uint8
 
+// Protocol v18 parameter type codes.
 const (
 	UnknownType         ParameterType = 0 //Tested
 	BooleanType         ParameterType = 2

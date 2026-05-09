@@ -38,11 +38,13 @@ type Command struct {
 	Payload       Payload `json:"payload"` // Command payload (interpretation depends on Type)
 }
 
+// UnknownPayload stores raw bytes for unsupported or encrypted command payloads.
 type UnknownPayload struct {
 	Raw  []byte
 	Kind CommandType
 }
 
+// Fragment describes one reliable payload fragment.
 type Fragment struct {
 	ID     uint32
 	Count  uint32

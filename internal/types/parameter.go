@@ -2,6 +2,7 @@ package types
 
 import "iter"
 
+// ParameterView exposes normalized accessors shared by versioned parameter models.
 type ParameterView interface {
 	ID() uint8
 

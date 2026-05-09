@@ -85,7 +85,7 @@ func (p *Parameter) parseHeader(r *reader.Reader) (Header, error) {
 	return header, nil
 }
 
-// Decode reads a value of the specified Photon Protocol16 type from the reader.
+// scanPayload reads a value of the specified Photon Protocol16 type from the reader.
 // It dispatches to the appropriate type-specific reader based on ttype.
 // Returns the decoded value as any, or an error if the type is unsupported
 // or if reading fails.

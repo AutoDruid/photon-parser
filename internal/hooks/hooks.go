@@ -2,11 +2,13 @@ package hooks
 
 import "michelprogram/photon-parser/internal/types"
 
+// Hooks contains synchronous and asynchronous parser hooks.
 type Hooks[P types.ParameterView] struct {
 	types.AsyncHooks[P]
 	types.SyncHooks[P]
 }
 
+// NewHooks returns a Hooks value with all hook slots initialized to nil.
 func NewHooks[P types.ParameterView]() *Hooks[P] {
 	return &Hooks[P]{
 		AsyncHooks: types.AsyncHooks[P]{
@@ -34,16 +36,23 @@ func ensureChan[T any](slot *chan T, size uint16) <-chan T {
 	}
 	return *slot
 }
+
+// OnSessionAsync returns the asynchronous session hook channel.
 func (h *Hooks[P]) OnSessionAsync(options types.HookOptions) <-chan types.Session {
 	return ensureChan(&h.AsyncHooks.OnSession, options.Size)
 }
+
+// OnCommandAsync returns the asynchronous command hook channel.
 func (h *Hooks[P]) OnCommandAsync(options types.HookOptions) <-chan types.Command {
 	return ensureChan(&h.AsyncHooks.OnCommand, options.Size)
 }
+
+// OnParameterAsync returns the asynchronous parameter hook channel.
 func (h *Hooks[P]) OnParameterAsync(options types.HookOptions) <-chan P {
 	return ensureChan(&h.AsyncHooks.OnParameter, options.Size)
 }
 
+// CloseAsyncHooks closes and resets all asynchronous hook channels.
 func (h *Hooks[P]) CloseAsyncHooks() {
 
 	if h.AsyncHooks.OnSession != nil {

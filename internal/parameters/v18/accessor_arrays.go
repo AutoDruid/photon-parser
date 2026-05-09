@@ -7,6 +7,7 @@ import (
 	"michelprogram/photon-parser/internal/reader"
 )
 
+// Float32ArrayValue iterates over float32 values when the parameter kind is Float32ArrayType.
 func (p Parameter) Float32ArrayValue() iter.Seq2[int, float32] {
 	n := int(p.Num)
 	if n <= 0 || len(p.Blob) < n*4 || p.Kind != Float32ArrayType {
@@ -22,6 +23,7 @@ func (p Parameter) Float32ArrayValue() iter.Seq2[int, float32] {
 	}
 }
 
+// Int32ArrayValue iterates over int32 values when the parameter kind is CompressedIntArrayType.
 func (p Parameter) Int32ArrayValue() iter.Seq2[int, int32] {
 	if p.Kind != CompressedIntArrayType || p.Num == 0 || len(p.Blob) == 0 {
 		return nil
@@ -43,6 +45,7 @@ func (p Parameter) Int32ArrayValue() iter.Seq2[int, int32] {
 	}
 }
 
+// Int64ArrayValue iterates over int64 values when the parameter kind is CompressedLongArrayType.
 func (p Parameter) Int64ArrayValue() iter.Seq2[int, int64] {
 	if p.Kind != CompressedLongArrayType || p.Num == 0 || len(p.Blob) == 0 {
 		return nil
@@ -64,6 +67,7 @@ func (p Parameter) Int64ArrayValue() iter.Seq2[int, int64] {
 	}
 }
 
+// ByteArrayValue iterates over bytes when the parameter kind is ByteArrayType.
 func (p Parameter) ByteArrayValue() iter.Seq2[int, byte] {
 	n := int(p.Num)
 	if n <= 0 || len(p.Blob) < n || p.Kind != ByteArrayType {
@@ -78,6 +82,7 @@ func (p Parameter) ByteArrayValue() iter.Seq2[int, byte] {
 	}
 }
 
+// Int16ArrayValue iterates over int16 values when the parameter kind is ShortArrayType.
 func (p Parameter) Int16ArrayValue() iter.Seq2[int, int16] {
 	n := int(p.Num)
 	if n <= 0 || len(p.Blob) < n*2 || p.Kind != ShortArrayType {
@@ -93,6 +98,7 @@ func (p Parameter) Int16ArrayValue() iter.Seq2[int, int16] {
 	}
 }
 
+// StringArrayValue iterates over strings when the parameter kind is StringArrayType.
 func (p Parameter) StringArrayValue() iter.Seq2[int, string] {
 	if p.Kind != StringArrayType || p.Num == 0 || len(p.Blob) == 0 {
 		return nil
@@ -119,6 +125,7 @@ func (p Parameter) StringArrayValue() iter.Seq2[int, string] {
 	}
 }
 
+// ArrayValue iterates over decoded values when the parameter kind is ArrayType.
 func (p Parameter) ArrayValue() iter.Seq2[int, any] {
 	if p.Kind != ArrayType || p.Num == 0 || len(p.Blob) == 0 {
 		return nil
@@ -143,6 +150,7 @@ func (p Parameter) ArrayValue() iter.Seq2[int, any] {
 	}
 }
 
+// BooleanArrayValue iterates over booleans when the parameter kind is BooleanArrayType.
 func (p Parameter) BooleanArrayValue() iter.Seq2[int, bool] {
 	if p.Kind != BooleanArrayType || p.Num == 0 || len(p.Blob) == 0 {
 		return nil
@@ -203,6 +211,7 @@ func decodeValue(v Value) any {
 	}
 }
 
+// Int8ArrayValue iterates over int8 values for supported parameter kinds.
 func (p Parameter) Int8ArrayValue() iter.Seq2[int, int8] {
 	return nil
 }

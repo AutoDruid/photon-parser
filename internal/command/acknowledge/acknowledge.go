@@ -5,11 +5,13 @@ import (
 	"michelprogram/photon-parser/internal/reader"
 )
 
+// Acknowledge represents the payload of an acknowledge command.
 type Acknowledge struct {
 	AckReliableSequenceNumber uint32
 	AckSentTime               uint32
 }
 
+// Parse decodes an acknowledge payload from reader.
 func Parse(reader *reader.Reader) (*Acknowledge, error) {
 	var ack Acknowledge
 	var err error

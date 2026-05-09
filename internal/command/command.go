@@ -15,11 +15,12 @@ import (
 	"michelprogram/photon-parser/internal/types"
 )
 
+// Command is an internal wrapper used while parsing one command.
 type Command[P types.ParameterView] struct {
 	types.Command
 }
 
-// ParseFromReader parses a Photon command from a parser.Reader.
+// Parse parses a Photon command from the parsing context.
 // It first reads the 12-byte command header, validates the length field,
 // then reads the remaining payload data.
 //

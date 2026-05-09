@@ -7,23 +7,28 @@ import (
 )
 
 const (
-	INT8_SIZE       = 1
-	INT16_SIZE      = 2
-	INT32_SIZE      = 4
-	INT64_SIZE      = 8
-	FLOAT32_SIZE    = 4
-	FLOAT64_SIZE    = 8
+	// Integer and floating-point byte sizes.
+	INT8_SIZE    = 1
+	INT16_SIZE   = 2
+	INT32_SIZE   = 4
+	INT64_SIZE   = 8
+	FLOAT32_SIZE = 4
+	FLOAT64_SIZE = 8
+
+	// Varint masks and shift width.
 	VARINT_SHIFT    = 7
 	VARINT_MASK     = 0x7F
 	VARINT_MSB_MASK = 0x80
 )
 
+// Reader provides sequential decoding helpers over a byte slice.
 type Reader struct {
 	Buffer []byte
 	Max    int
 	Cursor int
 }
 
+// NewReader creates a Reader over data with the cursor at position zero.
 func NewReader(data []byte) *Reader {
 	return &Reader{
 		Buffer: data,
@@ -39,6 +44,7 @@ func (r *Reader) ReadRemaining() []byte {
 	return r.Buffer[tmp:]
 }
 
+// Skip advances the cursor by n bytes.
 func (r *Reader) Skip(n int) error {
 
 	if n < 0 {
@@ -242,6 +248,7 @@ func (r *Reader) ReadString(n int) (string, error) {
 	return str, nil
 }
 
+// ReadByte reads a single byte from the reader.
 func (r *Reader) ReadByte() (byte, error) {
 
 	size := r.Cursor + 1

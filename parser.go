@@ -11,10 +11,12 @@ import (
 	"michelprogram/photon-parser/internal/types"
 )
 
+// Parser decodes Photon packets into sessions and emits parsing hooks.
 type Parser[P types.ParameterView] struct {
 	ctx *context.Context[P]
 }
 
+// NewV16 returns a parser configured for Photon protocol v16 parameters.
 func NewV16() *Parser[v16.Parameter] {
 	return &Parser[v16.Parameter]{
 		ctx: context.NewContext(
@@ -29,11 +31,13 @@ func NewV16() *Parser[v16.Parameter] {
 	}
 }
 
+// ParseV16 parses a single Photon packet using the v16 parameter format.
 func ParseV16(data []byte) (*Session, error) {
 	p := NewV16()
 	return p.ParsePacket(data)
 }
 
+// NewV18 returns a parser configured for Photon protocol v18 parameters.
 func NewV18() *Parser[v18.Parameter] {
 	return &Parser[v18.Parameter]{
 		ctx: context.NewContext(
@@ -48,11 +52,13 @@ func NewV18() *Parser[v18.Parameter] {
 	}
 }
 
+// ParseV18 parses a single Photon packet using the v18 parameter format.
 func ParseV18(data []byte) (*Session, error) {
 	p := NewV18()
 	return p.ParsePacket(data)
 }
 
+// ParsePacket parses one Photon packet and returns its decoded session.
 func (p *Parser[P]) ParsePacket(data []byte) (*Session, error) {
 
 	p.ctx.Reader.Reset(data)
@@ -67,30 +73,37 @@ func (p *Parser[P]) ParsePacket(data []byte) (*Session, error) {
 	return &sess, nil
 }
 
+// OnSessionSync registers a synchronous callback invoked for each parsed session.
 func (p *Parser[P]) OnSessionSync(fn func(Session)) {
 	p.ctx.Hooks.SyncHooks.OnSession = fn
 }
 
+// OnCommandSync registers a synchronous callback invoked for each parsed command.
 func (p *Parser[P]) OnCommandSync(fn func(Command)) {
 	p.ctx.Hooks.SyncHooks.OnCommand = fn
 }
 
+// OnParameterSync registers a synchronous callback invoked for each parsed parameter.
 func (p *Parser[P]) OnParameterSync(fn func(P)) {
 	p.ctx.Hooks.SyncHooks.OnParameter = fn
 }
 
+// OnSessionAsync returns a channel that receives parsed sessions asynchronously.
 func (p *Parser[P]) OnSessionAsync(options types.HookOptions) <-chan Session {
 	return p.ctx.Hooks.OnSessionAsync(options)
 }
 
+// OnCommandAsync returns a channel that receives parsed commands asynchronously.
 func (p *Parser[P]) OnCommandAsync(options types.HookOptions) <-chan Command {
 	return p.ctx.Hooks.OnCommandAsync(options)
 }
 
+// OnParameterAsync returns a channel that receives parsed parameters asynchronously.
 func (p *Parser[P]) OnParameterAsync(options types.HookOptions) <-chan P {
 	return p.ctx.Hooks.OnParameterAsync(options)
 }
 
+// Close closes all asynchronous hook channels owned by this parser.
 func (p *Parser[P]) Close() {
 	p.ctx.Hooks.CloseAsyncHooks()
 }

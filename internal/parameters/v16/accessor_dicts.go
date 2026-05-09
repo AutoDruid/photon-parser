@@ -5,6 +5,7 @@ import (
 	"michelprogram/photon-parser/internal/reader"
 )
 
+// DictionaryValue iterates over decoded key-value pairs for DictionaryType parameters.
 func (p Parameter) DictionaryValue() iter.Seq2[any, any] {
 	return func(yield func(any, any) bool) {
 		if p.Kind != DictionaryType || p.Num == 0 || len(p.Blob) == 0 {
