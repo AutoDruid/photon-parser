@@ -1,11 +1,11 @@
 package photon_test
 
 import (
-	"github.com/AutoDruid/photon-parser"
-	"github.com/AutoDruid/photon-parser/internal/types"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"github.com/AutoDruid/photon-parser"
+	"github.com/AutoDruid/photon-parser/internal/types"
 	"log"
 	"os"
 	"strings"

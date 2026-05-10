@@ -64,18 +64,18 @@ func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Command) e
 		out.Payload = parsed
 	}
 
-	cmd.emit(ctx.Reader, ctx.Hooks)
+	cmd.emit(ctx.Hooks, out)
 
 	return nil
 }
 
-func (c Command[P]) emit(r *reader.Reader, hooks *hooks.Hooks[P]) {
+func (c Command[P]) emit(hooks *hooks.Hooks[P], out *types.Command) {
 	if hooks == nil {
 		return
 	}
 
 	if hooks.SyncHooks.OnCommand != nil {
-		hooks.SyncHooks.OnCommand(c.Command)
+		hooks.SyncHooks.OnCommand(*out)
 	}
 
 	if hooks.AsyncHooks.OnCommand == nil {
@@ -83,7 +83,7 @@ func (c Command[P]) emit(r *reader.Reader, hooks *hooks.Hooks[P]) {
 	}
 
 	select {
-	case hooks.AsyncHooks.OnCommand <- c.Command:
+	case hooks.AsyncHooks.OnCommand <- *out:
 	default: // don't block parser
 	}
 
