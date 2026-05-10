@@ -21,3 +21,7 @@ run = "golangci-lint run ./..."
 [tasks.format]
 description = "Format the code"
 run = "go fmt ./..."
+
+[tasks.validate]
+description = "Validate the code"
+run = "mise lint && mise format && mise test && mise build"

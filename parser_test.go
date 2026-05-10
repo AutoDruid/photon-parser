@@ -1,8 +1,6 @@
 package photon_test
 
 import (
-	"github.com/AutoDruid/photon-parser"
-	"github.com/AutoDruid/photon-parser/internal/types"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -10,6 +8,9 @@ import (
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/AutoDruid/photon-parser"
+	"github.com/AutoDruid/photon-parser/internal/types"
 )
 
 type WiresharkFrame struct {

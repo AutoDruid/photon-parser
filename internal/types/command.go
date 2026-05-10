@@ -51,3 +51,30 @@ type Fragment struct {
 	Offset uint32
 	Data   []byte
 }
+
+// Type represents a Photon reliable message type.
+type Type uint8
+
+// Photon Protocol reliable message types.
+// These define the different kinds of reliable messages that can be exchanged.
+const (
+	OperationRequest       Type = 0x02 // Client requests an operation
+	OperationResponse      Type = 0x07 // Server responds to an operation
+	OtherOperationResponse Type = 0x03 // Alternative response format
+	EventDataType          Type = 0x04 // Server sends an event to client
+	ExchangeKeys           Type = 0x06 // Key exchange for encryption
+)
+
+// ReliableHeader represents the reliable message header.
+// This appears at the start of the payload in SendReliable commands.
+type ReliableHeader struct {
+	Signature      uint8 `json:"signature"`       // Message signature (typically 0xF3)
+	Type           Type  `json:"type"`            // Message type (operation, event, etc.)
+	EventCode      uint8 `json:"event_code"`      // Operation/event code (application-specific)
+	ParameterCount int   `json:"parameter_count"` // Number of parameters following this header
+}
+
+type Reliable[P ParameterView] struct {
+	ReliableHeader
+	Parameters []P
+}

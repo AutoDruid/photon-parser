@@ -12,3 +12,5 @@ type HookOptions = types.HookOptions
 type ParameterV16 = v16.Parameter
 type ParameterV18 = v18.Parameter
 type ParameterV18Type = v18.ParameterType
+type Reliable[P types.ParameterView] = types.Reliable[P]
+type ReliableV18 = Reliable[ParameterV18]
