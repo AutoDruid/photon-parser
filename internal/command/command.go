@@ -64,12 +64,12 @@ func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Command) e
 		out.Payload = parsed
 	}
 
-	cmd.emit(ctx.Hooks, out)
+	emit(ctx.Hooks, out)
 
 	return nil
 }
 
-func (c Command[P]) emit(hooks *hooks.Hooks[P], out *types.Command) {
+func emit[P types.ParameterView](hooks *hooks.Hooks[P], out *types.Command) {
 	if hooks == nil {
 		return
 	}

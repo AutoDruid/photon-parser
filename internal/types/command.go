@@ -65,7 +65,7 @@ const (
 	ExchangeKeys           Type = 0x06 // Key exchange for encryption
 )
 
-// Header represents the reliable message header.
+// ReliableHeader represents the reliable message header.
 // This appears at the start of the payload in SendReliable commands.
 type ReliableHeader struct {
 	Signature      uint8 `json:"signature"`       // Message signature (typically 0xF3)

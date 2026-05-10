@@ -4,12 +4,13 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/AutoDruid/photon-parser"
-	"github.com/AutoDruid/photon-parser/internal/types"
 	"log"
 	"os"
 	"strings"
 	"testing"
+
+	"github.com/AutoDruid/photon-parser"
+	"github.com/AutoDruid/photon-parser/internal/types"
 )
 
 type WiresharkFrame struct {

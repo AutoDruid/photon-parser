@@ -1,8 +1,6 @@
 package v18
 
-import (
-	"math"
-)
+import "math"
 
 func (p Parameter) StringValue() (string, bool) {
 	if p.Kind != StringType {
