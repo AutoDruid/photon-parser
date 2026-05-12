@@ -48,8 +48,9 @@ func Parse[P types.ParameterView](ctx *context.Context[P], length uint32) (*Reli
 		return nil, errors.ErrEncryptedPacket
 	}
 
-	reliable.Parameters = ctx.PoolParameter.Get(header.ParameterCount)
-	defer ctx.PoolParameter.Put(reliable.Parameters)
+	items := ctx.PoolParameter.Get(header.ParameterCount)
+	reliable.Parameters = items.Items
+	defer ctx.PoolParameter.Put(items)
 
 	for i := 0; i < reliable.ParameterCount; i++ {
 		err := ctx.Decoders.ParameterParser.Parse(ctx.Reader, &reliable.Parameters[i], ctx.Hooks)

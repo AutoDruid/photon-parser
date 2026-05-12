@@ -80,6 +80,8 @@ func TestParseUDP1(t *testing.T) {
 
 	frames := loadCaptures("./tests/dataset/v18/1.json", t)
 
+	session := photon.Session{}
+
 	for i, frame := range frames {
 		payload, frameNo, err := rowToPayload(frame)
 		if err != nil {
@@ -96,11 +98,11 @@ func TestParseUDP1(t *testing.T) {
 		}
 
 		t.Run(name, func(t *testing.T) {
-			session, err := parser.ParsePacket(payload)
+			err := parser.ParsePacketInto(payload, &session)
 			if err != nil {
 				t.Fatalf("parse (%d bytes): %v", len(payload), err)
 			}
-			if session == nil {
+			if &session == nil {
 				t.Fatalf("session must not be nil")
 			}
 		})
@@ -114,6 +116,7 @@ func TestParseUDP2(t *testing.T) {
 
 	frames := loadCaptures("./tests/dataset/v18/2.json", t)
 
+	session := photon.Session{}
 	for i, frame := range frames {
 		payload, frameNo, err := rowToPayload(frame)
 		if err != nil {
@@ -130,11 +133,11 @@ func TestParseUDP2(t *testing.T) {
 		}
 
 		t.Run(name, func(t *testing.T) {
-			session, err := parser.ParsePacket(payload)
+			err := parser.ParsePacketInto(payload, &session)
 			if err != nil {
 				t.Fatalf("parse (%d bytes): %v", len(payload), err)
 			}
-			if session == nil {
+			if &session == nil {
 				t.Fatalf("session must not be nil")
 			}
 		})
@@ -148,6 +151,7 @@ func TestParseUDP3(t *testing.T) {
 
 	frames := loadCaptures("./tests/dataset/v18/3.json", t)
 
+	session := photon.Session{}
 	for i, frame := range frames {
 		payload, frameNo, err := rowToPayload(frame)
 		if err != nil {
@@ -164,11 +168,11 @@ func TestParseUDP3(t *testing.T) {
 		}
 
 		t.Run(name, func(t *testing.T) {
-			session, err := parser.ParsePacket(payload)
+			err := parser.ParsePacketInto(payload, &session)
 			if err != nil {
 				t.Fatalf("parse (%d bytes): %v", len(payload), err)
 			}
-			if session == nil {
+			if &session == nil {
 				t.Fatalf("session must not be nil")
 			}
 		})
@@ -182,8 +186,6 @@ func BenchmarkParseUDP1(b *testing.B) {
 
 	frames := loadCapturesB("./tests/dataset/v18/1.json", b)
 
-	b.ReportAllocs()
-
 	payloads := make([][]byte, len(frames))
 	for i, frame := range frames {
 		payload, _, err := rowToPayload(frame)
@@ -193,18 +195,18 @@ func BenchmarkParseUDP1(b *testing.B) {
 		payloads[i] = payload
 	}
 
+	session := photon.Session{}
+
+	b.ReportAllocs()
 	b.ResetTimer()
 	for b.Loop() {
 		for i, payload := range payloads {
 			if len(payload) == 0 {
 				continue
 			}
-			sink, err := parser.ParsePacket(payload)
+			err := parser.ParsePacketInto(payload, &session)
 			if err != nil {
 				b.Fatalf("row %d: error: %v", i, err)
-			}
-			if sink == nil {
-				b.Fatal("sink must not be nil")
 			}
 		}
 	}
@@ -247,15 +249,16 @@ func TestCountParameters(t *testing.T) {
 		count++
 	})
 
+	session := photon.Session{}
 	for i, payload := range payloads {
 		if len(payload) == 0 {
 			continue
 		}
-		sink, err := parser.ParsePacket(payload)
+		err := parser.ParsePacketInto(payload, &session)
 		if err != nil {
 			t.Fatalf("row %d: error: %v", i, err)
 		}
-		if sink == nil {
+		if &session == nil {
 			t.Fatal("sink must not be nil")
 		}
 	}

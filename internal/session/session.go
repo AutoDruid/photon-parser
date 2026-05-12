@@ -31,8 +31,7 @@ func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Session) e
 		return err
 	}
 
-	out.Commands = ctx.PoolCommand.Get(int(out.CommandCount))
-	defer ctx.PoolCommand.Put(out.Commands)
+	out.Commands = make([]types.Command, out.CommandCount)
 
 	for i := uint8(0); i < out.CommandCount; i++ {
 		err := command.Parse(ctx, &out.Commands[i])

@@ -41,7 +41,12 @@ func NewV16() *Parser[v16.Parameter] {
 // ParseV16 parses data using a newly allocated protocol 16 Parser and returns the resulting Session.
 func ParseV16(data []byte) (*Session, error) {
 	p := NewV16()
-	return p.ParsePacket(data)
+		var sess Session
+	err := p.ParsePacketInto(data, &sess)
+	if err != nil {
+		return nil, err
+	}
+	return &sess, nil
 }
 
 // NewV18 returns a Parser that interprets parameters and reliable headers using protocol 18 rules.
@@ -62,23 +67,26 @@ func NewV18() *Parser[v18.Parameter] {
 // ParseV18 parses data using a newly allocated protocol 18 Parser and returns the resulting Session.
 func ParseV18(data []byte) (*Session, error) {
 	p := NewV18()
-	return p.ParsePacket(data)
+	var sess Session
+	err := p.ParsePacketInto(data, &sess)
+	if err != nil {
+		return nil, err
+	}
+	return &sess, nil
 }
 
 // ParsePacket resets the internal reader to data and decodes one Photon session.
 // Hooks registered on the Parser are invoked during this call.
-func (p *Parser[P]) ParsePacket(data []byte) (*Session, error) {
+func (p *Parser[P]) ParsePacketInto(data []byte, sess *Session) error {
 
 	p.ctx.Reader.Reset(data)
 
-	var sess Session
-
-	err := session.Parse(p.ctx, &sess)
+	err := session.Parse(p.ctx, sess)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return &sess, nil
+	return nil
 }
 
 // OnEventData registers a callback for reliable messages of type event data (server-raised events).

@@ -2,47 +2,52 @@ package context
 
 import (
 	"sync"
+
+	"github.com/AutoDruid/photon-parser/internal/types"
 )
 
 const (
 	maxPooledCap = 1024
 )
 
-
-type Pool[P any] struct {
+type Pool[P types.ParameterView] struct {
 	pool sync.Pool
 }
 
-func NewPool[P any](maxCap int) *Pool[P] {
+type PooledSlice[P types.ParameterView] struct{
+	Items []P
+}
 
+func NewPool[P types.ParameterView](maxCap int) *Pool[P] {
 	return &Pool[P]{
 		pool: sync.Pool{
 			New: func() any {
-				return make([]P, 0, maxCap)
+				return &PooledSlice[P]{
+					Items: make([]P, 0, maxCap),
+				}
 			},
 		},
 	}
 }
 
-func (p *Pool[P]) Get(n int) []P {
+func (p *Pool[P]) Get(n int) *PooledSlice[P] {
 	if n < 0 {
 		n = 0
 	}
-	raw := p.pool.Get()
-	s, _ := raw.([]P)
-	if cap(s) >= n {
-		return s[:n]
+	wrapper := p.pool.Get().(*PooledSlice[P])
+	
+	if cap(wrapper.Items) >= n {
+		wrapper.Items = wrapper.Items[:n]
+		return wrapper
 	}
-	return make([]P, n)
+	wrapper.Items = make([]P, n)
+	return wrapper
 }
 
-func (p *Pool[P]) Put(buff []P) {
-	if cap(buff) > maxPooledCap {
+func (p *Pool[P]) Put(wrapper *PooledSlice[P]) {
+	if cap(wrapper.Items) > maxPooledCap {
 		return
 	}
-	var zero P
-	for i := range buff {
-		buff[i] = zero
-	}
-	p.pool.Put(buff[:0])
+	wrapper.Items = wrapper.Items[:0]
+	p.pool.Put(wrapper)
 }

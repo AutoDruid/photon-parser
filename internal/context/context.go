@@ -13,7 +13,6 @@ type Context[P types.ParameterView] struct {
 	Hooks         *hooks.Hooks[P]
 	Decoders      Decoders[P]
 	PoolParameter *Pool[P]
-	PoolCommand   *Pool[types.Command]
 }
 
 func NewContext[P types.ParameterView](reader *reader.Reader, assembler *assembler.Assembler, hooks *hooks.Hooks[P], decoders Decoders[P]) *Context[P] {
@@ -23,6 +22,5 @@ func NewContext[P types.ParameterView](reader *reader.Reader, assembler *assembl
 		Hooks:         hooks,
 		Decoders:      decoders,
 		PoolParameter: NewPool[P](1024),
-		PoolCommand:   NewPool[types.Command](256),
 	}
 }
