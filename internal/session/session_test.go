@@ -139,7 +139,9 @@ func TestSyncHookOnSession(t *testing.T) {
 		sess = s
 	})
 
-	_, err := parser.ParsePacket(payload)
+	sess2 := types.Session{}
+
+	err := parser.ParsePacketInto(payload, &sess2)
 
 	if err != nil {
 		t.Fatalf("error parsing session: %v", err)
@@ -178,7 +180,9 @@ func TestASyncHookOnSession(t *testing.T) {
 
 	ch := parser.OnSessionAsync(types.HookOptions{Size: 1})
 
-	_, err := parser.ParsePacket(payload)
+	sess := types.Session{}
+
+	err := parser.ParsePacketInto(payload, &sess)
 
 	if err != nil {
 		t.Fatalf("error parsing session: %v", err)

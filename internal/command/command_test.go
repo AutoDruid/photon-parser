@@ -20,6 +20,7 @@ func TestParseSession(t *testing.T) {
 			ParameterParser:              &v16.Parameter{},
 			ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
 		},
+		PoolParameter: context.NewPool[v16.Parameter](100),
 	}
 
 	var cmd types.Command

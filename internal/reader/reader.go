@@ -3,7 +3,6 @@ package reader
 import (
 	"encoding/binary"
 	"math"
-	"unsafe"
 
 	"github.com/AutoDruid/photon-parser/internal/errors"
 )
@@ -237,8 +236,7 @@ func (r *Reader) ReadString(n int) (string, error) {
 		return "", errors.ErrNotEnoughBytesString
 	}
 
-	//str := string(r.Buffer[r.Cursor:size])
-	str := unsafe.String(&r.Buffer[r.Cursor], n)
+	str := string(r.Buffer[r.Cursor:size])
 	r.Cursor = size
 
 	return str, nil
