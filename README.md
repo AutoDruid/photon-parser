@@ -1,5 +1,20 @@
 # photon-parser
 
+## Download
+
+**As a Go dependency** (recommended when you only need the library in your module):
+
+```bash
+go get github.com/AutoDruid/photon-parser@latest
+```
+
+**Clone the repository** (for contributing, running examples, or local development):
+
+```bash
+git clone https://github.com/AutoDruid/photon-parser.git
+cd photon-parser
+```
+
 ## Introduction
 
 **photon-parser** is a Go library that decodes Photon session envelopes and command payloads from raw bytes—useful for inspecting captures, learning how the wire format is structured, and building tools around Photon traffic. This project is **explanatory and educational**: it documents and parses protocol data for understanding; it does **not** endorse any particular use, and **maintainers are not responsible** for how you apply it (including compliance, game or service terms, or any risk you take when handling real traffic). The library supports **protocol version 16** and **protocol version 18** (distinct parameter layouts and reliable-header parameter counting).

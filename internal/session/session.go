@@ -26,15 +26,15 @@ type Session[P types.ParameterView] struct {
 // Returns a Session struct with all fields populated including the Commands slice,
 // or an error if any part of parsing fails.
 func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Session) error {
-	session := Session[P]{}
-	header, err := session.parseHeader(ctx.Reader)
+	err := parseHeader(out, ctx.Reader)
 	if err != nil {
 		return err
 	}
 
-	out.Commands = make([]types.Command, header.CommandCount)
+	out.Commands = ctx.PoolCommand.Get(int(out.CommandCount))
+	defer ctx.PoolCommand.Put(out.Commands)
 
-	for i := uint8(0); i < header.CommandCount; i++ {
+	for i := uint8(0); i < out.CommandCount; i++ {
 		err := command.Parse(ctx, &out.Commands[i])
 
 		if errors.Is(err, photonErrors.ErrHeaderSize) {
@@ -49,46 +49,43 @@ func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Session) e
 		}
 	}
 
-	out.Header = header
-
-	session.emit(ctx.Hooks, out)
+	emit(ctx.Hooks, out)
 
 	return nil
 }
 
-func (s *Session[P]) parseHeader(r *reader.Reader) (types.Header, error) {
+func parseHeader(out *types.Session, r *reader.Reader) error {
 	var err error
-	var header types.Header
 
-	header.PeerID, err = r.ReadUInt16(binary.BigEndian)
+	out.PeerID, err = r.ReadUInt16(binary.BigEndian)
 	if err != nil {
-		return types.Header{}, err
+		return err
 	}
 
-	header.CRCEnabled, err = r.ReadUInt8()
+	out.CRCEnabled, err = r.ReadUInt8()
 	if err != nil {
-		return types.Header{}, err
+		return err
 	}
 
-	header.CommandCount, err = r.ReadUInt8()
+	out.CommandCount, err = r.ReadUInt8()
 	if err != nil {
-		return types.Header{}, err
+		return err
 	}
 
-	header.Timestamp, err = r.ReadUInt32(binary.BigEndian)
+	out.Timestamp, err = r.ReadUInt32(binary.BigEndian)
 	if err != nil {
-		return types.Header{}, err
+		return err
 	}
 
-	header.Challenge, err = r.ReadInt32(binary.BigEndian)
+	out.Challenge, err = r.ReadInt32(binary.BigEndian)
 	if err != nil {
-		return types.Header{}, err
+		return err
 	}
 
-	return header, nil
+	return nil
 }
 
-func (s Session[P]) emit(hooks *hooks.Hooks[P], out *types.Session) {
+func emit[P types.ParameterView](hooks *hooks.Hooks[P], out *types.Session) {
 	if hooks == nil {
 		return
 	}

@@ -124,11 +124,10 @@ func BenchmarkFaiol(b *testing.B) {
 	parser := photonparser.NewV18()
 
 	for b.Loop() {
-		res, err := parser.ParsePacket(payload)
+		_,err := parser.ParsePacket(payload)
 		if err != nil {
 			log.Println(err)
 		}
-		log.Println(res)
 	}
 
 }

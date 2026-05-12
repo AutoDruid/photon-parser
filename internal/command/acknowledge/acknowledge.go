@@ -11,20 +11,20 @@ type Acknowledge struct {
 	AckSentTime               uint32
 }
 
-func Parse(reader *reader.Reader) (*Acknowledge, error) {
+func Parse(reader *reader.Reader) (Acknowledge, error) {
 	var ack Acknowledge
 	var err error
 
 	ack.AckReliableSequenceNumber, err = reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
-		return nil, err
+		return Acknowledge{}, err
 	}
 
 	ack.AckSentTime, err = reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
-		return nil, err
+		return Acknowledge{}, err
 	}
 
-	return &ack, nil
+	return ack, nil
 
 }

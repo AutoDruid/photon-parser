@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/AutoDruid/photon-parser"
-	"github.com/AutoDruid/photon-parser/internal/types"
+	v18 "github.com/AutoDruid/photon-parser/internal/parameters/v18"
 )
 
 type WiresharkFrame struct {
@@ -78,7 +78,7 @@ func TestParseUDP1(t *testing.T) {
 
 	parser := photon.NewV18()
 
-	frames := loadCaptures("resources/v18.json", t)
+	frames := loadCaptures("./tests/dataset/v18/1.json", t)
 
 	for i, frame := range frames {
 		payload, frameNo, err := rowToPayload(frame)
@@ -112,7 +112,7 @@ func TestParseUDP2(t *testing.T) {
 
 	parser := photon.NewV18()
 
-	frames := loadCaptures("resources/v181.json", t)
+	frames := loadCaptures("./tests/dataset/v18/2.json", t)
 
 	for i, frame := range frames {
 		payload, frameNo, err := rowToPayload(frame)
@@ -146,7 +146,7 @@ func TestParseUDP3(t *testing.T) {
 
 	parser := photon.NewV18()
 
-	frames := loadCaptures("resources/v182.json", t)
+	frames := loadCaptures("./tests/dataset/v18/3.json", t)
 
 	for i, frame := range frames {
 		payload, frameNo, err := rowToPayload(frame)
@@ -180,10 +180,9 @@ func BenchmarkParseUDP1(b *testing.B) {
 
 	parser := photon.NewV18()
 
-	frames := loadCapturesB("ressources/v18.json", b)
+	frames := loadCapturesB("./tests/dataset/v18/1.json", b)
 
 	b.ReportAllocs()
-	b.ResetTimer()
 
 	payloads := make([][]byte, len(frames))
 	for i, frame := range frames {
@@ -194,13 +193,73 @@ func BenchmarkParseUDP1(b *testing.B) {
 		payloads[i] = payload
 	}
 
-	sess := &types.Session{}
-
+	b.ResetTimer()
 	for b.Loop() {
-		for _, payload := range payloads {
-			sess, _ = parser.ParsePacket(payload)
+		for i, payload := range payloads {
+			if len(payload) == 0 {
+				continue
+			}
+			sink, err := parser.ParsePacket(payload)
+			if err != nil {
+				b.Fatalf("row %d: error: %v", i, err)
+			}
+			if sink == nil {
+				b.Fatal("sink must not be nil")
+			}
+		}
+	}
+}
+
+func TestCountParameters(t *testing.T) {
+	parser := photon.NewV18()
+
+	frames := loadCaptures("./tests/dataset/v18/1.json", t)
+
+	payloads := make([][]byte, len(frames))
+	for i, frame := range frames {
+		payload, _, err := rowToPayload(frame)
+		if err != nil {
+			t.Fatalf("row %d: decode row: %v", i, err)
+		}
+		payloads[i] = payload
+	}
+
+	total := 0
+	count := 0
+
+	parser.OnEventData(func(r photon.Reliable[v18.Parameter]) {
+		total += r.ParameterCount
+		count++
+	})
+
+	parser.OnOperationRequest(func(r photon.Reliable[v18.Parameter]) {
+		total += r.ParameterCount
+		count++
+	})
+
+	parser.OnOperationResponse(func(r photon.Reliable[v18.Parameter]) {
+		total += r.ParameterCount
+		count++
+	})
+
+	parser.OnOtherOperationResponse(func(r photon.Reliable[v18.Parameter]) {
+		total += r.ParameterCount
+		count++
+	})
+
+	for i, payload := range payloads {
+		if len(payload) == 0 {
+			continue
+		}
+		sink, err := parser.ParsePacket(payload)
+		if err != nil {
+			t.Fatalf("row %d: error: %v", i, err)
+		}
+		if sink == nil {
+			t.Fatal("sink must not be nil")
 		}
 	}
 
-	log.Println(sess)
+	log.Printf("Total %d, avg %.2f", total, float64(total)/float64(count))
+
 }
