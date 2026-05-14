@@ -1,8 +1,6 @@
 package types
 
-// Header represents the Photon session header containing peer and timing information.
-// This header appears at the start of every Photon packet.
-type Header struct {
+type SessionHeader struct {
 	PeerID       uint16 `json:"peer_id"`       // Peer identifier for this connection
 	CRCEnabled   uint8  `json:"crc_enabled"`   // CRC checksum flag (0 = disabled, 1 = enabled)
 	CommandCount uint8  `json:"command_count"` // Number of commands following this header
@@ -13,6 +11,6 @@ type Header struct {
 // Session represents a complete Photon session packet with its header and commands.
 // A session packet can contain multiple commands that will be processed sequentially.
 type Session[P ParameterView] struct {
-	Header   `json:"header"`
-	Commands []Command[P] `json:"commands"`
+	SessionHeader `json:"header"`
+	Commands      []Command[P] `json:"commands"`
 }

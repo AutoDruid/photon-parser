@@ -24,7 +24,7 @@ func TestReliableParsing(t *testing.T) {
 		PoolParameter: context.NewPool[v16.Parameter](100),
 	}
 	var sd types.Reliable[v16.Parameter]
-	err := reliable.Parse(ctx, &sd, uint32(len(payload)))
+	err := reliable.ParseInto(ctx, uint32(len(payload)), &sd)
 
 	if err != nil {
 		t.Fatalf("LoadFromWiresharkExport() failed: %v", err)

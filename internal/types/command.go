@@ -1,49 +1,44 @@
 package types
 
-// Type represents a Photon Protocol command type.
+// CommandType represents a Photon Protocol command type.
 type CommandType uint8
 
-// Photon Protocol command types.
-// These define the various operations that can be performed in a Photon session.
 const (
-	AcknowledgeCommand          CommandType = 0x01 // Acknowledges receipt of reliable commands
-	ConnectCommand              CommandType = 0x02 // Initiates a connection
-	VerifyConnectCommand        CommandType = 0x03 // Verifies connection establishment
-	DisconnectCommand           CommandType = 0x04 // Gracefully closes a connection
-	PingCommand                 CommandType = 0x05 // Keep-alive ping message
-	SendReliableCommand         CommandType = 0x06 // Sends reliable data (guaranteed delivery)
-	SendUnreliableCommand       CommandType = 0x07 // Sends unreliable data (best effort)
-	SendReliableFragmentCommand CommandType = 0x08 // Sends a fragment of a large reliable message
+	AcknowledgeCommand          CommandType = 0x01
+	ConnectCommand              CommandType = 0x02
+	VerifyConnectCommand        CommandType = 0x03
+	DisconnectCommand           CommandType = 0x04
+	PingCommand                 CommandType = 0x05
+	SendReliableCommand         CommandType = 0x06
+	SendUnreliableCommand       CommandType = 0x07
+	SendReliableFragmentCommand CommandType = 0x08
 )
 
 // COMMAND_HEADER_SIZE is the size in bytes of a command header (12 bytes).
 const COMMAND_HEADER_SIZE = 12
 
-// Header represents the command header containing command metadata.
-// This header appears at the start of every command within a session.
 type CommandHeader struct {
-	Type                   CommandType `json:"type"`                     // Command type (see Type constants)
-	ChannelID              uint8       `json:"channel_id"`               // Channel identifier for message ordering
-	Flags                  uint8       `json:"flags"`                    // Command flags (implementation-specific)
-	ReservedByte           uint8       `json:"reserved_byte"`            // Reserved for future use
-	Length                 uint32      `json:"length"`                   // Total length of command including header
-	ReliableSequenceNumber uint32      `json:"reliable_sequence_number"` // Sequence number for reliable delivery
+	Type                   CommandType `json:"type"`
+	ChannelID              uint8       `json:"channel_id"`
+	Flags                  uint8       `json:"flags"`
+	ReservedByte           uint8       `json:"reserved_byte"`
+	Length                 uint32      `json:"length"`
+	ReliableSequenceNumber uint32      `json:"reliable_sequence_number"`
 }
 
-// Command represents a complete Photon command with its header and payload data.
-// The Data field contains the command-specific payload, which may be empty
-// for some command types (e.g., Acknowledge, Ping).
+// Command represents a Photon command with its header and payload data.
+// To gain in performance we use a union of single struct for all command types.
 type Command[P ParameterView] struct {
 	CommandHeader `json:"header"`
 
-	UnreliablePayload       Reliable[P] `json:"unreliable_payload"`
-	ReliablePayload         Reliable[P] `json:"reliable_payload"`
-	ReliableFragmentPayload Fragment    `json:"reliable_fragment_payload"`
-	AcknowledgePayload      Acknowledge `json:"acknowledge_payload"`
-	ConnectPayload          Connect     `json:"connect_payload"`
-	UnknownPayload
-	PingPayload       struct{} `json:"ping_payload"`
-	DisconnectPayload struct{} `json:"disconnect_payload"`
+	UnreliablePayload       Reliable[P]    `json:"unreliable_payload"`
+	ReliablePayload         Reliable[P]    `json:"reliable_payload"`
+	ReliableFragmentPayload Fragment       `json:"reliable_fragment_payload"`
+	AcknowledgePayload      Acknowledge    `json:"acknowledge_payload"`
+	ConnectPayload          Connect        `json:"connect_payload"`
+	UnknownPayload          UnknownPayload `json:"unknown_payload"`
+	PingPayload             struct{}       `json:"ping_payload"`
+	DisconnectPayload       struct{}       `json:"disconnect_payload"`
 }
 
 type Connect struct {
@@ -67,6 +62,7 @@ type UnknownPayload struct {
 	Kind CommandType `json:"kind"`
 }
 
+// Some commands data are fragmented, this struct represents the fragment metadata.
 type Fragment struct {
 	ID     uint32 `json:"id"`
 	Count  uint32 `json:"count"`
@@ -76,26 +72,21 @@ type Fragment struct {
 	Data   []byte `json:"data"`
 }
 
-// Type represents a Photon reliable message type.
-type Type uint8
+type MessageType uint8
 
-// Photon Protocol reliable message types.
-// These define the different kinds of reliable messages that can be exchanged.
 const (
-	OperationRequest       Type = 0x02 // Client requests an operation
-	OperationResponse      Type = 0x07 // Server responds to an operation
-	OtherOperationResponse Type = 0x03 // Alternative response format
-	EventDataType          Type = 0x04 // Server sends an event to client
-	ExchangeKeys           Type = 0x06 // Key exchange for encryption
+	OperationRequest       MessageType = 0x02 // Client requests an operation
+	OperationResponse      MessageType = 0x07 // Server responds to an operation
+	OtherOperationResponse MessageType = 0x03 // Alternative response format
+	EventDataType          MessageType = 0x04 // Server sends an event to client
+	ExchangeKeys           MessageType = 0x06 // Key exchange for encryption
 )
 
-// ReliableHeader represents the reliable message header.
-// This appears at the start of the payload in SendReliable commands.
 type ReliableHeader struct {
-	Signature      uint8 `json:"signature"`       // Message signature (typically 0xF3)
-	Type           Type  `json:"type"`            // Message type (operation, event, etc.)
-	EventCode      uint8 `json:"event_code"`      // Operation/event code (application-specific)
-	ParameterCount int   `json:"parameter_count"` // Number of parameters following this header
+	Signature      uint8       `json:"signature"`       // Message signature (typically 0xF3)
+	Type           MessageType `json:"type"`            // Message type (operation, event, etc.)
+	EventCode      uint8       `json:"event_code"`      // Operation/event code (application-specific)
+	ParameterCount int         `json:"parameter_count"` // Number of parameters following this header
 }
 
 type Reliable[P ParameterView] struct {

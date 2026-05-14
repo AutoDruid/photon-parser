@@ -22,31 +22,31 @@ const READED_HEADER_SIZE = 14
 //
 // Returns a Reliable struct with all fields populated including the Parameters slice,
 // or an error if any part of parsing fails.
-func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Reliable[P], length uint32) error {
-	err := parseHeader(out, ctx, length)
+func ParseInto[P types.ParameterView](ctx *context.Context[P], length uint32, dest *types.Reliable[P]) error {
+	err := readReliableHeaderInto(ctx, length, dest)
 	if err != nil {
 		return err
 	}
 
-	if out.Type >= types.ExchangeKeys {
+	if dest.Type >= types.ExchangeKeys {
 		return nil
 	}
 
-	if out.Signature != 0xF3 {
+	if dest.Signature != 0xF3 {
 		return errors.ErrEncryptedPacket
 	}
 
-	items := ctx.PoolParameter.Get(out.ParameterCount)
-	out.Parameters = items.Items
+	items := ctx.PoolParameter.Get(dest.ParameterCount)
+	dest.Parameters = items.Items
 
-	for i := 0; i < out.ParameterCount; i++ {
-		err := ctx.Decoders.ParameterParser.Parse(ctx.Reader, &out.Parameters[i], ctx.Hooks)
+	for i := 0; i < dest.ParameterCount; i++ {
+		err := ctx.Decoders.ParameterParser.ParseInto(ctx.Reader, ctx.Hooks, &dest.Parameters[i])
 		if err != nil {
 			return err
 		}
 	}
 
-	emit(ctx.Hooks, out)
+	emit(ctx.Hooks, dest)
 
 	ctx.PoolParameter.Put(items)
 
@@ -54,20 +54,10 @@ func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Reliable[P
 
 }
 
-func emit[P types.ParameterView](hooks *hooks.Hooks[P], out *types.Reliable[P]) {
-	if hooks == nil {
-		return
-	}
-
-	if hooks.OnEvents[out.Type] != nil {
-		hooks.OnEvents[out.Type](*out)
-	}
-}
-
-func parseHeader[P types.ParameterView](out *types.Reliable[P], ctx *context.Context[P], length uint32) error {
+func readReliableHeaderInto[P types.ParameterView](ctx *context.Context[P], length uint32, dest *types.Reliable[P]) error {
 	var err error
 
-	out.Signature, err = ctx.Reader.ReadUInt8()
+	dest.Signature, err = ctx.Reader.ReadUInt8()
 	if err != nil {
 		return err
 	}
@@ -77,12 +67,12 @@ func parseHeader[P types.ParameterView](out *types.Reliable[P], ctx *context.Con
 		return err
 	}
 
-	out.Type = types.Type(b)
+	dest.Type = types.MessageType(b)
 
-	switch out.Type {
+	switch dest.Type {
 	case types.OperationResponse, types.OtherOperationResponse:
 
-		out.EventCode, err = ctx.Reader.ReadUInt8()
+		dest.EventCode, err = ctx.Reader.ReadUInt8()
 		if err != nil {
 			return err
 		}
@@ -99,7 +89,7 @@ func parseHeader[P types.ParameterView](out *types.Reliable[P], ctx *context.Con
 			return err
 		}
 	case types.EventDataType, types.OperationRequest:
-		out.EventCode, err = ctx.Reader.ReadUInt8()
+		dest.EventCode, err = ctx.Reader.ReadUInt8()
 		if err != nil {
 			return err
 		}
@@ -111,10 +101,20 @@ func parseHeader[P types.ParameterView](out *types.Reliable[P], ctx *context.Con
 		return nil
 	}
 
-	out.ParameterCount, err = ctx.Decoders.ReliableHeaderParameterCount.Count(ctx.Reader)
+	dest.ParameterCount, err = ctx.Decoders.ReliableHeaderParameterCount.Count(ctx.Reader)
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func emit[P types.ParameterView](hooks *hooks.Hooks[P], dest *types.Reliable[P]) {
+	if hooks == nil {
+		return
+	}
+
+	if hooks.OnEvents[dest.Type] != nil {
+		hooks.OnEvents[dest.Type](*dest)
+	}
 }

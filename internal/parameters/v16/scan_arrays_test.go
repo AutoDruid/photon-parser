@@ -44,7 +44,7 @@ func TestParseInt8ArrayParameterAndAccessor(t *testing.T) {
 			var parser v16.Parameter
 			var got v16.Parameter
 
-			if err := parser.Parse(r, &got, nil); err != nil {
+			if err := parser.ParseInto(r, nil, &got); err != nil {
 				t.Fatalf("Parse() error = %v", err)
 			}
 
@@ -136,7 +136,7 @@ func TestParseStringArrayParameterAndAccessor(t *testing.T) {
 			var parser v16.Parameter
 			var got v16.Parameter
 
-			if err := parser.Parse(r, &got, nil); err != nil {
+			if err := parser.ParseInto(r, nil, &got); err != nil {
 				t.Fatalf("Parse() error = %v", err)
 			}
 
@@ -217,7 +217,7 @@ func TestParseInt32ArrayParameterAndAccessor(t *testing.T) {
 			var parser v16.Parameter
 			var got v16.Parameter
 
-			if err := parser.Parse(r, &got, nil); err != nil {
+			if err := parser.ParseInto(r, nil, &got); err != nil {
 				t.Fatalf("Parse() error = %v", err)
 			}
 
@@ -332,7 +332,7 @@ func TestParseArrayParameterAndAccessor(t *testing.T) {
 			var parser v16.Parameter
 			var got v16.Parameter
 
-			if err := parser.Parse(r, &got, nil); err != nil {
+			if err := parser.ParseInto(r, nil, &got); err != nil {
 				t.Fatalf("Parse() error = %v", err)
 			}
 

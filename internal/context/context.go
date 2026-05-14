@@ -7,6 +7,9 @@ import (
 	"github.com/AutoDruid/photon-parser/internal/types"
 )
 
+// Context is the main context for the parser.
+// It contains the reader, assembler, hooks, decoders, and pools for the parser.
+// It live as long as the parser is used.
 type Context[P types.ParameterView] struct {
 	Reader        *reader.Reader
 	Assembler     *assembler.Assembler

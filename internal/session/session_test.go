@@ -32,7 +32,7 @@ func TestParseSessionv16(t *testing.T) {
 	)
 
 	var sess types.Session[v16.Parameter]
-	err := session.Parse(ctx, &sess)
+	err := session.ParseInto(ctx, &sess)
 
 	if err != nil {
 		t.Fatalf("error parsing session: %v", err)
@@ -78,7 +78,7 @@ func TestParseSessionv18(t *testing.T) {
 	)
 
 	var sess types.Session[v18.Parameter]
-	err := session.Parse(ctx, &sess)
+	err := session.ParseInto(ctx, &sess)
 
 	if err != nil {
 		t.Fatalf("error parsing session: %v", err)
@@ -109,7 +109,7 @@ func TestParseSessionv18(t *testing.T) {
 	}
 }
 
-func TestMalFormedHeader(t *testing.T) {
+func TestWrongHeader(t *testing.T) {
 
 	payload := []byte{0x0, 0x0}
 
@@ -121,10 +121,10 @@ func TestMalFormedHeader(t *testing.T) {
 	)
 
 	var sess types.Session[v18.Parameter]
-	err := session.Parse(ctx, &sess)
+	err := session.ParseInto(ctx, &sess)
 
 	if err == nil {
-		t.Fatalf("error parsing session should be error")
+		t.Fatalf("parsing session header should fail")
 	}
 }
 
