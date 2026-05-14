@@ -1,7 +1,6 @@
 package command
 
 import (
-	"encoding/binary"
 	"fmt"
 
 	"github.com/AutoDruid/photon-parser/internal/command/acknowledge"
@@ -151,12 +150,12 @@ func parseHeader[P types.ParameterView](out *types.Command[P], r *reader.Reader)
 		return err
 	}
 
-	out.Length, err = r.ReadUInt32(binary.BigEndian)
+	out.Length, err = r.ReadUInt32BE()
 	if err != nil {
 		return err
 	}
 
-	out.ReliableSequenceNumber, err = r.ReadUInt32(binary.BigEndian)
+	out.ReliableSequenceNumber, err = r.ReadUInt32BE()
 	if err != nil {
 		return err
 	}

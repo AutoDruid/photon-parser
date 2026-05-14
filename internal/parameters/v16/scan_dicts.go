@@ -1,8 +1,6 @@
 package v16
 
 import (
-	"encoding/binary"
-
 	"github.com/AutoDruid/photon-parser/internal/reader"
 )
 
@@ -17,7 +15,7 @@ func scanDictionary(reader *reader.Reader, value *Value) error {
 		return err
 	}
 
-	size, err := reader.ReadUInt16(binary.BigEndian)
+	size, err := reader.ReadUInt16BE()
 	if err != nil {
 		return err
 	}

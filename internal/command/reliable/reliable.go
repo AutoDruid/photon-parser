@@ -1,8 +1,6 @@
 package reliable
 
 import (
-	"encoding/binary"
-
 	"github.com/AutoDruid/photon-parser/internal/context"
 	"github.com/AutoDruid/photon-parser/internal/errors"
 	"github.com/AutoDruid/photon-parser/internal/hooks"
@@ -39,8 +37,8 @@ func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Reliable[P
 	}
 
 	items := ctx.PoolParameter.Get(out.ParameterCount)
-	out.Parameters = items.Items
 	defer ctx.PoolParameter.Put(items)
+	out.Parameters = items.Items
 
 	for i := 0; i < out.ParameterCount; i++ {
 		err := ctx.Decoders.ParameterParser.Parse(ctx.Reader, &out.Parameters[i], ctx.Hooks)
@@ -89,7 +87,7 @@ func parseHeader[P types.ParameterView](out *types.Reliable[P], ctx *context.Con
 		}
 
 		//Return code
-		_, err = ctx.Reader.ReadInt16(binary.LittleEndian)
+		_, err = ctx.Reader.ReadInt16LE()
 		if err != nil {
 			return err
 		}

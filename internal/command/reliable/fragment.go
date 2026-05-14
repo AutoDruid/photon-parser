@@ -1,8 +1,6 @@
 package reliable
 
 import (
-	"encoding/binary"
-
 	"github.com/AutoDruid/photon-parser/internal/context"
 	"github.com/AutoDruid/photon-parser/internal/reader"
 	"github.com/AutoDruid/photon-parser/internal/types"
@@ -28,27 +26,27 @@ func ParseFragment[P types.ParameterView](ctx *context.Context[P], out *types.Fr
 func parseMetadata(reader *reader.Reader, out *types.Fragment) error {
 	var err error
 
-	out.ID, err = reader.ReadUInt32(binary.BigEndian)
+	out.ID, err = reader.ReadUInt32BE()
 	if err != nil {
 		return err
 	}
 
-	out.Count, err = reader.ReadUInt32(binary.BigEndian)
+	out.Count, err = reader.ReadUInt32BE()
 	if err != nil {
 		return err
 	}
 
-	out.Index, err = reader.ReadUInt32(binary.BigEndian)
+	out.Index, err = reader.ReadUInt32BE()
 	if err != nil {
 		return err
 	}
 
-	out.Size, err = reader.ReadUInt32(binary.BigEndian)
+	out.Size, err = reader.ReadUInt32BE()
 	if err != nil {
 		return err
 	}
 
-	out.Offset, err = reader.ReadUInt32(binary.BigEndian)
+	out.Offset, err = reader.ReadUInt32BE()
 	if err != nil {
 		return err
 	}

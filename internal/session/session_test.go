@@ -31,7 +31,7 @@ func TestParseSessionv16(t *testing.T) {
 		},
 	)
 
-	var sess types.Session
+	var sess types.Session[v16.Parameter]
 	err := session.Parse(ctx, &sess)
 
 	if err != nil {
@@ -77,7 +77,7 @@ func TestParseSessionv18(t *testing.T) {
 		},
 	)
 
-	var sess types.Session
+	var sess types.Session[v18.Parameter]
 	err := session.Parse(ctx, &sess)
 
 	if err != nil {
@@ -120,7 +120,7 @@ func TestMalFormedHeader(t *testing.T) {
 		context.Decoders[v18.Parameter]{},
 	)
 
-	var sess types.Session
+	var sess types.Session[v18.Parameter]
 	err := session.Parse(ctx, &sess)
 
 	if err == nil {
@@ -134,12 +134,12 @@ func TestSyncHookOnSession(t *testing.T) {
 
 	parser := photon.NewV18()
 
-	var sess types.Session
-	parser.OnSessionSync(func(s types.Session) {
+	var sess types.Session[v18.Parameter]
+	parser.OnSessionSync(func(s types.Session[v18.Parameter]) {
 		sess = s
 	})
 
-	sess2 := types.Session{}
+	sess2 := types.Session[v18.Parameter]{}
 
 	err := parser.ParsePacketInto(payload, &sess2)
 
@@ -180,7 +180,7 @@ func TestASyncHookOnSession(t *testing.T) {
 
 	ch := parser.OnSessionAsync(types.HookOptions{Size: 1})
 
-	sess := types.Session{}
+	sess := types.Session[v18.Parameter]{}
 
 	err := parser.ParsePacketInto(payload, &sess)
 

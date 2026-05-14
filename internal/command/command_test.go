@@ -23,7 +23,7 @@ func TestParseSession(t *testing.T) {
 		PoolParameter: context.NewPool[v16.Parameter](100),
 	}
 
-	var cmd types.Command
+	var cmd types.Command[v16.Parameter]
 
 	err := command.Parse(ctx, &cmd)
 

@@ -36,44 +36,44 @@ type CommandHeader struct {
 type Command[P ParameterView] struct {
 	CommandHeader `json:"header"`
 
-	UnreliablePayload       Reliable[P]
-	ReliablePayload         Reliable[P]
-	ReliableFragmentPayload Fragment
-	AcknowledgePayload      Acknowledge
-	ConnectPayload          Connect
+	UnreliablePayload       Reliable[P] `json:"unreliable_payload"`
+	ReliablePayload         Reliable[P] `json:"reliable_payload"`
+	ReliableFragmentPayload Fragment    `json:"reliable_fragment_payload"`
+	AcknowledgePayload      Acknowledge `json:"acknowledge_payload"`
+	ConnectPayload          Connect     `json:"connect_payload"`
 	UnknownPayload
-	PingPayload       struct{}
-	DisconnectPayload struct{}
+	PingPayload       struct{} `json:"ping_payload"`
+	DisconnectPayload struct{} `json:"disconnect_payload"`
 }
 
 type Connect struct {
-	Mtu                        uint32
-	WindowSize                 uint32
-	ChannelCount               uint32
-	IncomingBandwidth          uint32
-	OutgoingBandwidth          uint32
-	DisconnectThrottle         uint32
-	PacketThrottleAcceleration uint32
-	PacketThrottleDeceleration uint32
+	Mtu                        uint32 `json:"mtu"`
+	WindowSize                 uint32 `json:"window_size"`
+	ChannelCount               uint32 `json:"channel_count"`
+	IncomingBandwidth          uint32 `json:"incoming_bandwidth"`
+	OutgoingBandwidth          uint32 `json:"outgoing_bandwidth"`
+	DisconnectThrottle         uint32 `json:"disconnect_throttle"`
+	PacketThrottleAcceleration uint32 `json:"packet_throttle_acceleration"`
+	PacketThrottleDeceleration uint32 `json:"packet_throttle_deceleration"`
 }
 
 type Acknowledge struct {
-	AckReliableSequenceNumber uint32
-	AckSentTime               uint32
+	AckReliableSequenceNumber uint32 `json:"ack_reliable_sequence_number"`
+	AckSentTime               uint32 `json:"ack_sent_time"`
 }
 
 type UnknownPayload struct {
-	Raw  []byte
-	Kind CommandType
+	Raw  []byte      `json:"raw"`
+	Kind CommandType `json:"kind"`
 }
 
 type Fragment struct {
-	ID     uint32
-	Count  uint32
-	Index  uint32
-	Size   uint32
-	Offset uint32
-	Data   []byte
+	ID     uint32 `json:"id"`
+	Count  uint32 `json:"count"`
+	Index  uint32 `json:"index"`
+	Size   uint32 `json:"size"`
+	Offset uint32 `json:"offset"`
+	Data   []byte `json:"data"`
 }
 
 // Type represents a Photon reliable message type.
@@ -99,6 +99,6 @@ type ReliableHeader struct {
 }
 
 type Reliable[P ParameterView] struct {
-	ReliableHeader
-	Parameters []P
+	ReliableHeader `json:"reliable_header"`
+	Parameters     []P `json:"parameters"`
 }

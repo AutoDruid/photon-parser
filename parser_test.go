@@ -4,7 +4,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 	"testing"
@@ -74,7 +73,7 @@ func loadCapturesB(path string, b *testing.B) []json.RawMessage {
 	return frames
 }
 
-func TestParseUDP1(t *testing.T) {
+func TestParseVersion18OnDataset1(t *testing.T) {
 
 	parser := photon.NewV18()
 
@@ -102,15 +101,14 @@ func TestParseUDP1(t *testing.T) {
 			if err != nil {
 				t.Fatalf("parse (%d bytes): %v", len(payload), err)
 			}
-			if &session == nil {
-				t.Fatalf("session must not be nil")
+			if session.Timestamp == 0 {
+				t.Fatalf("session must have a timestamp")
 			}
 		})
 	}
-	t.Logf("done: %d rows", len(frames))
 }
 
-func TestParseUDP2(t *testing.T) {
+func TestParseVersion18OnDataset2(t *testing.T) {
 
 	parser := photon.NewV18()
 
@@ -137,15 +135,14 @@ func TestParseUDP2(t *testing.T) {
 			if err != nil {
 				t.Fatalf("parse (%d bytes): %v", len(payload), err)
 			}
-			if &session == nil {
-				t.Fatalf("session must not be nil")
+			if session.Timestamp == 0 {
+				t.Fatalf("session must have a timestamp")
 			}
 		})
 	}
-	t.Logf("done: %d rows", len(frames))
 }
 
-func TestParseUDP3(t *testing.T) {
+func TestParseVersion18OnDataset3(t *testing.T) {
 
 	parser := photon.NewV18()
 
@@ -172,38 +169,63 @@ func TestParseUDP3(t *testing.T) {
 			if err != nil {
 				t.Fatalf("parse (%d bytes): %v", len(payload), err)
 			}
-			if &session == nil {
-				t.Fatalf("session must not be nil")
+			if session.Timestamp == 0 {
+				t.Fatalf("session must have a timestamp")
 			}
 		})
 	}
-	t.Logf("done: %d rows", len(frames))
 }
 
-func BenchmarkParseUDP1(b *testing.B) {
-
+func TestParserOnASinglePacketVersion18(t *testing.T) {
 	parser := photon.NewV18()
+	frames := loadCaptures("./tests/dataset/v18/2.json", t)
 
+	payload, _, err := rowToPayload(frames[181])
+	if err != nil {
+		t.Fatalf("decode row: %v", err)
+	}
+
+	session := photon.Session[v18.Parameter]{}
+
+	parser.OnCommandSync(func(command photon.Command[v18.Parameter]) {
+		t.Log(command.Kind)
+	})
+
+	err = parser.ParsePacketInto(payload, &session)
+	if err != nil {
+		t.Fatalf("error: %v", err)
+	}
+	if session.Timestamp == 0 {
+		t.Fatalf("session must have a timestamp")
+	}
+}
+
+func BenchmarkParserOn343PacketsVersion18(b *testing.B) {
+	parser := photon.NewV18()
 	frames := loadCapturesB("./tests/dataset/v18/1.json", b)
 
-	payloads := make([][]byte, len(frames))
+	var totalBytes int64
+	payloads := make([][]byte, 0, len(frames))
+
 	for i, frame := range frames {
 		payload, _, err := rowToPayload(frame)
 		if err != nil {
 			b.Fatalf("row %d: decode row: %v", i, err)
 		}
-		payloads[i] = payload
+		if len(payload) > 0 {
+			payloads = append(payloads, payload)
+			totalBytes += int64(len(payload))
+		}
 	}
 
 	session := photon.Session[v18.Parameter]{}
 
 	b.ReportAllocs()
+	b.SetBytes(totalBytes)
 	b.ResetTimer()
+
 	for b.Loop() {
 		for i, payload := range payloads {
-			if len(payload) == 0 {
-				continue
-			}
 			err := parser.ParsePacketInto(payload, &session)
 			if err != nil {
 				b.Fatalf("row %d: error: %v", i, err)
@@ -212,57 +234,59 @@ func BenchmarkParseUDP1(b *testing.B) {
 	}
 }
 
-func TestCountParameters(t *testing.T) {
+func BenchmarkParserOnASinglePacketVersion18(b *testing.B) {
 	parser := photon.NewV18()
+	frames := loadCapturesB("./tests/dataset/v18/1.json", b)
 
-	frames := loadCaptures("./tests/dataset/v18/1.json", t)
-
-	payloads := make([][]byte, len(frames))
-	for i, frame := range frames {
-		payload, _, err := rowToPayload(frame)
-		if err != nil {
-			t.Fatalf("row %d: decode row: %v", i, err)
-		}
-		payloads[i] = payload
+	payload, _, err := rowToPayload(frames[200])
+	if err != nil {
+		b.Fatalf("decode row: %v", err)
 	}
 
-	total := 0
-	count := 0
-
-	parser.OnEventData(func(r photon.Reliable[v18.Parameter]) {
-		total += r.ParameterCount
-		count++
-	})
-
-	parser.OnOperationRequest(func(r photon.Reliable[v18.Parameter]) {
-		total += r.ParameterCount
-		count++
-	})
-
-	parser.OnOperationResponse(func(r photon.Reliable[v18.Parameter]) {
-		total += r.ParameterCount
-		count++
-	})
-
-	parser.OnOtherOperationResponse(func(r photon.Reliable[v18.Parameter]) {
-		total += r.ParameterCount
-		count++
-	})
+	totalBytes := int64(len(payload))
 
 	session := photon.Session[v18.Parameter]{}
-	for i, payload := range payloads {
-		if len(payload) == 0 {
-			continue
-		}
+
+	b.ReportAllocs()
+	b.SetBytes(totalBytes)
+	b.ResetTimer()
+
+	for b.Loop() {
 		err := parser.ParsePacketInto(payload, &session)
 		if err != nil {
-			t.Fatalf("row %d: error: %v", i, err)
+			b.Fatalf("error: %v", err)
 		}
-		if &session == nil {
-			t.Fatal("sink must not be nil")
+		if session.Timestamp == 0 {
+			b.Fatalf("session must have a timestamp")
 		}
 	}
+}
 
-	log.Printf("Total %d, avg %.2f", total, float64(total)/float64(count))
+func BenchmarkParserOnASinglePacketVersion18Parallel(b *testing.B) {
+	frames := loadCapturesB("./tests/dataset/v18/1.json", b)
+	payload, _, err := rowToPayload(frames[6])
+	if err != nil {
+		b.Fatalf("decode row: %v", err)
+	}
 
+	totalBytes := int64(len(payload))
+
+	b.ReportAllocs()
+	b.SetBytes(totalBytes)
+	b.ResetTimer()
+
+	b.RunParallel(func(pb *testing.PB) {
+		parser := photon.NewV18()
+		session := photon.Session[v18.Parameter]{}
+
+		for pb.Next() {
+			err := parser.ParsePacketInto(payload, &session)
+			if err != nil {
+				b.Errorf("error: %v", err)
+			}
+			if session.PeerID == 0 {
+				b.Errorf("session must have a peer id")
+			}
+		}
+	})
 }

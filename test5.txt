@@ -1,7 +1,0 @@
-goos: darwin
-goarch: arm64
-pkg: github.com/AutoDruid/photon-parser
-cpu: Apple M2
-BenchmarkParseUDP1-8   	  132260	     92268 ns/op	  157786 B/op	     345 allocs/op
-PASS
-ok  	github.com/AutoDruid/photon-parser	12.648s

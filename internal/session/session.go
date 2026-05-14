@@ -4,7 +4,6 @@
 package session
 
 import (
-	"encoding/binary"
 	"errors"
 
 	"github.com/AutoDruid/photon-parser/internal/command"
@@ -31,7 +30,10 @@ func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Session[P]
 		return err
 	}
 
-	out.Commands = make([]types.Command[P], out.CommandCount)
+	items := ctx.PoolCommand.Get(int(out.CommandCount))
+	defer ctx.PoolCommand.Put(items)
+
+	out.Commands = items.Items
 
 	for i := uint8(0); i < out.CommandCount; i++ {
 		err := command.Parse(ctx, &out.Commands[i])
@@ -56,7 +58,7 @@ func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Session[P]
 func parseHeader[P types.ParameterView](out *types.Session[P], r *reader.Reader) error {
 	var err error
 
-	out.PeerID, err = r.ReadUInt16(binary.BigEndian)
+	out.PeerID, err = r.ReadUInt16BE()
 	if err != nil {
 		return err
 	}
@@ -71,12 +73,12 @@ func parseHeader[P types.ParameterView](out *types.Session[P], r *reader.Reader)
 		return err
 	}
 
-	out.Timestamp, err = r.ReadUInt32(binary.BigEndian)
+	out.Timestamp, err = r.ReadUInt32BE()
 	if err != nil {
 		return err
 	}
 
-	out.Challenge, err = r.ReadInt32(binary.BigEndian)
+	out.Challenge, err = r.ReadInt32BE()
 	if err != nil {
 		return err
 	}

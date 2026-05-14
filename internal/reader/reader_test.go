@@ -2,7 +2,6 @@ package reader_test
 
 import (
 	"bytes"
-	"encoding/binary"
 	"math"
 	"testing"
 
@@ -417,7 +416,7 @@ func TestReadInt16(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := reader.NewReader(tt.input)
-			got, err := r.ReadInt16(binary.BigEndian)
+			got, err := r.ReadInt16BE()
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadInt16() error = %v, wantErr %v", err, tt.wantErr)
@@ -448,7 +447,7 @@ func TestReadUInt16(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := reader.NewReader(tt.input)
-			got, err := r.ReadUInt16(binary.BigEndian)
+			got, err := r.ReadUInt16BE()
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadUInt16() error = %v, wantErr %v", err, tt.wantErr)
@@ -498,7 +497,7 @@ func TestReadInt32(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := reader.NewReader(tt.input)
-			got, err := r.ReadInt32(binary.BigEndian)
+			got, err := r.ReadInt32BE()
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadInt32() error = %v, wantErr %v", err, tt.wantErr)
@@ -528,7 +527,7 @@ func TestReadUInt32(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := reader.NewReader(tt.input)
-			got, err := r.ReadUInt32(binary.BigEndian)
+			got, err := r.ReadUInt32BE()
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadUInt32() error = %v, wantErr %v", err, tt.wantErr)
@@ -578,7 +577,7 @@ func TestReadInt64(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := reader.NewReader(tt.input)
-			got, err := r.ReadInt64(binary.BigEndian)
+			got, err := r.ReadInt64BE()
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadInt64() error = %v, wantErr %v", err, tt.wantErr)
@@ -624,7 +623,7 @@ func TestReadUInt64(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := reader.NewReader(tt.input)
-			got, err := r.ReadUInt64(binary.BigEndian)
+			got, err := r.ReadUInt64BE()
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadUInt64() error = %v, wantErr %v", err, tt.wantErr)
@@ -674,7 +673,7 @@ func TestReadFloat32(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := reader.NewReader(tt.input)
-			got, err := r.ReadFloat32(binary.BigEndian)
+			got, err := r.ReadFloat32BE()
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadFloat32() error = %v, wantErr %v", err, tt.wantErr)
@@ -723,7 +722,7 @@ func TestReadFloat64(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			r := reader.NewReader(tt.input)
-			got, err := r.ReadFloat64(binary.BigEndian)
+			got, err := r.ReadFloat64BE()
 
 			if (err != nil) != tt.wantErr {
 				t.Errorf("ReadFloat64() error = %v, wantErr %v", err, tt.wantErr)

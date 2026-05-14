@@ -2,23 +2,21 @@ package context
 
 import (
 	"sync"
-
-	"github.com/AutoDruid/photon-parser/internal/types"
 )
 
 const (
 	maxPooledCap = 1024
 )
 
-type Pool[P types.ParameterView] struct {
+type Pool[P any] struct {
 	pool sync.Pool
 }
 
-type PooledSlice[P types.ParameterView] struct {
+type PooledSlice[P any] struct {
 	Items []P
 }
 
-func NewPool[P types.ParameterView](maxCap int) *Pool[P] {
+func NewPool[P any](maxCap int) *Pool[P] {
 	return &Pool[P]{
 		pool: sync.Pool{
 			New: func() any {
@@ -34,7 +32,10 @@ func (p *Pool[P]) Get(n int) *PooledSlice[P] {
 	if n < 0 {
 		n = 0
 	}
+
 	wrapper := p.pool.Get().(*PooledSlice[P])
+
+	clear(wrapper.Items)
 
 	if cap(wrapper.Items) >= n {
 		wrapper.Items = wrapper.Items[:n]
@@ -48,8 +49,6 @@ func (p *Pool[P]) Put(wrapper *PooledSlice[P]) {
 	if cap(wrapper.Items) > maxPooledCap {
 		return
 	}
-
-	clear(wrapper.Items)
 
 	wrapper.Items = wrapper.Items[:0]
 	p.pool.Put(wrapper)

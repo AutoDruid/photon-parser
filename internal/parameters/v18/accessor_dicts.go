@@ -12,16 +12,20 @@ func (p Parameter) DictionaryValue() iter.Seq2[any, any] {
 	}
 	return func(yield func(any, any) bool) {
 		r := reader.NewReader(p.Blob)
+		var key, value Value
 		for i := uint64(0); i < p.Num; i++ {
-			k, err := scanPayload(r, p.KeyType)
+			key.Kind = p.KeyType
+			err := scanPayload(r, &key)
 			if err != nil {
 				return
 			}
-			v, err := scanPayload(r, p.ValType)
+
+			value.Kind = p.ValType
+			err = scanPayload(r, &value)
 			if err != nil {
 				return
 			}
-			if !yield(decodeValue(k), decodeValue(v)) {
+			if !yield(decodeValue(key), decodeValue(value)) {
 				return
 			}
 		}

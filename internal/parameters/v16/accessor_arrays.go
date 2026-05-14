@@ -1,7 +1,6 @@
 package v16
 
 import (
-	"encoding/binary"
 	"fmt"
 	"iter"
 
@@ -54,7 +53,7 @@ func (p Parameter) Int32ArrayValue() iter.Seq2[int, int32] {
 		r := reader.NewReader(p.Blob)
 
 		for i := 0; i < int(p.Num); i++ {
-			output, err := r.ReadInt32(binary.BigEndian)
+			output, err := r.ReadInt32BE()
 			if err != nil {
 				return
 			}
@@ -75,7 +74,7 @@ func (p Parameter) StringArrayValue() iter.Seq2[int, string] {
 		r := reader.NewReader(p.Blob)
 
 		for i := 0; i < int(p.Num); i++ {
-			size, err := r.ReadUInt16(binary.BigEndian)
+			size, err := r.ReadUInt16BE()
 			if err != nil {
 				return
 			}
