@@ -22,6 +22,18 @@ run = "golangci-lint run ./..."
 description = "Format the code"
 run = "go fmt ./..."
 
+[tasks.benchmark]
+description = "Run the benchmarks"
+run = "mkdir -p ./ressources && go test -run ^$ -bench '^BenchmarkParserOn343PacketsVersion18$' -benchmem -benchtime=10s -memprofile=./ressources/mem.out -cpuprofile=./ressources/cpu.out -o ./ressources/benchmark.test ."
+
+[tasks.profile-mem]
+description = "Profile the memory usage"
+run = "mkdir -p ./ressources && go tool pprof -alloc_space -list 'reliable.Parse' ./ressources/benchmark.test ./ressources/mem.out"
+
+[tasks.profile-cpu]
+description = "Profile the CPU usage"
+run = "mkdir -p ./ressources && go tool pprof -list 'reliable.Parse' ./ressources/benchmark.test ./ressources/cpu.out"
+
 [tasks.validate]
 description = "Validate the code"
 run = "mise lint && mise format && mise test && mise build"

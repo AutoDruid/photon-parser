@@ -1,13 +1,11 @@
 package v16
 
 import (
-	"encoding/binary"
-
 	"github.com/AutoDruid/photon-parser/internal/reader"
 )
 
 func scanInt8Array(reader *reader.Reader, value *Value) error {
-	size, err := reader.ReadUInt32(binary.BigEndian)
+	size, err := reader.ReadUInt32BE()
 	if err != nil {
 		return err
 	}
@@ -22,7 +20,7 @@ func scanInt8Array(reader *reader.Reader, value *Value) error {
 }
 
 func scanInt32Array(reader *reader.Reader, value *Value) error {
-	size, err := reader.ReadUInt32(binary.BigEndian)
+	size, err := reader.ReadUInt32BE()
 	if err != nil {
 		return err
 	}
@@ -36,14 +34,14 @@ func scanInt32Array(reader *reader.Reader, value *Value) error {
 }
 
 func scanStringArray(reader *reader.Reader, value *Value) error {
-	size, err := reader.ReadUInt32(binary.BigEndian)
+	size, err := reader.ReadUInt32BE()
 	if err != nil {
 		return err
 	}
 
 	start := reader.Cursor
 	for i := uint32(0); i < size; i++ {
-		size, err := reader.ReadUInt16(binary.BigEndian)
+		size, err := reader.ReadUInt16BE()
 		if err != nil {
 			return err
 		}
@@ -59,7 +57,7 @@ func scanStringArray(reader *reader.Reader, value *Value) error {
 }
 
 func scanArray(reader *reader.Reader, value *Value) error {
-	size, err := reader.ReadUInt16(binary.BigEndian)
+	size, err := reader.ReadUInt16BE()
 	if err != nil {
 		return err
 	}

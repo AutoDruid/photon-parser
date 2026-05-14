@@ -8,6 +8,7 @@ import (
 	"github.com/AutoDruid/photon-parser/internal/context"
 	v16 "github.com/AutoDruid/photon-parser/internal/parameters/v16"
 	"github.com/AutoDruid/photon-parser/internal/reader"
+	"github.com/AutoDruid/photon-parser/internal/types"
 )
 
 func TestReliableParsing(t *testing.T) {
@@ -20,8 +21,10 @@ func TestReliableParsing(t *testing.T) {
 			ParameterParser:              &v16.Parameter{},
 			ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
 		},
+		PoolParameter: context.NewPool[v16.Parameter](100),
 	}
-	sd, err := reliable.Parse(ctx, 0)
+	var sd types.Reliable[v16.Parameter]
+	err := reliable.Parse(ctx, &sd, uint32(len(payload)))
 
 	if err != nil {
 		t.Fatalf("LoadFromWiresharkExport() failed: %v", err)

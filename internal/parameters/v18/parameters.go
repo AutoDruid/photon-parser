@@ -34,7 +34,9 @@ func (p *Parameter) Parse(reader *reader.Reader, out *Parameter, hooks *hooks.Ho
 		return err
 	}
 
-	value, err := scanPayload(reader, header.Type)
+	value := Value{Kind: header.Type}
+
+	err = scanPayload(reader, &value)
 
 	if err != nil {
 		return err
@@ -86,141 +88,140 @@ func (p *Parameter) parseHeader(r *reader.Reader) (Header, error) {
 	return header, nil
 }
 
-func scanPayload(reader *reader.Reader, t ParameterType) (Value, error) {
+func scanPayload(reader *reader.Reader, dest *Value) error {
 	var err error
-	res := Value{Kind: t}
 
-	switch t {
+	switch dest.Kind {
 	case Int8Type:
-		err = scanInt8(reader, &res)
+		err = scanInt8(reader, dest)
 		if err != nil {
-			return Value{}, err
+			return err
 		}
 	case Int8Positive:
-		err = scanInt8Positive(reader, &res)
+		err = scanInt8Positive(reader, dest)
 		if err != nil {
-			return Value{}, err
+			return err
 		}
 	case Int8Negative:
-		err = scanInt8Negative(reader, &res)
+		err = scanInt8Negative(reader, dest)
 		if err != nil {
-			return Value{}, err
+			return err
 		}
 	case Int16Type:
-		err = scanInt16Type(reader, &res)
+		err = scanInt16Type(reader, dest)
 		if err != nil {
-			return Value{}, err
+			return err
 		}
 	case Int16Positive:
-		err = scanInt16Positive(reader, &res)
+		err = scanInt16Positive(reader, dest)
 		if err != nil {
-			return Value{}, err
+			return err
 		}
 	case Int16Negative:
-		err = scanInt16Negative(reader, &res)
+		err = scanInt16Negative(reader, dest)
 		if err != nil {
-			return Value{}, err
+			return err
 		}
 	case Long8Positive:
-		err = scanLong8Positive(reader, &res)
+		err = scanLong8Positive(reader, dest)
 		if err != nil {
-			return Value{}, err
+			return err
 		}
 	case Long8Negative:
-		err = scanLong8Negative(reader, &res)
+		err = scanLong8Negative(reader, dest)
 		if err != nil {
-			return Value{}, err
+			return err
 		}
 	case Long16Positive:
-		err = scanLong16Positive(reader, &res)
+		err = scanLong16Positive(reader, dest)
 		if err != nil {
-			return Value{}, err
+			return err
 		}
 	case Long16Negative:
-		err = scanLong16Negative(reader, &res)
+		err = scanLong16Negative(reader, dest)
 		if err != nil {
-			return Value{}, err
+			return err
 		}
 	case StringType:
-		err = scanString(reader, &res)
+		err = scanString(reader, dest)
 		if err != nil {
-			return Value{}, err
+			return err
 		}
 	case CompressedInt32Type:
-		err = scanCompressedInt32(reader, &res)
+		err = scanCompressedInt32(reader, dest)
 		if err != nil {
-			return Value{}, err
+			return err
 		}
 	case CompressedInt64Type:
-		err = scanCompressedInt64(reader, &res)
+		err = scanCompressedInt64(reader, dest)
 		if err != nil {
-			return Value{}, err
+			return err
 		}
 	case Float32ArrayType:
-		err = scanFloat32Array(reader, &res)
+		err = scanFloat32Array(reader, dest)
 		if err != nil {
-			return Value{}, err
+			return err
 		}
 	case Float32Type:
-		err = scanFloat32(reader, &res)
+		err = scanFloat32(reader, dest)
 		if err != nil {
-			return Value{}, err
+			return err
 		}
 	case Float64Type:
-		err = scanFloat64(reader, &res)
+		err = scanFloat64(reader, dest)
 		if err != nil {
-			return Value{}, err
+			return err
 		}
 	case BooleanTrueType:
-		res.Num = 1
+		dest.Num = 1
 	case BooleanFalseType:
-		res.Num = 0
+		dest.Num = 0
 	case IntZeroType, ShortZeroType, LongZeroType, ByteZeroType:
 		break
 	case ArrayType:
-		err = scanArray(reader, &res)
+		err = scanArray(reader, dest)
 		if err != nil {
-			return Value{}, err
+			return err
 		}
 	case ShortArrayType:
-		err = scanShortArray(reader, &res)
+		err = scanShortArray(reader, dest)
 		if err != nil {
-			return Value{}, err
+			return err
 		}
 	case ByteArrayType:
-		err = scanByteArray(reader, &res)
+		err = scanByteArray(reader, dest)
 		if err != nil {
-			return Value{}, err
+			return err
 		}
 	case BooleanArrayType:
-		err = scanBooleanArray(reader, &res)
+		err = scanBooleanArray(reader, dest)
 		if err != nil {
-			return Value{}, err
+			return err
 		}
 	case StringArrayType:
-		err = scanStringArray(reader, &res)
+		err = scanStringArray(reader, dest)
 		if err != nil {
-			return Value{}, err
+			return err
 		}
 	case DictionaryType:
-		err = scanDictionary(reader, &res)
+		err = scanDictionary(reader, dest)
 		if err != nil {
-			return Value{}, err
+			return err
 		}
 	case CompressedIntArrayType:
-		err = scanCompressedIntArray(reader, &res)
+		err = scanCompressedIntArray(reader, dest)
 		if err != nil {
-			return Value{}, err
+			return err
 		}
 	case CompressedLongArrayType:
-		err = scanCompressedLongArray(reader, &res)
+		err = scanCompressedLongArray(reader, dest)
 		if err != nil {
-			return Value{}, err
+			return err
 		}
 	case NilType, UnknownType:
 		break
 	default:
-		return Value{}, fmt.Errorf("unsupported type: %d", t)
+		return fmt.Errorf("unsupported type: %d", dest.Kind)
 	}
-	return res, nil
+	return nil
 }

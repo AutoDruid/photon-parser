@@ -6,8 +6,8 @@ import (
 	"github.com/AutoDruid/photon-parser/internal/types"
 )
 
-type Session = types.Session
-type Command = types.Command
+type Session[P types.ParameterView] = types.Session[P]
+type Command[P types.ParameterView] = types.Command[P]
 type HookOptions = types.HookOptions
 type ParameterV16 = v16.Parameter
 type ParameterV18 = v18.Parameter

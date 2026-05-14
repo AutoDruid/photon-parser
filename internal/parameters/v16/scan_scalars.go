@@ -1,14 +1,13 @@
 package v16
 
 import (
-	"encoding/binary"
 	"math"
 
 	"github.com/AutoDruid/photon-parser/internal/reader"
 )
 
 func scanString(reader *reader.Reader, value *Value) error {
-	size, err := reader.ReadUInt16(binary.BigEndian)
+	size, err := reader.ReadUInt16BE()
 	if err != nil {
 		return err
 	}
@@ -22,7 +21,7 @@ func scanString(reader *reader.Reader, value *Value) error {
 }
 
 func scanFloat32(reader *reader.Reader, value *Value) error {
-	res, err := reader.ReadFloat32(binary.BigEndian)
+	res, err := reader.ReadFloat32BE()
 	if err != nil {
 		return err
 	}
@@ -31,7 +30,7 @@ func scanFloat32(reader *reader.Reader, value *Value) error {
 }
 
 func scanFloat64(reader *reader.Reader, value *Value) error {
-	res, err := reader.ReadFloat64(binary.BigEndian)
+	res, err := reader.ReadFloat64BE()
 	if err != nil {
 		return err
 	}
@@ -49,7 +48,7 @@ func scanInt8(reader *reader.Reader, value *Value) error {
 }
 
 func scanInt16(reader *reader.Reader, value *Value) error {
-	res, err := reader.ReadInt16(binary.BigEndian)
+	res, err := reader.ReadInt16BE()
 	if err != nil {
 		return err
 	}
@@ -58,7 +57,7 @@ func scanInt16(reader *reader.Reader, value *Value) error {
 }
 
 func scanInt32(reader *reader.Reader, value *Value) error {
-	res, err := reader.ReadInt32(binary.BigEndian)
+	res, err := reader.ReadInt32BE()
 	if err != nil {
 		return err
 	}
@@ -67,7 +66,7 @@ func scanInt32(reader *reader.Reader, value *Value) error {
 }
 
 func scanInt64(reader *reader.Reader, value *Value) error {
-	res, err := reader.ReadInt64(binary.BigEndian)
+	res, err := reader.ReadInt64BE()
 	if err != nil {
 		return err
 	}

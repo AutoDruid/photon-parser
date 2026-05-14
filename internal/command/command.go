@@ -1,13 +1,10 @@
 package command
 
 import (
-	"encoding/binary"
 	"fmt"
 
 	"github.com/AutoDruid/photon-parser/internal/command/acknowledge"
 	"github.com/AutoDruid/photon-parser/internal/command/connect"
-	"github.com/AutoDruid/photon-parser/internal/command/disconnect"
-	"github.com/AutoDruid/photon-parser/internal/command/ping"
 	"github.com/AutoDruid/photon-parser/internal/command/reliable"
 	"github.com/AutoDruid/photon-parser/internal/context"
 	"github.com/AutoDruid/photon-parser/internal/errors"
@@ -15,10 +12,6 @@ import (
 	"github.com/AutoDruid/photon-parser/internal/reader"
 	"github.com/AutoDruid/photon-parser/internal/types"
 )
-
-type Command[P types.ParameterView] struct {
-	types.Command
-}
 
 // ParseFromReader parses a Photon command from a parser.Reader.
 // It first reads the 12-byte command header, validates the length field,
@@ -32,18 +25,16 @@ type Command[P types.ParameterView] struct {
 // The returned Command struct contains all header fields and the raw payload
 // in the Data field. For SendReliable commands, the Data can be further parsed
 // using the reliable package.
-func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Command) error {
-	cmd := Command[P]{}
-	header, err := cmd.parseHeader(ctx.Reader)
+func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Command[P]) error {
+	err := parseHeader(out, ctx.Reader)
 
-	out.CommandHeader = header
-	if header.Type > types.SendReliableFragmentCommand {
+	if out.Type > types.SendReliableFragmentCommand {
 		remaining := ctx.Reader.Max - ctx.Reader.Cursor - 1
 		rest, err := ctx.Reader.ReadBytes(remaining)
 		if err != nil {
 			return err
 		}
-		out.Payload = types.UnknownPayload{Raw: rest, Kind: header.Type}
+		out.UnknownPayload = types.UnknownPayload{Raw: rest, Kind: out.Type}
 		return nil
 	}
 
@@ -51,17 +42,15 @@ func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Command) e
 		return err
 	}
 
-	if header.Length < types.COMMAND_HEADER_SIZE {
+	if out.Length < types.COMMAND_HEADER_SIZE {
 		return errors.ErrHeaderSize
 	}
 
-	parsed, err := cmd.parsePayload(header.Type, ctx, header.Length)
+	err = parsePayload(out, ctx)
 	if err != nil {
-		rest, _ := ctx.Reader.ReadBytes(int(header.Length - types.COMMAND_HEADER_SIZE))
+		rest, _ := ctx.Reader.ReadBytes(int(out.Length - types.COMMAND_HEADER_SIZE))
 		// don't fatal — just store raw for encrypted packets
-		out.Payload = types.UnknownPayload{Raw: rest, Kind: header.Type}
-	} else {
-		out.Payload = parsed
+		out.UnknownPayload = types.UnknownPayload{Raw: rest, Kind: out.Type}
 	}
 
 	emit(ctx.Hooks, out)
@@ -69,7 +58,7 @@ func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Command) e
 	return nil
 }
 
-func emit[P types.ParameterView](hooks *hooks.Hooks[P], out *types.Command) {
+func emit[P types.ParameterView](hooks *hooks.Hooks[P], out *types.Command[P]) {
 	if hooks == nil {
 		return
 	}
@@ -89,75 +78,87 @@ func emit[P types.ParameterView](hooks *hooks.Hooks[P], out *types.Command) {
 
 }
 
-func (c Command[P]) parsePayload(t types.CommandType, ctx *context.Context[P], length uint32) (types.Payload, error) {
-	switch t {
+func parsePayload[P types.ParameterView](out *types.Command[P], ctx *context.Context[P]) error {
+	switch out.Type {
 	case types.SendUnreliableCommand:
 
 		_, err := ctx.Reader.ReadBytes(4)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		sd, err := reliable.Parse(ctx, length)
+		err = reliable.Parse(ctx, &out.UnreliablePayload, out.Length)
 		if err != nil {
-			return nil, err
+			return err
 		}
-		return sd, nil
 	case types.SendReliableCommand:
-		return reliable.Parse(ctx, length)
+		err := reliable.Parse(ctx, &out.ReliablePayload, out.Length)
+		if err != nil {
+			return err
+		}
 	case types.AcknowledgeCommand:
-		return acknowledge.Parse(ctx.Reader)
+		err := acknowledge.Parse(ctx.Reader, &out.AcknowledgePayload)
+		if err != nil {
+			return err
+		}
 	case types.ConnectCommand, types.VerifyConnectCommand:
-		return connect.Parse(ctx.Reader)
+		err := connect.Parse(ctx.Reader, &out.ConnectPayload)
+		if err != nil {
+			return err
+		}
 	case types.SendReliableFragmentCommand:
-		return reliable.ParseFragment(ctx, length)
+		err := reliable.ParseFragment(ctx, &out.ReliableFragmentPayload, &out.ReliablePayload, out.Length)
+		if err != nil {
+			return err
+		}
 	case types.PingCommand:
-		return ping.Parse(), nil
+		out.PingPayload = struct{}{}
 	case types.DisconnectCommand:
-		return disconnect.Parse(), nil
+		out.DisconnectPayload = struct{}{}
 	default:
-		return nil, fmt.Errorf("unsupported command type %d", t)
+		return fmt.Errorf("unsupported command type %d", out.Type)
 	}
+
+	return nil
 }
 
-func (s *Command[P]) parseHeader(r *reader.Reader) (types.CommandHeader, error) {
+func parseHeader[P types.ParameterView](out *types.Command[P], r *reader.Reader) error {
 	var err error
-	var header types.CommandHeader
 
 	b, err := r.ReadUInt8()
 	if err != nil {
-		return types.CommandHeader{}, err
+		return err
 	}
 
-	header.Type = types.CommandType(b)
+	out.Type = types.CommandType(b)
 
-	if header.Type > types.SendReliableFragmentCommand {
-		return header, nil
+	if out.Type > types.SendReliableFragmentCommand {
+		return nil
 	}
 
-	header.ChannelID, err = r.ReadUInt8()
+	out.ChannelID, err = r.ReadUInt8()
 	if err != nil {
-		return types.CommandHeader{}, err
+		return err
 	}
 
-	header.Flags, err = r.ReadUInt8()
+	out.Flags, err = r.ReadUInt8()
 	if err != nil {
-		return types.CommandHeader{}, err
+		return err
 	}
 
-	header.ReservedByte, err = r.ReadUInt8()
+	out.ReservedByte, err = r.ReadUInt8()
 	if err != nil {
-		return types.CommandHeader{}, err
+		return err
 	}
 
-	header.Length, err = r.ReadUInt32(binary.BigEndian)
+	out.Length, err = r.ReadUInt32BE()
 	if err != nil {
-		return types.CommandHeader{}, err
+		return err
 	}
 
-	header.ReliableSequenceNumber, err = r.ReadUInt32(binary.BigEndian)
+	out.ReliableSequenceNumber, err = r.ReadUInt32BE()
 	if err != nil {
-		return types.CommandHeader{}, err
+		return err
 	}
 
-	return header, nil
+	return nil
 }

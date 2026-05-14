@@ -12,7 +12,7 @@ type Header struct {
 
 // Session represents a complete Photon session packet with its header and commands.
 // A session packet can contain multiple commands that will be processed sequentially.
-type Session struct {
+type Session[P ParameterView] struct {
 	Header   `json:"header"`
-	Commands []Command `json:"commands"`
+	Commands []Command[P] `json:"commands"`
 }

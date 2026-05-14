@@ -1,7 +1,6 @@
 package v18
 
 import (
-	"encoding/binary"
 	"math"
 
 	"github.com/AutoDruid/photon-parser/internal/reader"
@@ -22,7 +21,7 @@ func scanString(reader *reader.Reader, value *Value) error {
 }
 
 func scanFloat32(reader *reader.Reader, value *Value) error {
-	res, err := reader.ReadFloat32(binary.LittleEndian)
+	res, err := reader.ReadFloat32LE()
 	if err != nil {
 		return err
 	}
@@ -31,7 +30,7 @@ func scanFloat32(reader *reader.Reader, value *Value) error {
 }
 
 func scanFloat64(reader *reader.Reader, value *Value) error {
-	res, err := reader.ReadFloat64(binary.LittleEndian)
+	res, err := reader.ReadFloat64LE()
 	if err != nil {
 		return err
 	}
@@ -67,7 +66,7 @@ func scanInt8Negative(reader *reader.Reader, value *Value) error {
 }
 
 func scanInt16Type(reader *reader.Reader, value *Value) error {
-	res, err := reader.ReadInt16(binary.LittleEndian)
+	res, err := reader.ReadInt16LE()
 	if err != nil {
 		return err
 	}
@@ -76,7 +75,7 @@ func scanInt16Type(reader *reader.Reader, value *Value) error {
 }
 
 func scanInt16Positive(reader *reader.Reader, value *Value) error {
-	res, err := reader.ReadUInt16(binary.LittleEndian)
+	res, err := reader.ReadUInt16LE()
 	if err != nil {
 		return err
 	}
@@ -85,7 +84,7 @@ func scanInt16Positive(reader *reader.Reader, value *Value) error {
 }
 
 func scanInt16Negative(reader *reader.Reader, value *Value) error {
-	res, err := reader.ReadUInt16(binary.LittleEndian)
+	res, err := reader.ReadUInt16LE()
 	if err != nil {
 		return err
 	}
@@ -112,7 +111,7 @@ func scanLong8Negative(reader *reader.Reader, value *Value) error {
 }
 
 func scanLong16Positive(reader *reader.Reader, value *Value) error {
-	res, err := reader.ReadUInt16(binary.LittleEndian)
+	res, err := reader.ReadUInt16LE()
 	if err != nil {
 		return err
 	}
@@ -121,7 +120,7 @@ func scanLong16Positive(reader *reader.Reader, value *Value) error {
 }
 
 func scanLong16Negative(reader *reader.Reader, value *Value) error {
-	res, err := reader.ReadUInt16(binary.LittleEndian)
+	res, err := reader.ReadUInt16LE()
 	if err != nil {
 		return err
 	}

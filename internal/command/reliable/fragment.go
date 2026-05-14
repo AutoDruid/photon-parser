@@ -1,65 +1,57 @@
 package reliable
 
 import (
-	"encoding/binary"
-
 	"github.com/AutoDruid/photon-parser/internal/context"
 	"github.com/AutoDruid/photon-parser/internal/reader"
 	"github.com/AutoDruid/photon-parser/internal/types"
 )
 
-type Fragment struct {
-	types.Fragment
-}
+func ParseFragment[P types.ParameterView](ctx *context.Context[P], out *types.Fragment, outt *types.Reliable[P], length uint32) error {
 
-func ParseFragment[P types.ParameterView](ctx *context.Context[P], length uint32) (*Reliable[P], error) {
-
-	fragment, err := parseMetadata(ctx.Reader)
+	err := parseMetadata(ctx.Reader, out)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	data, completed := ctx.Assembler.Feed(fragment.Fragment)
+	data, completed := ctx.Assembler.Feed(*out)
 
 	if completed {
 		ctx.Reader.Reset(data)
-		return Parse(ctx, length)
+		return Parse(ctx, outt, length)
 	}
 
-	return nil, nil
+	return nil
 }
 
-func parseMetadata(reader *reader.Reader) (*Fragment, error) {
-	var fragment Fragment
+func parseMetadata(reader *reader.Reader, out *types.Fragment) error {
 	var err error
 
-	fragment.ID, err = reader.ReadUInt32(binary.BigEndian)
+	out.ID, err = reader.ReadUInt32BE()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	fragment.Count, err = reader.ReadUInt32(binary.BigEndian)
+	out.Count, err = reader.ReadUInt32BE()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	fragment.Index, err = reader.ReadUInt32(binary.BigEndian)
+	out.Index, err = reader.ReadUInt32BE()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	fragment.Size, err = reader.ReadUInt32(binary.BigEndian)
+	out.Size, err = reader.ReadUInt32BE()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	fragment.Offset, err = reader.ReadUInt32(binary.BigEndian)
+	out.Offset, err = reader.ReadUInt32BE()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	fragment.Data = reader.ReadRemaining()
+	out.Data = reader.ReadRemaining()
 
-	return &fragment, nil
-
+	return nil
 }

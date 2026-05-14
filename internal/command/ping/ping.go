@@ -2,6 +2,6 @@ package ping
 
 type Ping struct{}
 
-func Parse() *Ping {
-	return &Ping{}
+func Parse() Ping {
+	return Ping{}
 }

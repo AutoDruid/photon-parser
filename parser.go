@@ -39,9 +39,14 @@ func NewV16() *Parser[v16.Parameter] {
 }
 
 // ParseV16 parses data using a newly allocated protocol 16 Parser and returns the resulting Session.
-func ParseV16(data []byte) (*Session, error) {
+func ParseV16(data []byte) (*Session[v16.Parameter], error) {
 	p := NewV16()
-	return p.ParsePacket(data)
+	var sess Session[v16.Parameter]
+	err := p.ParsePacketInto(data, &sess)
+	if err != nil {
+		return nil, err
+	}
+	return &sess, nil
 }
 
 // NewV18 returns a Parser that interprets parameters and reliable headers using protocol 18 rules.
@@ -60,25 +65,28 @@ func NewV18() *Parser[v18.Parameter] {
 }
 
 // ParseV18 parses data using a newly allocated protocol 18 Parser and returns the resulting Session.
-func ParseV18(data []byte) (*Session, error) {
+func ParseV18(data []byte) (*Session[v18.Parameter], error) {
 	p := NewV18()
-	return p.ParsePacket(data)
+	var sess Session[v18.Parameter]
+	err := p.ParsePacketInto(data, &sess)
+	if err != nil {
+		return nil, err
+	}
+	return &sess, nil
 }
 
 // ParsePacket resets the internal reader to data and decodes one Photon session.
 // Hooks registered on the Parser are invoked during this call.
-func (p *Parser[P]) ParsePacket(data []byte) (*Session, error) {
+func (p *Parser[P]) ParsePacketInto(data []byte, sess *Session[P]) error {
 
 	p.ctx.Reader.Reset(data)
 
-	var sess Session
-
-	err := session.Parse(p.ctx, &sess)
+	err := session.Parse(p.ctx, sess)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return &sess, nil
+	return nil
 }
 
 // OnEventData registers a callback for reliable messages of type event data (server-raised events).
@@ -103,12 +111,12 @@ func (p *Parser[P]) OnOtherOperationResponse(fn func(Reliable[P])) {
 }
 
 // OnSessionSync registers a function called once per ParsePacket when the session has been parsed.
-func (p *Parser[P]) OnSessionSync(fn func(Session)) {
+func (p *Parser[P]) OnSessionSync(fn func(Session[P])) {
 	p.ctx.Hooks.SyncHooks.OnSession = fn
 }
 
 // OnCommandSync registers a function called for each top-level command during ParsePacket.
-func (p *Parser[P]) OnCommandSync(fn func(Command)) {
+func (p *Parser[P]) OnCommandSync(fn func(Command[P])) {
 	p.ctx.Hooks.SyncHooks.OnCommand = fn
 }
 
@@ -119,12 +127,12 @@ func (p *Parser[P]) OnParameterSync(fn func(P)) {
 
 // OnSessionAsync returns a receive-only channel of parsed sessions.
 // HookOptions.Size sets the channel buffer capacity; see Close when finished with async hooks.
-func (p *Parser[P]) OnSessionAsync(options types.HookOptions) <-chan Session {
+func (p *Parser[P]) OnSessionAsync(options types.HookOptions) <-chan Session[P] {
 	return p.ctx.Hooks.OnSessionAsync(options)
 }
 
 // OnCommandAsync returns a receive-only channel that receives each command as it is parsed.
-func (p *Parser[P]) OnCommandAsync(options types.HookOptions) <-chan Command {
+func (p *Parser[P]) OnCommandAsync(options types.HookOptions) <-chan Command[P] {
 	return p.ctx.Hooks.OnCommandAsync(options)
 }
 

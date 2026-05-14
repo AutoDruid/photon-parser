@@ -18,11 +18,17 @@ func scanDictionary(r *reader.Reader, value *Value) error {
 		return err
 	}
 	start := r.Cursor
+
+	var dummy Value
+
 	for i := uint32(0); i < count; i++ {
-		if _, err := scanPayload(r, ParameterType(keyType)); err != nil {
+		dummy.Kind = ParameterType(keyType)
+		if err := scanPayload(r, &dummy); err != nil {
 			return err
 		}
-		if _, err := scanPayload(r, ParameterType(valueType)); err != nil {
+
+		dummy.Kind = ParameterType(valueType)
+		if err := scanPayload(r, &dummy); err != nil {
 			return err
 		}
 	}
