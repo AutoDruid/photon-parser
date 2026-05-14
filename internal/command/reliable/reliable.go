@@ -1,6 +1,8 @@
 package reliable
 
 import (
+	"fmt"
+
 	"github.com/AutoDruid/photon-parser/internal/context"
 	"github.com/AutoDruid/photon-parser/internal/errors"
 	"github.com/AutoDruid/photon-parser/internal/hooks"
@@ -9,8 +11,6 @@ import (
 
 // HEADER_SIZE is the size in bytes of a reliable message header (5 bytes).
 const HEADER_SIZE = 5
-
-const READED_HEADER_SIZE = 14
 
 // ParseFromReader parses a Photon reliable message from a parser.Reader.
 // It reads the 5-byte header, then iterates through and parses each parameter
@@ -22,8 +22,10 @@ const READED_HEADER_SIZE = 14
 //
 // Returns a Reliable struct with all fields populated including the Parameters slice,
 // or an error if any part of parsing fails.
-func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Reliable[P], length uint32) error {
-	err := parseHeader(out, ctx, length)
+func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Reliable[P], payloadLen uint32) error {
+	start := ctx.Reader.Cursor
+
+	err := parseHeader(out, ctx, payloadLen, start)
 	if err != nil {
 		return err
 	}
@@ -34,6 +36,20 @@ func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Reliable[P
 
 	if out.Signature != 0xF3 {
 		return errors.ErrEncryptedPacket
+	}
+
+	consumed := ctx.Reader.Cursor - start
+	remaining := int(payloadLen) - consumed
+	if remaining < 0 {
+		return fmt.Errorf("reliable header size %d exceeds payload %d", consumed, payloadLen)
+	}
+
+	if ctx.Config.SkipParameterParsing {
+		return ctx.Reader.Skip(remaining)
+	}
+
+	if ctx.Config.SkipTargetEventCodes[out.Type] {
+		return ctx.Reader.Skip(remaining)
 	}
 
 	items := ctx.PoolParameter.Get(out.ParameterCount)
@@ -64,7 +80,7 @@ func emit[P types.ParameterView](hooks *hooks.Hooks[P], out *types.Reliable[P]) 
 	}
 }
 
-func parseHeader[P types.ParameterView](out *types.Reliable[P], ctx *context.Context[P], length uint32) error {
+func parseHeader[P types.ParameterView](out *types.Reliable[P], ctx *context.Context[P], payloadLen uint32, start int) error {
 	var err error
 
 	out.Signature, err = ctx.Reader.ReadUInt8()
@@ -104,11 +120,12 @@ func parseHeader[P types.ParameterView](out *types.Reliable[P], ctx *context.Con
 			return err
 		}
 	default:
-		_, err = ctx.Reader.ReadBytes(int(length) - READED_HEADER_SIZE)
-		if err != nil {
-			return err
+		rest := int(payloadLen) - (ctx.Reader.Cursor - start)
+		if rest < 0 {
+			return fmt.Errorf("reliable default skip: negative rest")
 		}
-		return nil
+		_, err := ctx.Reader.ReadBytes(rest)
+		return err
 	}
 
 	out.ParameterCount, err = ctx.Decoders.ReliableHeaderParameterCount.Count(ctx.Reader)

@@ -30,11 +30,18 @@ func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Command[P]
 
 	if out.Type > types.SendReliableFragmentCommand {
 		remaining := ctx.Reader.Max - ctx.Reader.Cursor - 1
+
+		if ctx.Config.SkipUnknownPayloads {
+			return ctx.Reader.Skip(remaining)
+		}
+
 		rest, err := ctx.Reader.ReadBytes(remaining)
 		if err != nil {
 			return err
 		}
 		out.UnknownPayload = types.UnknownPayload{Raw: rest, Kind: out.Type}
+
+		emit(ctx.Hooks, out)
 		return nil
 	}
 
@@ -46,9 +53,21 @@ func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Command[P]
 		return errors.ErrHeaderSize
 	}
 
+	if ctx.Config.SkipCommands[out.Type] {
+		remaining := int(out.Length - types.COMMAND_HEADER_SIZE)
+		return ctx.Reader.Skip(remaining)
+	}
+
 	err = parsePayload(out, ctx)
 	if err != nil {
-		rest, _ := ctx.Reader.ReadBytes(int(out.Length - types.COMMAND_HEADER_SIZE))
+		remaining := int(out.Length - types.COMMAND_HEADER_SIZE)
+
+		if ctx.Config.SkipUnknownPayloads {
+			err := ctx.Reader.Skip(remaining)
+			return err
+		}
+
+		rest, _ := ctx.Reader.ReadBytes(remaining)
 		// don't fatal — just store raw for encrypted packets
 		out.UnknownPayload = types.UnknownPayload{Raw: rest, Kind: out.Type}
 	}
@@ -86,12 +105,22 @@ func parsePayload[P types.ParameterView](out *types.Command[P], ctx *context.Con
 		if err != nil {
 			return err
 		}
-		err = reliable.Parse(ctx, &out.UnreliablePayload, out.Length)
+
+		relPayload := int64(out.Length) - types.COMMAND_HEADER_SIZE - 4
+		if relPayload < 0 {
+			return fmt.Errorf("command length %d too small for unreliable reliable payload", out.Length)
+		}
+
+		err = reliable.Parse(ctx, &out.UnreliablePayload, uint32(relPayload))
 		if err != nil {
 			return err
 		}
 	case types.SendReliableCommand:
-		err := reliable.Parse(ctx, &out.ReliablePayload, out.Length)
+		relPayload := int64(out.Length) - types.COMMAND_HEADER_SIZE
+		if relPayload < 0 {
+			return fmt.Errorf("command length %d too small for reliable payload", out.Length)
+		}
+		err := reliable.Parse(ctx, &out.ReliablePayload, uint32(relPayload))
 		if err != nil {
 			return err
 		}

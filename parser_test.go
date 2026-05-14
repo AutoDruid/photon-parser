@@ -1,6 +1,7 @@
 package photon_test
 
 import (
+	"bytes"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -176,6 +177,190 @@ func TestParseVersion18OnDataset3(t *testing.T) {
 	}
 }
 
+func TestParseVersion18OnDataset3WithoutUnknownPayloads(t *testing.T) {
+
+	parser := photon.NewV18(photon.SkipUnknownPayloads(true))
+
+	frames := loadCaptures("./tests/dataset/v18/3.json", t)
+
+	session := photon.Session[v18.Parameter]{}
+
+	parser.OnCommandSync(func(command photon.Command[v18.Parameter]) {
+		if !bytes.Equal(command.Raw, []byte{}) {
+			t.Fatalf("unknown payload found")
+		}
+	})
+
+	for i, frame := range frames {
+		payload, frameNo, err := rowToPayload(frame)
+		if err != nil {
+			t.Fatalf("row %d: decode row: %v", i, err)
+		}
+		if len(payload) == 0 {
+			t.Logf("row %d%s: skip (empty payload)", i, frameNo)
+			continue
+		}
+
+		name := fmt.Sprintf("row_%d", i)
+		if s := strings.TrimSpace(frameNo); s != "" {
+			name += "_" + strings.ReplaceAll(strings.ReplaceAll(s, " ", "_"), "__", "_")
+		}
+
+		t.Run(name, func(t *testing.T) {
+			err := parser.ParsePacketInto(payload, &session)
+			if err != nil {
+				t.Fatalf("parse (%d bytes): %v", len(payload), err)
+			}
+			if session.Timestamp == 0 {
+				t.Fatalf("session must have a timestamp")
+			}
+		})
+	}
+}
+
+func TestParseVersion18OnDataset3WithoutCommands(t *testing.T) {
+
+	parser := photon.NewV18(photon.SkipCommands(photon.SendReliableCommand))
+
+	frames := loadCaptures("./tests/dataset/v18/3.json", t)
+
+	session := photon.Session[v18.Parameter]{}
+
+	parser.OnCommandSync(func(command photon.Command[v18.Parameter]) {
+		if command.Type == photon.SendReliableCommand {
+			t.Fatalf("send reliable command found")
+		}
+	})
+
+	for i, frame := range frames {
+		payload, frameNo, err := rowToPayload(frame)
+		if err != nil {
+			t.Fatalf("row %d: decode row: %v", i, err)
+		}
+		if len(payload) == 0 {
+			t.Logf("row %d%s: skip (empty payload)", i, frameNo)
+			continue
+		}
+
+		name := fmt.Sprintf("row_%d", i)
+		if s := strings.TrimSpace(frameNo); s != "" {
+			name += "_" + strings.ReplaceAll(strings.ReplaceAll(s, " ", "_"), "__", "_")
+		}
+
+		t.Run(name, func(t *testing.T) {
+			err := parser.ParsePacketInto(payload, &session)
+			if err != nil {
+				t.Fatalf("parse (%d bytes): %v", len(payload), err)
+			}
+			if session.Timestamp == 0 {
+				t.Fatalf("session must have a timestamp")
+			}
+		})
+	}
+}
+
+func TestParseVersion18OnDataset3WithoutParameters(t *testing.T) {
+
+	parser := photon.NewV18(photon.SkipParameterParsing(true))
+
+	frames := loadCaptures("./tests/dataset/v18/3.json", t)
+
+	session := photon.Session[v18.Parameter]{}
+
+	parser.OnCommandSync(func(command photon.Command[v18.Parameter]) {
+		var parameters []v18.Parameter
+		switch command.Type {
+		case photon.SendReliableCommand:
+			parameters = command.ReliablePayload.Parameters
+		case photon.SendUnreliableCommand:
+			parameters = command.UnreliablePayload.Parameters
+		}
+		if len(parameters) > 0 {
+			t.Fatalf("parameters found")
+		}
+	})
+
+	for i, frame := range frames {
+		payload, frameNo, err := rowToPayload(frame)
+		if err != nil {
+			t.Fatalf("row %d: decode row: %v", i, err)
+		}
+		if len(payload) == 0 {
+			t.Logf("row %d%s: skip (empty payload)", i, frameNo)
+			continue
+		}
+
+		name := fmt.Sprintf("row_%d", i)
+		if s := strings.TrimSpace(frameNo); s != "" {
+			name += "_" + strings.ReplaceAll(strings.ReplaceAll(s, " ", "_"), "__", "_")
+		}
+
+		t.Run(name, func(t *testing.T) {
+			err := parser.ParsePacketInto(payload, &session)
+			if err != nil {
+				t.Fatalf("parse (%d bytes): %v", len(payload), err)
+			}
+			if session.Timestamp == 0 {
+				t.Fatalf("session must have a timestamp")
+			}
+		})
+	}
+}
+
+func TestParseVersion18OnDataset3WithoutEvents(t *testing.T) {
+
+	parser := photon.NewV18(photon.SkipTargetEventCodes(photon.OperationRequest, photon.OperationResponse))
+
+	frames := loadCaptures("./tests/dataset/v18/3.json", t)
+
+	session := photon.Session[v18.Parameter]{}
+
+	for i, frame := range frames {
+		payload, frameNo, err := rowToPayload(frame)
+		if err != nil {
+			t.Fatalf("row %d: decode row: %v", i, err)
+		}
+		if len(payload) == 0 {
+			t.Logf("row %d%s: skip (empty payload)", i, frameNo)
+			continue
+		}
+
+		name := fmt.Sprintf("row_%d", i)
+		if s := strings.TrimSpace(frameNo); s != "" {
+			name += "_" + strings.ReplaceAll(strings.ReplaceAll(s, " ", "_"), "__", "_")
+		}
+
+		t.Run(name, func(t *testing.T) {
+			parser.OnCommandSync(func(command photon.Command[v18.Parameter]) {
+				switch command.Type {
+				case photon.SendReliableCommand:
+					switch command.ReliablePayload.Type {
+					case photon.OperationRequest, photon.OperationResponse:
+						if len(command.ReliablePayload.Parameters) > 0 {
+							t.Fatalf("decoded parameters on skipped operation type %v", command.ReliablePayload.Type)
+						}
+					}
+				case photon.SendUnreliableCommand:
+					switch command.UnreliablePayload.Type {
+					case photon.OperationRequest, photon.OperationResponse:
+						if len(command.UnreliablePayload.Parameters) > 0 {
+							t.Fatalf("decoded parameters on skipped operation type %v", command.UnreliablePayload.Type)
+						}
+					}
+				}
+			})
+
+			err := parser.ParsePacketInto(payload, &session)
+			if err != nil {
+				t.Fatalf("parse (%d bytes): %v", len(payload), err)
+			}
+			if session.Timestamp == 0 {
+				t.Fatalf("session must have a timestamp")
+			}
+		})
+	}
+}
+
 func TestParserOnASinglePacketVersion18(t *testing.T) {
 	parser := photon.NewV18()
 	frames := loadCaptures("./tests/dataset/v18/2.json", t)
@@ -202,6 +387,74 @@ func TestParserOnASinglePacketVersion18(t *testing.T) {
 
 func BenchmarkParserOn343PacketsVersion18(b *testing.B) {
 	parser := photon.NewV18()
+	frames := loadCapturesB("./tests/dataset/v18/1.json", b)
+
+	var totalBytes int64
+	payloads := make([][]byte, 0, len(frames))
+
+	for i, frame := range frames {
+		payload, _, err := rowToPayload(frame)
+		if err != nil {
+			b.Fatalf("row %d: decode row: %v", i, err)
+		}
+		if len(payload) > 0 {
+			payloads = append(payloads, payload)
+			totalBytes += int64(len(payload))
+		}
+	}
+
+	session := photon.Session[v18.Parameter]{}
+
+	b.ReportAllocs()
+	b.SetBytes(totalBytes)
+	b.ResetTimer()
+
+	for b.Loop() {
+		for i, payload := range payloads {
+			err := parser.ParsePacketInto(payload, &session)
+			if err != nil {
+				b.Fatalf("row %d: error: %v", i, err)
+			}
+		}
+	}
+}
+
+func BenchmarkParserOn343PacketsVersion18WithoutUnknownPayloads(b *testing.B) {
+	parser := photon.NewV18(photon.SkipUnknownPayloads(true))
+	frames := loadCapturesB("./tests/dataset/v18/1.json", b)
+
+	var totalBytes int64
+	payloads := make([][]byte, 0, len(frames))
+
+	for i, frame := range frames {
+		payload, _, err := rowToPayload(frame)
+		if err != nil {
+			b.Fatalf("row %d: decode row: %v", i, err)
+		}
+		if len(payload) > 0 {
+			payloads = append(payloads, payload)
+			totalBytes += int64(len(payload))
+		}
+	}
+
+	session := photon.Session[v18.Parameter]{}
+
+	b.ReportAllocs()
+	b.SetBytes(totalBytes)
+	b.ResetTimer()
+
+	for b.Loop() {
+		for i, payload := range payloads {
+			err := parser.ParsePacketInto(payload, &session)
+			if err != nil {
+				b.Fatalf("row %d: error: %v", i, err)
+			}
+		}
+	}
+}
+
+func BenchmarkParserOn343PacketsVersion18WithoutParameters(b *testing.B) {
+	parser := photon.NewV18(photon.SkipParameterParsing(true))
 	frames := loadCapturesB("./tests/dataset/v18/1.json", b)
 
 	var totalBytes int64

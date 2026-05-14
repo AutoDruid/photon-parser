@@ -24,7 +24,12 @@ type Parser[P types.ParameterView] struct {
 }
 
 // NewV16 returns a Parser that interprets parameters and reliable headers using protocol 16 rules.
-func NewV16() *Parser[v16.Parameter] {
+func NewV16(options ...Option) *Parser[v16.Parameter] {
+	config := DefaultConfig()
+	for _, option := range options {
+		option(&config)
+	}
+
 	return &Parser[v16.Parameter]{
 		ctx: context.NewContext(
 			reader.NewReader(nil),
@@ -34,13 +39,14 @@ func NewV16() *Parser[v16.Parameter] {
 				ParameterParser:              &v16.Parameter{},
 				ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
 			},
+			config,
 		),
 	}
 }
 
 // ParseV16 parses data using a newly allocated protocol 16 Parser and returns the resulting Session.
-func ParseV16(data []byte) (*Session[v16.Parameter], error) {
-	p := NewV16()
+func ParseV16(data []byte, options ...Option) (*Session[v16.Parameter], error) {
+	p := NewV16(options...)
 	var sess Session[v16.Parameter]
 	err := p.ParsePacketInto(data, &sess)
 	if err != nil {
@@ -50,7 +56,11 @@ func ParseV16(data []byte) (*Session[v16.Parameter], error) {
 }
 
 // NewV18 returns a Parser that interprets parameters and reliable headers using protocol 18 rules.
-func NewV18() *Parser[v18.Parameter] {
+func NewV18(options ...Option) *Parser[v18.Parameter] {
+	config := DefaultConfig()
+	for _, option := range options {
+		option(&config)
+	}
 	return &Parser[v18.Parameter]{
 		ctx: context.NewContext(
 			reader.NewReader(nil),
@@ -60,13 +70,14 @@ func NewV18() *Parser[v18.Parameter] {
 				ParameterParser:              &v18.Parameter{},
 				ReliableHeaderParameterCount: &v18.ReliableHeaderParameterCountV18{},
 			},
+			config,
 		),
 	}
 }
 
 // ParseV18 parses data using a newly allocated protocol 18 Parser and returns the resulting Session.
-func ParseV18(data []byte) (*Session[v18.Parameter], error) {
-	p := NewV18()
+func ParseV18(data []byte, options ...Option) (*Session[v18.Parameter], error) {
+	p := NewV18(options...)
 	var sess Session[v18.Parameter]
 	err := p.ParsePacketInto(data, &sess)
 	if err != nil {

@@ -29,6 +29,7 @@ func TestParseSessionv16(t *testing.T) {
 			ParameterParser:              &v16.Parameter{},
 			ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
 		},
+		types.Config{},
 	)
 
 	var sess types.Session[v16.Parameter]
@@ -75,6 +76,7 @@ func TestParseSessionv18(t *testing.T) {
 			ParameterParser:              &v18.Parameter{},
 			ReliableHeaderParameterCount: &v18.ReliableHeaderParameterCountV18{},
 		},
+		types.Config{},
 	)
 
 	var sess types.Session[v18.Parameter]
@@ -118,6 +120,7 @@ func TestMalFormedHeader(t *testing.T) {
 		nil,
 		nil,
 		context.Decoders[v18.Parameter]{},
+		types.Config{},
 	)
 
 	var sess types.Session[v18.Parameter]

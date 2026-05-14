@@ -17,7 +17,7 @@ func ParseFragment[P types.ParameterView](ctx *context.Context[P], out *types.Fr
 
 	if completed {
 		ctx.Reader.Reset(data)
-		return Parse(ctx, outt, length)
+		return Parse(ctx, outt, uint32(len(data)))
 	}
 
 	return nil
