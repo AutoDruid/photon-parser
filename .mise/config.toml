@@ -24,20 +24,15 @@ run = "go fmt ./..."
 
 [tasks.benchmark]
 description = "Run the benchmarks"
-run = "go test -run ^$ -bench '^BenchmarkParserOn343PacketsVersion18$' -benchmem -benchtime=10s -memprofile=./ressources/mem.out -cpuprofile=./ressources/cpu.out -o ./ressources/benchmark.test ."
+run = "mkdir -p ./ressources && go test -run ^$ -bench '^BenchmarkParserOn343PacketsVersion18$' -benchmem -benchtime=10s -memprofile=./ressources/mem.out -cpuprofile=./ressources/cpu.out -o ./ressources/benchmark.test ."
 
 [tasks.profile-mem]
 description = "Profile the memory usage"
-run = "go tool pprof -alloc_space -list 'reliable.Parse' ./ressources/benchmark.test ./ressources/mem.out"
+run = "mkdir -p ./ressources && go tool pprof -alloc_space -list 'reliable.Parse' ./ressources/benchmark.test ./ressources/mem.out"
 
 [tasks.profile-cpu]
 description = "Profile the CPU usage"
-run = "go tool pprof -list 'reliable.Parse' ./ressources/benchmark.test ./ressources/cpu.out"
-
-[tasks.profile]
-description = "Profile the code"
-usage = 'arg "<file>" default="./ressources/mem.prof" help="The profile file to profile"'
-run = 'go tool pprof -http=:8085 "${usage_file?}"'
+run = "mkdir -p ./ressources && go tool pprof -list 'reliable.Parse' ./ressources/benchmark.test ./ressources/cpu.out"
 
 [tasks.validate]
 description = "Validate the code"
