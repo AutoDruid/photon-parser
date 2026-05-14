@@ -37,7 +37,6 @@ func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Reliable[P
 	}
 
 	items := ctx.PoolParameter.Get(out.ParameterCount)
-	defer ctx.PoolParameter.Put(items)
 	out.Parameters = items.Items
 
 	for i := 0; i < out.ParameterCount; i++ {
@@ -48,6 +47,8 @@ func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Reliable[P
 	}
 
 	emit(ctx.Hooks, out)
+
+	ctx.PoolParameter.Put(items)
 
 	return nil
 

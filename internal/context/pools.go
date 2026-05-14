@@ -35,10 +35,9 @@ func (p *Pool[P]) Get(n int) *PooledSlice[P] {
 
 	wrapper := p.pool.Get().(*PooledSlice[P])
 
-	clear(wrapper.Items)
-
 	if cap(wrapper.Items) >= n {
 		wrapper.Items = wrapper.Items[:n]
+		clear(wrapper.Items)
 		return wrapper
 	}
 	wrapper.Items = make([]P, n)

@@ -31,8 +31,6 @@ func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Session[P]
 	}
 
 	items := ctx.PoolCommand.Get(int(out.CommandCount))
-	defer ctx.PoolCommand.Put(items)
-
 	out.Commands = items.Items
 
 	for i := uint8(0); i < out.CommandCount; i++ {
@@ -51,6 +49,8 @@ func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Session[P]
 	}
 
 	emit(ctx.Hooks, out)
+
+	ctx.PoolCommand.Put(items)
 
 	return nil
 }
