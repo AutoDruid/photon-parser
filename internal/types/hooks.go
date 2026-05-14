@@ -1,15 +1,15 @@
 package types
 
 type SyncHooks[P ParameterView] struct {
-	OnSession   func(Session)
-	OnCommand   func(Command)
+	OnSession   func(Session[P])
+	OnCommand   func(Command[P])
 	OnEvents    map[Type]func(Reliable[P])
 	OnParameter func(P)
 }
 
 type AsyncHooks[P ParameterView] struct {
-	OnSession   chan Session
-	OnCommand   chan Command
+	OnSession   chan Session[P]
+	OnCommand   chan Command[P]
 	OnParameter chan P
 }
 

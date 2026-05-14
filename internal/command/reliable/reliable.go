@@ -14,13 +14,6 @@ const HEADER_SIZE = 5
 
 const READED_HEADER_SIZE = 14
 
-// Reliable represents a complete reliable message with header and parameters.
-// Parameters contain the actual game data as key-value pairs where each
-// parameter has an ID, type, and value.
-type Reliable[P types.ParameterView] struct {
-	types.Reliable[P]
-}
-
 // ParseFromReader parses a Photon reliable message from a parser.Reader.
 // It reads the 5-byte header, then iterates through and parses each parameter
 // as specified by the ParameterCount field.
@@ -31,102 +24,98 @@ type Reliable[P types.ParameterView] struct {
 //
 // Returns a Reliable struct with all fields populated including the Parameters slice,
 // or an error if any part of parsing fails.
-func Parse[P types.ParameterView](ctx *context.Context[P], length uint32) (*Reliable[P], error) {
-	reliable := Reliable[P]{}
-	header, err := reliable.parseHeader(ctx, length)
+func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Reliable[P], length uint32) error {
+	err := parseHeader(out, ctx, length)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	if header.Type >= types.ExchangeKeys {
-		return nil, nil
+	if out.Type >= types.ExchangeKeys {
+		return nil
 	}
 
-	reliable.ReliableHeader = header
-
-	if reliable.Signature != 0xF3 {
-		return nil, errors.ErrEncryptedPacket
+	if out.Signature != 0xF3 {
+		return errors.ErrEncryptedPacket
 	}
 
-	items := ctx.PoolParameter.Get(header.ParameterCount)
-	reliable.Parameters = items.Items
+	items := ctx.PoolParameter.Get(out.ParameterCount)
+	out.Parameters = items.Items
 	defer ctx.PoolParameter.Put(items)
 
-	for i := 0; i < reliable.ParameterCount; i++ {
-		err := ctx.Decoders.ParameterParser.Parse(ctx.Reader, &reliable.Parameters[i], ctx.Hooks)
+	for i := 0; i < out.ParameterCount; i++ {
+		err := ctx.Decoders.ParameterParser.Parse(ctx.Reader, &out.Parameters[i], ctx.Hooks)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	}
 
-	emit(ctx.Hooks, &reliable)
+	emit(ctx.Hooks, out)
 
-	return &reliable, nil
+	return nil
 
 }
 
-func emit[P types.ParameterView](hooks *hooks.Hooks[P], out *Reliable[P]) {
+func emit[P types.ParameterView](hooks *hooks.Hooks[P], out *types.Reliable[P]) {
 	if hooks == nil {
 		return
 	}
 
 	if hooks.OnEvents[out.Type] != nil {
-		hooks.OnEvents[out.Type](out.Reliable)
+		hooks.OnEvents[out.Type](*out)
 	}
 }
 
-func (r *Reliable[P]) parseHeader(ctx *context.Context[P], length uint32) (types.ReliableHeader, error) {
+func parseHeader[P types.ParameterView](out *types.Reliable[P], ctx *context.Context[P], length uint32) error {
 	var err error
-	var header types.ReliableHeader
 
-	header.Signature, err = ctx.Reader.ReadUInt8()
+	out.Signature, err = ctx.Reader.ReadUInt8()
 	if err != nil {
-		return types.ReliableHeader{}, err
+		return err
 	}
 
 	b, err := ctx.Reader.ReadUInt8()
 	if err != nil {
-		return types.ReliableHeader{}, err
+		return err
 	}
 
-	header.Type = types.Type(b)
+	out.Type = types.Type(b)
 
-	switch header.Type {
+	switch out.Type {
 	case types.OperationResponse, types.OtherOperationResponse:
 
-		header.EventCode, err = ctx.Reader.ReadUInt8()
+		out.EventCode, err = ctx.Reader.ReadUInt8()
 		if err != nil {
-			return types.ReliableHeader{}, err
+			return err
 		}
 
 		//Return code
 		_, err = ctx.Reader.ReadInt16(binary.LittleEndian)
 		if err != nil {
-			return types.ReliableHeader{}, err
+			return err
 		}
 
 		//Read debug msg
 		_, err = ctx.Reader.ReadByte()
 		if err != nil {
-			return types.ReliableHeader{}, err
+			return err
 		}
 	case types.EventDataType, types.OperationRequest:
-		header.EventCode, err = ctx.Reader.ReadUInt8()
+		out.EventCode, err = ctx.Reader.ReadUInt8()
 		if err != nil {
-			return types.ReliableHeader{}, err
+			return err
 		}
 	default:
 		_, err = ctx.Reader.ReadBytes(int(length) - READED_HEADER_SIZE)
 		if err != nil {
-			return types.ReliableHeader{}, err
+			return err
 		}
-		return header, nil
+		return nil
 	}
 
-	header.ParameterCount, err = ctx.Decoders.ReliableHeaderParameterCount.Count(ctx.Reader)
+	out.ParameterCount, err = ctx.Decoders.ReliableHeaderParameterCount.Count(ctx.Reader)
 	if err != nil {
-		return types.ReliableHeader{}, err
+		return err
 	}
 
-	return header, nil
+	return nil
 }

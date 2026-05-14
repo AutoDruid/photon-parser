@@ -33,9 +33,33 @@ type CommandHeader struct {
 // Command represents a complete Photon command with its header and payload data.
 // The Data field contains the command-specific payload, which may be empty
 // for some command types (e.g., Acknowledge, Ping).
-type Command struct {
+type Command[P ParameterView] struct {
 	CommandHeader `json:"header"`
-	Payload       Payload `json:"payload"` // Command payload (interpretation depends on Type)
+
+	UnreliablePayload       Reliable[P]
+	ReliablePayload         Reliable[P]
+	ReliableFragmentPayload Fragment
+	AcknowledgePayload      Acknowledge
+	ConnectPayload          Connect
+	UnknownPayload
+	PingPayload       struct{}
+	DisconnectPayload struct{}
+}
+
+type Connect struct {
+	Mtu                        uint32
+	WindowSize                 uint32
+	ChannelCount               uint32
+	IncomingBandwidth          uint32
+	OutgoingBandwidth          uint32
+	DisconnectThrottle         uint32
+	PacketThrottleAcceleration uint32
+	PacketThrottleDeceleration uint32
+}
+
+type Acknowledge struct {
+	AckReliableSequenceNumber uint32
+	AckSentTime               uint32
 }
 
 type UnknownPayload struct {

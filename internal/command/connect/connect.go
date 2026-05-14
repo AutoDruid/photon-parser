@@ -4,53 +4,44 @@ import (
 	"encoding/binary"
 
 	"github.com/AutoDruid/photon-parser/internal/reader"
+	"github.com/AutoDruid/photon-parser/internal/types"
 )
 
-type Connect struct {
-	Mtu                        uint32
-	WindowSize                 uint32
-	ChannelCount               uint32
-	IncomingBandwidth          uint32
-	OutgoingBandwidth          uint32
-	DisconnectThrottle         uint32
-	PacketThrottleAcceleration uint32
-	PacketThrottleDeceleration uint32
-}
-
-func Parse(reader *reader.Reader) (*Connect, error) {
+func Parse(reader *reader.Reader, out *types.Connect) error {
 	var err error
-	connect := Connect{}
-	connect.Mtu, err = reader.ReadUInt32(binary.BigEndian)
+
+	out.Mtu, err = reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	connect.WindowSize, err = reader.ReadUInt32(binary.BigEndian)
+	out.WindowSize, err = reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	connect.ChannelCount, err = reader.ReadUInt32(binary.BigEndian)
+	out.ChannelCount, err = reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	connect.IncomingBandwidth, err = reader.ReadUInt32(binary.BigEndian)
+	out.IncomingBandwidth, err = reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	connect.OutgoingBandwidth, err = reader.ReadUInt32(binary.BigEndian)
+	out.OutgoingBandwidth, err = reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	connect.DisconnectThrottle, err = reader.ReadUInt32(binary.BigEndian)
+	out.DisconnectThrottle, err = reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	connect.PacketThrottleAcceleration, err = reader.ReadUInt32(binary.BigEndian)
+	out.PacketThrottleAcceleration, err = reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	connect.PacketThrottleDeceleration, err = reader.ReadUInt32(binary.BigEndian)
+	out.PacketThrottleDeceleration, err = reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return &connect, nil
+
+	return nil
 }

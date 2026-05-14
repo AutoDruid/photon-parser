@@ -39,9 +39,9 @@ func NewV16() *Parser[v16.Parameter] {
 }
 
 // ParseV16 parses data using a newly allocated protocol 16 Parser and returns the resulting Session.
-func ParseV16(data []byte) (*Session, error) {
+func ParseV16(data []byte) (*Session[v16.Parameter], error) {
 	p := NewV16()
-		var sess Session
+	var sess Session[v16.Parameter]
 	err := p.ParsePacketInto(data, &sess)
 	if err != nil {
 		return nil, err
@@ -65,9 +65,9 @@ func NewV18() *Parser[v18.Parameter] {
 }
 
 // ParseV18 parses data using a newly allocated protocol 18 Parser and returns the resulting Session.
-func ParseV18(data []byte) (*Session, error) {
+func ParseV18(data []byte) (*Session[v18.Parameter], error) {
 	p := NewV18()
-	var sess Session
+	var sess Session[v18.Parameter]
 	err := p.ParsePacketInto(data, &sess)
 	if err != nil {
 		return nil, err
@@ -77,7 +77,7 @@ func ParseV18(data []byte) (*Session, error) {
 
 // ParsePacket resets the internal reader to data and decodes one Photon session.
 // Hooks registered on the Parser are invoked during this call.
-func (p *Parser[P]) ParsePacketInto(data []byte, sess *Session) error {
+func (p *Parser[P]) ParsePacketInto(data []byte, sess *Session[P]) error {
 
 	p.ctx.Reader.Reset(data)
 
@@ -111,12 +111,12 @@ func (p *Parser[P]) OnOtherOperationResponse(fn func(Reliable[P])) {
 }
 
 // OnSessionSync registers a function called once per ParsePacket when the session has been parsed.
-func (p *Parser[P]) OnSessionSync(fn func(Session)) {
+func (p *Parser[P]) OnSessionSync(fn func(Session[P])) {
 	p.ctx.Hooks.SyncHooks.OnSession = fn
 }
 
 // OnCommandSync registers a function called for each top-level command during ParsePacket.
-func (p *Parser[P]) OnCommandSync(fn func(Command)) {
+func (p *Parser[P]) OnCommandSync(fn func(Command[P])) {
 	p.ctx.Hooks.SyncHooks.OnCommand = fn
 }
 
@@ -127,12 +127,12 @@ func (p *Parser[P]) OnParameterSync(fn func(P)) {
 
 // OnSessionAsync returns a receive-only channel of parsed sessions.
 // HookOptions.Size sets the channel buffer capacity; see Close when finished with async hooks.
-func (p *Parser[P]) OnSessionAsync(options types.HookOptions) <-chan Session {
+func (p *Parser[P]) OnSessionAsync(options types.HookOptions) <-chan Session[P] {
 	return p.ctx.Hooks.OnSessionAsync(options)
 }
 
 // OnCommandAsync returns a receive-only channel that receives each command as it is parsed.
-func (p *Parser[P]) OnCommandAsync(options types.HookOptions) <-chan Command {
+func (p *Parser[P]) OnCommandAsync(options types.HookOptions) <-chan Command[P] {
 	return p.ctx.Hooks.OnCommandAsync(options)
 }
 

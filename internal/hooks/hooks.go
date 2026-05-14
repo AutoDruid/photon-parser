@@ -35,10 +35,10 @@ func ensureChan[T any](slot *chan T, size uint16) <-chan T {
 	}
 	return *slot
 }
-func (h *Hooks[P]) OnSessionAsync(options types.HookOptions) <-chan types.Session {
+func (h *Hooks[P]) OnSessionAsync(options types.HookOptions) <-chan types.Session[P] {
 	return ensureChan(&h.AsyncHooks.OnSession, options.Size)
 }
-func (h *Hooks[P]) OnCommandAsync(options types.HookOptions) <-chan types.Command {
+func (h *Hooks[P]) OnCommandAsync(options types.HookOptions) <-chan types.Command[P] {
 	return ensureChan(&h.AsyncHooks.OnCommand, options.Size)
 }
 func (h *Hooks[P]) OnParameterAsync(options types.HookOptions) <-chan P {

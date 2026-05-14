@@ -16,7 +16,7 @@ import (
 )
 
 type Session[P types.ParameterView] struct {
-	types.Session
+	types.Session[P]
 }
 
 // Parse parses a Photon session packet from a parser.Reader.
@@ -25,13 +25,13 @@ type Session[P types.ParameterView] struct {
 //
 // Returns a Session struct with all fields populated including the Commands slice,
 // or an error if any part of parsing fails.
-func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Session) error {
+func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Session[P]) error {
 	err := parseHeader(out, ctx.Reader)
 	if err != nil {
 		return err
 	}
 
-	out.Commands = make([]types.Command, out.CommandCount)
+	out.Commands = make([]types.Command[P], out.CommandCount)
 
 	for i := uint8(0); i < out.CommandCount; i++ {
 		err := command.Parse(ctx, &out.Commands[i])
@@ -53,7 +53,7 @@ func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Session) e
 	return nil
 }
 
-func parseHeader(out *types.Session, r *reader.Reader) error {
+func parseHeader[P types.ParameterView](out *types.Session[P], r *reader.Reader) error {
 	var err error
 
 	out.PeerID, err = r.ReadUInt16(binary.BigEndian)
@@ -84,7 +84,7 @@ func parseHeader(out *types.Session, r *reader.Reader) error {
 	return nil
 }
 
-func emit[P types.ParameterView](hooks *hooks.Hooks[P], out *types.Session) {
+func emit[P types.ParameterView](hooks *hooks.Hooks[P], out *types.Session[P]) {
 	if hooks == nil {
 		return
 	}

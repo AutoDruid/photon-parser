@@ -14,7 +14,7 @@ type Pool[P types.ParameterView] struct {
 	pool sync.Pool
 }
 
-type PooledSlice[P types.ParameterView] struct{
+type PooledSlice[P types.ParameterView] struct {
 	Items []P
 }
 
@@ -35,7 +35,7 @@ func (p *Pool[P]) Get(n int) *PooledSlice[P] {
 		n = 0
 	}
 	wrapper := p.pool.Get().(*PooledSlice[P])
-	
+
 	if cap(wrapper.Items) >= n {
 		wrapper.Items = wrapper.Items[:n]
 		return wrapper
@@ -48,6 +48,9 @@ func (p *Pool[P]) Put(wrapper *PooledSlice[P]) {
 	if cap(wrapper.Items) > maxPooledCap {
 		return
 	}
+
+	clear(wrapper.Items)
+
 	wrapper.Items = wrapper.Items[:0]
 	p.pool.Put(wrapper)
 }

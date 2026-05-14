@@ -80,7 +80,7 @@ func TestParseUDP1(t *testing.T) {
 
 	frames := loadCaptures("./tests/dataset/v18/1.json", t)
 
-	session := photon.Session{}
+	session := photon.Session[v18.Parameter]{}
 
 	for i, frame := range frames {
 		payload, frameNo, err := rowToPayload(frame)
@@ -116,7 +116,7 @@ func TestParseUDP2(t *testing.T) {
 
 	frames := loadCaptures("./tests/dataset/v18/2.json", t)
 
-	session := photon.Session{}
+	session := photon.Session[v18.Parameter]{}
 	for i, frame := range frames {
 		payload, frameNo, err := rowToPayload(frame)
 		if err != nil {
@@ -151,7 +151,7 @@ func TestParseUDP3(t *testing.T) {
 
 	frames := loadCaptures("./tests/dataset/v18/3.json", t)
 
-	session := photon.Session{}
+	session := photon.Session[v18.Parameter]{}
 	for i, frame := range frames {
 		payload, frameNo, err := rowToPayload(frame)
 		if err != nil {
@@ -195,7 +195,7 @@ func BenchmarkParseUDP1(b *testing.B) {
 		payloads[i] = payload
 	}
 
-	session := photon.Session{}
+	session := photon.Session[v18.Parameter]{}
 
 	b.ReportAllocs()
 	b.ResetTimer()
@@ -249,7 +249,7 @@ func TestCountParameters(t *testing.T) {
 		count++
 	})
 
-	session := photon.Session{}
+	session := photon.Session[v18.Parameter]{}
 	for i, payload := range payloads {
 		if len(payload) == 0 {
 			continue

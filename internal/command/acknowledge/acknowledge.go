@@ -4,27 +4,22 @@ import (
 	"encoding/binary"
 
 	"github.com/AutoDruid/photon-parser/internal/reader"
+	"github.com/AutoDruid/photon-parser/internal/types"
 )
 
-type Acknowledge struct {
-	AckReliableSequenceNumber uint32
-	AckSentTime               uint32
-}
-
-func Parse(reader *reader.Reader) (Acknowledge, error) {
-	var ack Acknowledge
+func Parse(reader *reader.Reader, out *types.Acknowledge) error {
 	var err error
 
-	ack.AckReliableSequenceNumber, err = reader.ReadUInt32(binary.BigEndian)
+	out.AckReliableSequenceNumber, err = reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
-		return Acknowledge{}, err
+		return err
 	}
 
-	ack.AckSentTime, err = reader.ReadUInt32(binary.BigEndian)
+	out.AckSentTime, err = reader.ReadUInt32(binary.BigEndian)
 	if err != nil {
-		return Acknowledge{}, err
+		return err
 	}
 
-	return ack, nil
+	return nil
 
 }
