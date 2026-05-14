@@ -1,6 +1,6 @@
 package types
 
-// Type represents a Photon Protocol command type.
+// CommandType represents a Photon Protocol command type.
 type CommandType uint8
 
 const (
