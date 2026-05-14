@@ -25,7 +25,7 @@ func TestParseSession(t *testing.T) {
 
 	var cmd types.Command[v16.Parameter]
 
-	err := command.Parse(ctx, &cmd)
+	err := command.ParseInto(ctx, &cmd)
 
 	if err != nil {
 		t.Fatalf("LoadFromWiresharkExport() failed: %v", err)

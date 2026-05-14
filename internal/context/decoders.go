@@ -10,7 +10,7 @@ import (
 // (v16, v18).
 // It is wired once at Parser construction so the hot path
 type ParameterParser[P types.ParameterView] interface {
-	Parse(*reader.Reader, *P, *hooks.Hooks[P]) error
+	ParseInto(*reader.Reader, *hooks.Hooks[P], *P) error
 }
 
 // ReliableHeaderParameterCount is implemented by each protocol-version reliable header parameter count package

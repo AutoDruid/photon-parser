@@ -187,10 +187,6 @@ func TestParserOnASinglePacketVersion18(t *testing.T) {
 
 	session := photon.Session[v18.Parameter]{}
 
-	parser.OnCommandSync(func(command photon.Command[v18.Parameter]) {
-		t.Log(command.Kind)
-	})
-
 	err = parser.ParsePacketInto(payload, &session)
 	if err != nil {
 		t.Fatalf("error: %v", err)

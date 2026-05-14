@@ -12,7 +12,11 @@ run = "go test ./..."
 
 [tasks.coverage]
 description = "Run the tests with coverage"
-run = "go test -cover ./..."
+run = "mkdir -p ./ressources && go test -cover ./... -coverprofile=ressources/coverage.out"
+
+[tasks.coverage-html]
+description = "Run the tests with coverage"
+run = "go tool cover -html=ressources/coverage.out"
 
 [tasks.lint]
 description = "Run the linter"

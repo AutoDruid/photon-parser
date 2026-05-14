@@ -5,15 +5,15 @@ import (
 	"github.com/AutoDruid/photon-parser/internal/types"
 )
 
-func Parse(reader *reader.Reader, out *types.Acknowledge) error {
+func ParseInto(reader *reader.Reader, dest *types.Acknowledge) error {
 	var err error
 
-	out.AckReliableSequenceNumber, err = reader.ReadUInt32BE()
+	dest.AckReliableSequenceNumber, err = reader.ReadUInt32BE()
 	if err != nil {
 		return err
 	}
 
-	out.AckSentTime, err = reader.ReadUInt32BE()
+	dest.AckSentTime, err = reader.ReadUInt32BE()
 	if err != nil {
 		return err
 	}
