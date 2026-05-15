@@ -3,7 +3,7 @@ package types
 type SyncHooks[P ParameterView] struct {
 	OnSession   func(Session[P])
 	OnCommand   func(Command[P])
-	OnEvents    map[Type]func(Reliable[P])
+	OnEvents    map[MessageType]func(Reliable[P])
 	OnParameter func(P)
 }
 

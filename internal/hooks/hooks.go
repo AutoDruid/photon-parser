@@ -17,7 +17,7 @@ func NewHooks[P types.ParameterView]() *Hooks[P] {
 		SyncHooks: types.SyncHooks[P]{
 			OnSession:   nil,
 			OnCommand:   nil,
-			OnEvents:    make(map[types.Type]func(types.Reliable[P])),
+			OnEvents:    make(map[types.MessageType]func(types.Reliable[P])),
 			OnParameter: nil,
 		},
 	}

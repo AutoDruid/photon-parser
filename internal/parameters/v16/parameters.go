@@ -27,7 +27,7 @@ var _ context.ParameterParser[Parameter] = (*Parameter)(nil)
 //	    return err
 //	}
 //	fmt.Printf("Parameter %d has value: %v\n", param.ID, param.Value)
-func (p *Parameter) Parse(reader *reader.Reader, out *Parameter, hooks *hooks.Hooks[Parameter]) error {
+func (p *Parameter) ParseInto(reader *reader.Reader, hooks *hooks.Hooks[Parameter], dest *Parameter) error {
 
 	header, err := p.parseHeader(reader)
 	if err != nil {
@@ -40,8 +40,8 @@ func (p *Parameter) Parse(reader *reader.Reader, out *Parameter, hooks *hooks.Ho
 		return err
 	}
 
-	out.Header = header
-	out.Value = value
+	dest.Header = header
+	dest.Value = value
 
 	p.emit(reader, hooks)
 

@@ -92,7 +92,7 @@ func (p *Parser[P]) ParsePacketInto(data []byte, sess *Session[P]) error {
 
 	p.ctx.Reader.Reset(data)
 
-	err := session.Parse(p.ctx, sess)
+	err := session.ParseInto(p.ctx, sess)
 	if err != nil {
 		return err
 	}

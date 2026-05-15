@@ -17,7 +17,7 @@ func DefaultConfig() types.Config {
 		types.DisconnectCommand:           false,
 	}
 
-	skipTargetEventCodes := map[types.Type]bool{
+	skipTargetEventCodes := map[types.MessageType]bool{
 		types.OperationRequest:       false,
 		types.OperationResponse:      false,
 		types.OtherOperationResponse: false,
@@ -64,10 +64,10 @@ func SkipCommands(commands ...types.CommandType) Option {
 
 // SkipTargetEventCodes allows to skip the parsing of the events that are not in the list.
 // This option is useful when you are only interested in some specific events.
-func SkipTargetEventCodes(codes ...types.Type) Option {
+func SkipTargetEventCodes(codes ...types.MessageType) Option {
 	return func(c *types.Config) {
 		if c.SkipTargetEventCodes == nil {
-			c.SkipTargetEventCodes = make(map[types.Type]bool)
+			c.SkipTargetEventCodes = make(map[types.MessageType]bool)
 		}
 		for _, code := range codes {
 			c.SkipTargetEventCodes[code] = true

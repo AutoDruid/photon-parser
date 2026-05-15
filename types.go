@@ -62,9 +62,9 @@ const (
 // Photon Protocol reliable message types.
 // These define the different kinds of reliable messages that can be exchanged.
 const (
-	OperationRequest       types.Type = 0x02 // Client requests an operation
-	OperationResponse      types.Type = 0x07 // Server responds to an operation
-	OtherOperationResponse types.Type = 0x03 // Alternative response format
-	EventDataType          types.Type = 0x04 // Server sends an event to client
-	ExchangeKeys           types.Type = 0x06 // Key exchange for encryption
+	OperationRequest       types.MessageType = 0x02 // Client requests an operation
+	OperationResponse      types.MessageType = 0x07 // Server responds to an operation
+	OtherOperationResponse types.MessageType = 0x03 // Alternative response format
+	EventDataType          types.MessageType = 0x04 // Server sends an event to client
+	ExchangeKeys           types.MessageType = 0x06 // Key exchange for encryption
 )

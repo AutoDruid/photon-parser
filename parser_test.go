@@ -186,7 +186,7 @@ func TestParseVersion18OnDataset3WithoutUnknownPayloads(t *testing.T) {
 	session := photon.Session[v18.Parameter]{}
 
 	parser.OnCommandSync(func(command photon.Command[v18.Parameter]) {
-		if !bytes.Equal(command.Raw, []byte{}) {
+		if !bytes.Equal(command.UnknownPayload.Raw, []byte{}) {
 			t.Fatalf("unknown payload found")
 		}
 	})
@@ -371,10 +371,6 @@ func TestParserOnASinglePacketVersion18(t *testing.T) {
 	}
 
 	session := photon.Session[v18.Parameter]{}
-
-	parser.OnCommandSync(func(command photon.Command[v18.Parameter]) {
-		t.Log(command.Kind)
-	})
 
 	err = parser.ParsePacketInto(payload, &session)
 	if err != nil {

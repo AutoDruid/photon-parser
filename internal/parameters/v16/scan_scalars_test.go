@@ -41,7 +41,7 @@ func TestParseStringParameterAndAccessor(t *testing.T) {
 			r := reader.NewReader(tt.input)
 			var parser v16.Parameter
 			var got v16.Parameter
-			if err := parser.Parse(r, &got, nil); err != nil {
+			if err := parser.ParseInto(r, nil, &got); err != nil {
 				t.Fatalf("Parse() error = %v", err)
 			}
 			if got.ID() != tt.wantID {
@@ -88,7 +88,7 @@ func TestParseInt8ParameterAndAccessor(t *testing.T) {
 			r := reader.NewReader(tt.input)
 			var parser v16.Parameter
 			var got v16.Parameter
-			if err := parser.Parse(r, &got, nil); err != nil {
+			if err := parser.ParseInto(r, nil, &got); err != nil {
 				t.Fatalf("Parse() error = %v", err)
 			}
 			if got.ID() != tt.wantID {
@@ -123,7 +123,7 @@ func TestParseInt16ParameterAndAccessor(t *testing.T) {
 			r := reader.NewReader(tt.input)
 			var parser v16.Parameter
 			var got v16.Parameter
-			if err := parser.Parse(r, &got, nil); err != nil {
+			if err := parser.ParseInto(r, nil, &got); err != nil {
 				t.Fatalf("Parse() error = %v", err)
 			}
 			if got.ID() != tt.wantID {
@@ -158,7 +158,7 @@ func TestParseInt32ParameterAndAccessor(t *testing.T) {
 			r := reader.NewReader(tt.input)
 			var parser v16.Parameter
 			var got v16.Parameter
-			if err := parser.Parse(r, &got, nil); err != nil {
+			if err := parser.ParseInto(r, nil, &got); err != nil {
 				t.Fatalf("Parse() error = %v", err)
 			}
 			if got.ID() != tt.wantID {
@@ -193,7 +193,7 @@ func TestParseInt64ParameterAndAccessor(t *testing.T) {
 			r := reader.NewReader(tt.input)
 			var parser v16.Parameter
 			var got v16.Parameter
-			if err := parser.Parse(r, &got, nil); err != nil {
+			if err := parser.ParseInto(r, nil, &got); err != nil {
 				t.Fatalf("Parse() error = %v", err)
 			}
 			if got.ID() != tt.wantID {
@@ -228,7 +228,7 @@ func TestParseFloat32ParameterAndAccessor(t *testing.T) {
 			r := reader.NewReader(tt.input)
 			var parser v16.Parameter
 			var got v16.Parameter
-			if err := parser.Parse(r, &got, nil); err != nil {
+			if err := parser.ParseInto(r, nil, &got); err != nil {
 				t.Fatalf("Parse() error = %v", err)
 			}
 			if got.ID() != tt.wantID {
@@ -263,7 +263,7 @@ func TestParseFloat64ParameterAndAccessor(t *testing.T) {
 			r := reader.NewReader(tt.input)
 			var parser v16.Parameter
 			var got v16.Parameter
-			if err := parser.Parse(r, &got, nil); err != nil {
+			if err := parser.ParseInto(r, nil, &got); err != nil {
 				t.Fatalf("Parse() error = %v", err)
 			}
 			if got.ID() != tt.wantID {
@@ -304,7 +304,7 @@ func TestParseBooleanParameterAndAccessor(t *testing.T) {
 			r := reader.NewReader(tt.input)
 			var parser v16.Parameter
 			var got v16.Parameter
-			if err := parser.Parse(r, &got, nil); err != nil {
+			if err := parser.ParseInto(r, nil, &got); err != nil {
 				t.Fatalf("Parse() error = %v", err)
 			}
 			if got.ID() != tt.wantID {

@@ -22,19 +22,19 @@ const HEADER_SIZE = 5
 //
 // Returns a Reliable struct with all fields populated including the Parameters slice,
 // or an error if any part of parsing fails.
-func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Reliable[P], payloadLen uint32) error {
+func Parse[P types.ParameterView](ctx *context.Context[P], dest *types.Reliable[P], payloadLen uint32) error {
 	start := ctx.Reader.Cursor
 
-	err := parseHeader(out, ctx, payloadLen, start)
+	err := parseHeader(dest, ctx, payloadLen, start)
 	if err != nil {
 		return err
 	}
 
-	if out.Type >= types.ExchangeKeys {
+	if dest.Type >= types.ExchangeKeys {
 		return nil
 	}
 
-	if out.Signature != 0xF3 {
+	if dest.Signature != 0xF3 {
 		return errors.ErrEncryptedPacket
 	}
 
@@ -48,21 +48,21 @@ func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Reliable[P
 		return ctx.Reader.Skip(remaining)
 	}
 
-	if ctx.Config.SkipTargetEventCodes[out.Type] {
+	if ctx.Config.SkipTargetEventCodes[dest.Type] {
 		return ctx.Reader.Skip(remaining)
 	}
 
-	items := ctx.PoolParameter.Get(out.ParameterCount)
-	out.Parameters = items.Items
+	items := ctx.PoolParameter.Get(dest.ParameterCount)
+	dest.Parameters = items.Items
 
-	for i := 0; i < out.ParameterCount; i++ {
-		err := ctx.Decoders.ParameterParser.Parse(ctx.Reader, &out.Parameters[i], ctx.Hooks)
+	for i := 0; i < dest.ParameterCount; i++ {
+		err := ctx.Decoders.ParameterParser.ParseInto(ctx.Reader, ctx.Hooks, &dest.Parameters[i])
 		if err != nil {
 			return err
 		}
 	}
 
-	emit(ctx.Hooks, out)
+	emit(ctx.Hooks, dest)
 
 	ctx.PoolParameter.Put(items)
 
@@ -80,10 +80,10 @@ func emit[P types.ParameterView](hooks *hooks.Hooks[P], out *types.Reliable[P]) 
 	}
 }
 
-func parseHeader[P types.ParameterView](out *types.Reliable[P], ctx *context.Context[P], payloadLen uint32, start int) error {
+func parseHeader[P types.ParameterView](dest *types.Reliable[P], ctx *context.Context[P], payloadLen uint32, start int) error {
 	var err error
 
-	out.Signature, err = ctx.Reader.ReadUInt8()
+	dest.Signature, err = ctx.Reader.ReadUInt8()
 	if err != nil {
 		return err
 	}
@@ -93,12 +93,12 @@ func parseHeader[P types.ParameterView](out *types.Reliable[P], ctx *context.Con
 		return err
 	}
 
-	out.Type = types.Type(b)
+	dest.Type = types.MessageType(b)
 
-	switch out.Type {
+	switch dest.Type {
 	case types.OperationResponse, types.OtherOperationResponse:
 
-		out.EventCode, err = ctx.Reader.ReadUInt8()
+		dest.EventCode, err = ctx.Reader.ReadUInt8()
 		if err != nil {
 			return err
 		}
@@ -115,7 +115,7 @@ func parseHeader[P types.ParameterView](out *types.Reliable[P], ctx *context.Con
 			return err
 		}
 	case types.EventDataType, types.OperationRequest:
-		out.EventCode, err = ctx.Reader.ReadUInt8()
+		dest.EventCode, err = ctx.Reader.ReadUInt8()
 		if err != nil {
 			return err
 		}
@@ -128,7 +128,7 @@ func parseHeader[P types.ParameterView](out *types.Reliable[P], ctx *context.Con
 		return err
 	}
 
-	out.ParameterCount, err = ctx.Decoders.ReliableHeaderParameterCount.Count(ctx.Reader)
+	dest.ParameterCount, err = ctx.Decoders.ReliableHeaderParameterCount.Count(ctx.Reader)
 	if err != nil {
 		return err
 	}
