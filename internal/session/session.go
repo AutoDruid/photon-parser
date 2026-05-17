@@ -4,7 +4,6 @@
 package session
 
 import (
-	"encoding/binary"
 	"errors"
 
 	"github.com/AutoDruid/photon-parser/internal/command"
@@ -15,27 +14,22 @@ import (
 	"github.com/AutoDruid/photon-parser/internal/types"
 )
 
-type Session[P types.ParameterView] struct {
-	types.Session
-}
-
-// Parse parses a Photon session packet from a parser.Reader.
+// ParseInto parses a Photon session packet from a parser.Reader.
 // This function reads the session header, then iterates through and parses
 // each command as specified by the CommandCount field.
 //
-// Returns a Session struct with all fields populated including the Commands slice,
-// or an error if any part of parsing fails.
-func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Session) error {
-	session := Session[P]{}
-	header, err := session.parseHeader(ctx.Reader)
+// Returns an error if any part of parsing fails.
+func ParseInto[P types.ParameterView](ctx *context.Context[P], dest *types.Session[P]) error {
+	err := readSessionHeaderInto(ctx.Reader, dest)
 	if err != nil {
 		return err
 	}
 
-	out.Commands = make([]types.Command, header.CommandCount)
+	items := ctx.PoolCommand.Get(int(dest.CommandCount))
+	dest.Commands = items.Items
 
-	for i := uint8(0); i < header.CommandCount; i++ {
-		err := command.Parse(ctx, &out.Commands[i])
+	for i := uint8(0); i < dest.CommandCount; i++ {
+		err := command.ParseInto(ctx, &dest.Commands[i])
 
 		if errors.Is(err, photonErrors.ErrHeaderSize) {
 			break
@@ -44,65 +38,74 @@ func Parse[P types.ParameterView](ctx *context.Context[P], out *types.Session) e
 			return err
 		}
 
-		if out.Commands[i].Type > types.SendReliableFragmentCommand {
+		if dest.Commands[i].Type > types.SendReliableFragmentCommand {
 			break
 		}
 	}
 
-	out.Header = header
+	emit(ctx.Hooks, dest)
 
-	session.emit(ctx.Hooks, out)
+	ctx.PoolCommand.Put(items)
 
 	return nil
 }
 
-func (s *Session[P]) parseHeader(r *reader.Reader) (types.Header, error) {
+func readSessionHeaderInto[P types.ParameterView](r *reader.Reader, dest *types.Session[P]) error {
 	var err error
-	var header types.Header
 
-	header.PeerID, err = r.ReadUInt16(binary.BigEndian)
+	dest.PeerID, err = r.ReadUInt16BE()
 	if err != nil {
-		return types.Header{}, err
+		return err
 	}
 
-	header.CRCEnabled, err = r.ReadUInt8()
+	dest.CRCEnabled, err = r.ReadUInt8()
 	if err != nil {
-		return types.Header{}, err
+		return err
 	}
 
-	header.CommandCount, err = r.ReadUInt8()
+	dest.CommandCount, err = r.ReadUInt8()
 	if err != nil {
-		return types.Header{}, err
+		return err
 	}
 
-	header.Timestamp, err = r.ReadUInt32(binary.BigEndian)
+	dest.Timestamp, err = r.ReadUInt32BE()
 	if err != nil {
-		return types.Header{}, err
+		return err
 	}
 
-	header.Challenge, err = r.ReadInt32(binary.BigEndian)
+	dest.Challenge, err = r.ReadInt32BE()
 	if err != nil {
-		return types.Header{}, err
+		return err
 	}
 
-	return header, nil
+	return nil
 }
 
-func (s Session[P]) emit(hooks *hooks.Hooks[P], out *types.Session) {
+func emit[P types.ParameterView](hooks *hooks.Hooks[P], dest *types.Session[P]) {
 	if hooks == nil {
 		return
 	}
 
 	if hooks.SyncHooks.OnSession != nil {
-		hooks.SyncHooks.OnSession(*out)
+		hooks.SyncHooks.OnSession(*dest)
 	}
 
 	if hooks.AsyncHooks.OnSession == nil {
 		return
 	}
 
+	s := *dest
+	if n := len(s.Commands); n > 0 {
+		cmds := make([]types.Command[P], n)
+		copy(cmds, s.Commands)
+		for i := range cmds {
+			cmds[i] = command.DetachForAsync(cmds[i])
+		}
+		s.Commands = cmds
+	}
+
 	select {
-	case hooks.AsyncHooks.OnSession <- *out:
+	case hooks.AsyncHooks.OnSession <- s:
 	default:
 	}
 }

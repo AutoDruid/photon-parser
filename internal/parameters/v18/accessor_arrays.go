@@ -126,18 +126,20 @@ func (p Parameter) ArrayValue() iter.Seq2[int, any] {
 	}
 	return func(yield func(int, any) bool) {
 		r := reader.NewReader(p.Blob)
+		var value Value
 		for i := 0; i < int(p.Num); i++ {
 			ttype, err := r.ReadByte()
 			if err != nil {
 				return
 			}
 
-			v, err := scanPayload(r, ParameterType(ttype))
+			value.Kind = ParameterType(ttype)
+			err = scanPayload(r, &value)
 			if err != nil {
 				return
 			}
 
-			if !yield(i, decodeValue(v)) {
+			if !yield(i, decodeValue(value)) {
 				return
 			}
 		}

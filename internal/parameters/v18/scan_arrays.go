@@ -116,12 +116,15 @@ func scanArray(r *reader.Reader, value *Value) error {
 		return err
 	}
 	start := r.Cursor
+	var dummy Value
 	for i := uint32(0); i < count; i++ {
 		ttype, err := r.ReadByte()
 		if err != nil {
 			return err
 		}
-		if _, err := scanPayload(r, ParameterType(ttype)); err != nil {
+
+		dummy.Kind = ParameterType(ttype)
+		if err := scanPayload(r, &dummy); err != nil {
 			return err
 		}
 	}

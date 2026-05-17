@@ -66,7 +66,7 @@ func TestParseDictsParametersAndAccessor(t *testing.T) {
 			var parser v16.Parameter
 			var got v16.Parameter
 
-			if err := parser.Parse(r, &got, nil); err != nil {
+			if err := parser.ParseInto(r, nil, &got); err != nil {
 				t.Fatalf("Parse() error = %v", err)
 			}
 

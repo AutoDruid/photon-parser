@@ -2,13 +2,86 @@ package command_test
 
 import (
 	"testing"
+	"time"
 
 	"github.com/AutoDruid/photon-parser/internal/command"
 	"github.com/AutoDruid/photon-parser/internal/context"
+	"github.com/AutoDruid/photon-parser/internal/hooks"
 	v16 "github.com/AutoDruid/photon-parser/internal/parameters/v16"
+	v18 "github.com/AutoDruid/photon-parser/internal/parameters/v18"
 	"github.com/AutoDruid/photon-parser/internal/reader"
 	"github.com/AutoDruid/photon-parser/internal/types"
 )
+
+var reliableCmd6Params = []byte{
+	0x6, 0x0, 0x1, 0x4, 0x0, 0x0, 0x0, 0x41, 0x0, 0x0, 0x0, 0x1b,
+	0xf3, 0x2, 0x1, 0x6, 0x0, 0xa, 0xca, 0xd0, 0xa2, 0xb9, 0xa1, 0xf5, 0xce, 0xde, 0x11,
+	0x1, 0x45, 0x2, 0xbb, 0x8c, 0x7f, 0xc2, 0x60, 0xf3, 0xb6, 0xc3,
+	0x2, 0x5, 0xab, 0x77, 0xa2, 0x42,
+	0x3, 0x45, 0x2, 0x52, 0xfc, 0x70, 0xc2, 0x82, 0xab, 0xb6, 0xc3,
+	0x4, 0x5, 0xd7, 0xa3, 0x32, 0x41,
+	0xfd, 0x4, 0x16, 0x0,
+}
+
+// SendReliable, 2 parameters (third command in TestAcknowledgeChainedWithSendReliable).
+var reliableCmd2Params = []byte{
+	0x6, 0x0, 0x1, 0x4, 0x0, 0x0, 0x0, 0x17, 0x0, 0x0, 0x0, 0x6,
+	0xf3, 0x2, 0x1, 0x2, 0x0, 0x47, 0x0, 0xfd, 0x4, 0xff, 0x1,
+}
+
+func TestAsyncHookOnCommandParametersNotAliasedWithPool(t *testing.T) {
+	h := hooks.NewHooks[v18.Parameter]()
+	ch := h.OnCommandAsync(types.HookOptions{Size: 4})
+	ctx := &context.Context[v18.Parameter]{
+		Reader: reader.NewReader(nil),
+		Hooks:  h,
+		Decoders: context.Decoders[v18.Parameter]{
+			ParameterParser:              &v18.Parameter{},
+			ReliableHeaderParameterCount: &v18.ReliableHeaderParameterCountV18{},
+		},
+		PoolParameter: context.NewPool[v18.Parameter](100),
+		PoolCommand:   context.NewPool[types.Command[v18.Parameter]](100),
+	}
+	var cmd types.Command[v18.Parameter]
+	ctx.Reader.Reset(reliableCmd6Params)
+	if err := command.ParseInto(ctx, &cmd); err != nil {
+		t.Fatalf("parse first command: %v", err)
+	}
+	if cmd.Type != types.SendReliableCommand {
+		t.Fatalf("first command type: got %v, want SendReliable", cmd.Type)
+	}
+	if cmd.ReliablePayload.ParameterCount != 6 {
+		t.Fatalf("first command parameter count: got %d, want 6", cmd.ReliablePayload.ParameterCount)
+	}
+	wantParam0ID := cmd.ReliablePayload.Parameters[0].Header.ID
+	wantParam0Type := cmd.ReliablePayload.Parameters[0].Type
+	// Reuses PoolParameter before async consumer reads the first command.
+	ctx.Reader.Reset(reliableCmd2Params)
+	if err := command.ParseInto(ctx, &cmd); err != nil {
+		t.Fatalf("parse second command: %v", err)
+	}
+	var got types.Command[v18.Parameter]
+	select {
+	case got = <-ch:
+	case <-time.After(time.Second):
+		t.Fatal("timeout waiting for first async command")
+	}
+	if got.Type != types.SendReliableCommand {
+		t.Fatalf("async type: got %v, want SendReliable", got.Type)
+	}
+	if got.ReliablePayload.ParameterCount != 6 {
+		t.Fatalf("async parameter count: got %d, want 6", got.ReliablePayload.ParameterCount)
+	}
+	if len(got.ReliablePayload.Parameters) != 6 {
+		t.Fatalf("async len(parameters): got %d, want 6", len(got.ReliablePayload.Parameters))
+	}
+	if got.ReliablePayload.Parameters[0].Header.ID != wantParam0ID {
+		t.Fatalf("async parameters[0].id: got %d, want %d (parameter pool aliasing)", got.ReliablePayload.Parameters[0].Header.ID, wantParam0ID)
+	}
+	if got.ReliablePayload.Parameters[0].Type != wantParam0Type {
+		t.Fatalf("async parameters[0].type: got %d, want %d (parameter pool aliasing)", got.ReliablePayload.Parameters[0].Type, wantParam0Type)
+	}
+}
 
 func TestParseSession(t *testing.T) {
 
@@ -20,11 +93,12 @@ func TestParseSession(t *testing.T) {
 			ParameterParser:              &v16.Parameter{},
 			ReliableHeaderParameterCount: &v16.ReliableHeaderParameterCountV16{},
 		},
+		PoolParameter: context.NewPool[v16.Parameter](100),
 	}
 
-	var cmd types.Command
+	var cmd types.Command[v16.Parameter]
 
-	err := command.Parse(ctx, &cmd)
+	err := command.ParseInto(ctx, &cmd)
 
 	if err != nil {
 		t.Fatalf("LoadFromWiresharkExport() failed: %v", err)

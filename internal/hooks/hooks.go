@@ -17,6 +17,7 @@ func NewHooks[P types.ParameterView]() *Hooks[P] {
 		SyncHooks: types.SyncHooks[P]{
 			OnSession:   nil,
 			OnCommand:   nil,
+			OnEvents:    make(map[types.MessageType]func(types.Reliable[P])),
 			OnParameter: nil,
 		},
 	}
@@ -34,16 +35,15 @@ func ensureChan[T any](slot *chan T, size uint16) <-chan T {
 	}
 	return *slot
 }
-func (h *Hooks[P]) OnSessionAsync(options types.HookOptions) <-chan types.Session {
+func (h *Hooks[P]) OnSessionAsync(options types.HookOptions) <-chan types.Session[P] {
 	return ensureChan(&h.AsyncHooks.OnSession, options.Size)
 }
-func (h *Hooks[P]) OnCommandAsync(options types.HookOptions) <-chan types.Command {
+func (h *Hooks[P]) OnCommandAsync(options types.HookOptions) <-chan types.Command[P] {
 	return ensureChan(&h.AsyncHooks.OnCommand, options.Size)
 }
 func (h *Hooks[P]) OnParameterAsync(options types.HookOptions) <-chan P {
 	return ensureChan(&h.AsyncHooks.OnParameter, options.Size)
 }
-
 func (h *Hooks[P]) CloseAsyncHooks() {
 
 	if h.AsyncHooks.OnSession != nil {
