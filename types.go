@@ -49,6 +49,7 @@ type ReliableV16 = Reliable[ParameterV16]
 
 type CommandType = types.CommandType
 type MessageType = types.MessageType
+
 // Photon command type bytes (CommandHeader.Type).
 const (
 	AcknowledgeCommand          = types.AcknowledgeCommand
@@ -60,6 +61,7 @@ const (
 	SendUnreliableCommand       = types.SendUnreliableCommand
 	SendReliableFragmentCommand = types.SendReliableFragmentCommand
 )
+
 // Reliable payload message kinds (ReliableHeader.Type).
 const (
 	OperationRequest       = types.OperationRequest

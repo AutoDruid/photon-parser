@@ -54,7 +54,7 @@ func TestAsyncHookOnCommandParametersNotAliasedWithPool(t *testing.T) {
 		t.Fatalf("first command parameter count: got %d, want 6", cmd.ReliablePayload.ParameterCount)
 	}
 	wantParam0ID := cmd.ReliablePayload.Parameters[0].Header.ID
-	wantParam0Type := cmd.ReliablePayload.Parameters[0].Header.Type
+	wantParam0Type := cmd.ReliablePayload.Parameters[0].Type
 	// Reuses PoolParameter before async consumer reads the first command.
 	ctx.Reader.Reset(reliableCmd2Params)
 	if err := command.ParseInto(ctx, &cmd); err != nil {
@@ -78,8 +78,8 @@ func TestAsyncHookOnCommandParametersNotAliasedWithPool(t *testing.T) {
 	if got.ReliablePayload.Parameters[0].Header.ID != wantParam0ID {
 		t.Fatalf("async parameters[0].id: got %d, want %d (parameter pool aliasing)", got.ReliablePayload.Parameters[0].Header.ID, wantParam0ID)
 	}
-	if got.ReliablePayload.Parameters[0].Header.Type != wantParam0Type {
-		t.Fatalf("async parameters[0].type: got %d, want %d (parameter pool aliasing)", got.ReliablePayload.Parameters[0].Header.Type, wantParam0Type)
+	if got.ReliablePayload.Parameters[0].Type != wantParam0Type {
+		t.Fatalf("async parameters[0].type: got %d, want %d (parameter pool aliasing)", got.ReliablePayload.Parameters[0].Type, wantParam0Type)
 	}
 }
 

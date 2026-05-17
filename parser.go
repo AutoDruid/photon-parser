@@ -23,7 +23,6 @@
 //   - Sync hooks run inline during parsing; a slow callback blocks the parser.
 //   - Async hooks copy the Commands slice before sending to avoid use-after-pool
 //     corruption; prefer the direct Session() approach for high-throughput paths.
-//
 package photon
 
 import (

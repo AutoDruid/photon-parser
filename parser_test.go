@@ -487,7 +487,6 @@ func BenchmarkParserOn343PacketsVersion18WithAsyncHooks(b *testing.B) {
 		}
 	}
 
-
 	b.StopTimer()
 	parser.Close()
 	for range ch {
@@ -659,7 +658,6 @@ func BenchmarkParserOnASingleWithSyncHooksPacketVersion18(b *testing.B) {
 
 	b.StopTimer()
 }
-
 
 func BenchmarkParserOnASinglePacketVersion18Parallel(b *testing.B) {
 	frames := loadCapturesB("./tests/dataset/v18/1.json", b)

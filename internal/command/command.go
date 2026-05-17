@@ -184,26 +184,30 @@ func emit[P types.ParameterView](hooks *hooks.Hooks[P], dest *types.Command[P]) 
 		return
 	}
 
-	s := *dest
-
-	switch s.Type {
-	case types.SendReliableCommand:
-		if n := len(s.ReliablePayload.Parameters); n > 0 {
-			parameters := make([]P, n)
-			copy(parameters, s.ReliablePayload.Parameters)
-			s.ReliablePayload.Parameters = parameters
-		}
-	case types.SendUnreliableCommand:
-		if n := len(s.UnreliablePayload.Parameters); n > 0 {
-			parameters := make([]P, n)
-			copy(parameters, s.UnreliablePayload.Parameters)
-			s.UnreliablePayload.Parameters = parameters
-		}
-	}
+	s := DetachForAsync(*dest)
 
 	select {
 	case hooks.AsyncHooks.OnCommand <- s:
 	default: // don't block parser
 	}
 
+}
+
+func DetachForAsync[P types.ParameterView](cmd types.Command[P]) types.Command[P] {
+	s := cmd
+	switch s.Type {
+	case types.SendReliableCommand:
+		if n := len(s.ReliablePayload.Parameters); n > 0 {
+			p := make([]P, n)
+			copy(p, s.ReliablePayload.Parameters)
+			s.ReliablePayload.Parameters = p
+		}
+	case types.SendUnreliableCommand:
+		if n := len(s.UnreliablePayload.Parameters); n > 0 {
+			p := make([]P, n)
+			copy(p, s.UnreliablePayload.Parameters)
+			s.UnreliablePayload.Parameters = p
+		}
+	}
+	return s
 }
