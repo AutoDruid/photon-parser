@@ -94,8 +94,18 @@ func emit[P types.ParameterView](hooks *hooks.Hooks[P], dest *types.Session[P]) 
 		return
 	}
 
+	s := *dest
+	if n := len(s.Commands); n > 0 {
+		cmds := make([]types.Command[P], n)
+		copy(cmds, s.Commands)
+		for i := range cmds {
+			cmds[i] = command.DetachForAsync(cmds[i])
+		}
+		s.Commands = cmds
+	}
+
 	select {
-	case hooks.AsyncHooks.OnSession <- *dest:
+	case hooks.AsyncHooks.OnSession <- s:
 	default:
 	}
 }
