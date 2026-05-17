@@ -24,7 +24,7 @@ type Parser[P types.ParameterView] struct {
 }
 
 // NewV16 returns a Parser that interprets parameters and reliable headers using protocol 16 rules.
-func NewV16(options ...Option) *Parser[v16.Parameter] {
+func NewParserV16(options ...Option) *Parser[v16.Parameter] {
 	config := DefaultConfig()
 	for _, option := range options {
 		option(&config)
@@ -45,9 +45,9 @@ func NewV16(options ...Option) *Parser[v16.Parameter] {
 }
 
 // ParseV16 parses data using a newly allocated protocol 16 Parser and returns the resulting Session.
-func ParseV16(data []byte, options ...Option) (*Session[v16.Parameter], error) {
-	p := NewV16(options...)
-	var sess Session[v16.Parameter]
+func ParsePacketV16(data []byte, options ...Option) (*SessionV16, error) {
+	p := NewParserV16(options...)
+	var sess SessionV16
 	err := p.ParsePacketInto(data, &sess)
 	if err != nil {
 		return nil, err
@@ -56,7 +56,7 @@ func ParseV16(data []byte, options ...Option) (*Session[v16.Parameter], error) {
 }
 
 // NewV18 returns a Parser that interprets parameters and reliable headers using protocol 18 rules.
-func NewV18(options ...Option) *Parser[v18.Parameter] {
+func NewParserV18(options ...Option) *Parser[v18.Parameter] {
 	config := DefaultConfig()
 	for _, option := range options {
 		option(&config)
@@ -76,9 +76,9 @@ func NewV18(options ...Option) *Parser[v18.Parameter] {
 }
 
 // ParseV18 parses data using a newly allocated protocol 18 Parser and returns the resulting Session.
-func ParseV18(data []byte, options ...Option) (*Session[v18.Parameter], error) {
-	p := NewV18(options...)
-	var sess Session[v18.Parameter]
+func ParsePacketV18(data []byte, options ...Option) (*SessionV18, error) {
+	p := NewParserV18(options...)
+	var sess SessionV18
 	err := p.ParsePacketInto(data, &sess)
 	if err != nil {
 		return nil, err

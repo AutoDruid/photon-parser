@@ -1,3 +1,4 @@
+// Public type aliases and wire-level constants for Photon decoding.
 package photon
 
 import (
@@ -6,65 +7,64 @@ import (
 	"github.com/AutoDruid/photon-parser/internal/types"
 )
 
-// Photon Protocol session types.
-// These define the different kinds of session that can be exchanged.
 type Session[P types.ParameterView] = types.Session[P]
-
-// Photon Protocol command types.
-// These define the various operations that can be performed in a Photon session.
 type Command[P types.ParameterView] = types.Command[P]
 
-// Photon Protocol reliable types.
-// These define the different kinds of reliable messages that can be exchanged.
+// SessionV16 is a decoded Photon session using protocol 16 parameters (see NewV16).
+type SessionV16 = types.Session[v16.Parameter]
+
+// SessionV18 is a decoded Photon session using protocol 18 parameters (see NewV18).
+type SessionV18 = types.Session[v18.Parameter]
+
+// CommandV18 is a single parsed Photon command with v18 parameter payloads.
+type CommandV18 = types.Command[v18.Parameter]
+
+// CommandV16 is a single parsed Photon command with v16 parameter payloads.
+type CommandV16 = types.Command[v16.Parameter]
+
+// Reliable is a parsed reliable/unreliable message body: header plus a parameter list.
+// It appears inside Command payloads (for example SendReliable / SendUnreliable).
 type Reliable[P types.ParameterView] = types.Reliable[P]
 
-// Photon Protocol hook options types.
-// These define the different kinds of hook options that can be exchanged.
+// HookOptions configures asynchronous hooks; Size is the channel buffer capacity.
 type HookOptions = types.HookOptions
 
-// Photon Protocol parameter types.
-// These define the different kinds of parameters that can be exchanged.
+// ParameterV16 is the decoded v16 parameter value type used with Parser v16 APIs.
 type ParameterV16 = v16.Parameter
 
-// Photon Protocol parameter types.
-// These define the different kinds of parameters that can be exchanged.
+// ParameterV18 is the decoded v18 parameter value type used with Parser v18 APIs.
 type ParameterV18 = v18.Parameter
 
-// Photon Protocol parameter types.
-// These define the different kinds of parameters that can be exchanged.
+// ParameterV18Type is the v18 on-wire type discriminator for one parameter slot.
 type ParameterV18Type = v18.ParameterType
 
-// Photon Protocol parameter types.
-// These define the different kinds of parameters that can be exchanged.
+// ParameterV16Type is the v16 on-wire type discriminator for one parameter slot.
 type ParameterV16Type = v16.ParameterType
 
-// Photon Protocol reliable types.
-// These define the different kinds of reliable messages that can be exchanged.
+// ReliableV18 is Reliable[ParameterV18], the shape of reliable payloads for NewV18 parsers.
 type ReliableV18 = Reliable[ParameterV18]
 
-// Photon Protocol reliable types.
-// These define the different kinds of reliable messages that can be exchanged.
+// ReliableV16 is Reliable[ParameterV16], the shape of reliable payloads for NewV16 parsers.
 type ReliableV16 = Reliable[ParameterV16]
 
-// Photon Protocol command types.
-// These define the various operations that can be performed in a Photon session.
+type CommandType = types.CommandType
+type MessageType = types.MessageType
+// Photon command type bytes (CommandHeader.Type).
 const (
-	AcknowledgeCommand          types.CommandType = 0x01 // Acknowledges receipt of reliable commands
-	ConnectCommand              types.CommandType = 0x02 // Initiates a connection
-	VerifyConnectCommand        types.CommandType = 0x03 // Verifies connection establishment
-	DisconnectCommand           types.CommandType = 0x04 // Gracefully closes a connection
-	PingCommand                 types.CommandType = 0x05 // Keep-alive ping message
-	SendReliableCommand         types.CommandType = 0x06 // Sends reliable data (guaranteed delivery)
-	SendUnreliableCommand       types.CommandType = 0x07 // Sends unreliable data (best effort)
-	SendReliableFragmentCommand types.CommandType = 0x08 // Sends a fragment of a large reliable message
+	AcknowledgeCommand          = types.AcknowledgeCommand
+	ConnectCommand              = types.ConnectCommand
+	VerifyConnectCommand        = types.VerifyConnectCommand
+	DisconnectCommand           = types.DisconnectCommand
+	PingCommand                 = types.PingCommand
+	SendReliableCommand         = types.SendReliableCommand
+	SendUnreliableCommand       = types.SendUnreliableCommand
+	SendReliableFragmentCommand = types.SendReliableFragmentCommand
 )
-
-// Photon Protocol reliable message types.
-// These define the different kinds of reliable messages that can be exchanged.
+// Reliable payload message kinds (ReliableHeader.Type).
 const (
-	OperationRequest       types.MessageType = 0x02 // Client requests an operation
-	OperationResponse      types.MessageType = 0x07 // Server responds to an operation
-	OtherOperationResponse types.MessageType = 0x03 // Alternative response format
-	EventDataType          types.MessageType = 0x04 // Server sends an event to client
-	ExchangeKeys           types.MessageType = 0x06 // Key exchange for encryption
+	OperationRequest       = types.OperationRequest
+	OperationResponse      = types.OperationResponse
+	OtherOperationResponse = types.OtherOperationResponse
+	EventDataType          = types.EventDataType
+	ExchangeKeys           = types.ExchangeKeys
 )

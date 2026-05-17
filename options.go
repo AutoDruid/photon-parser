@@ -53,9 +53,6 @@ func SkipParameterParsing(skip bool) Option {
 // This option is useful when you are only interested in some specific commands.
 func SkipCommands(commands ...types.CommandType) Option {
 	return func(c *types.Config) {
-		if c.SkipCommands == nil {
-			c.SkipCommands = make(map[types.CommandType]bool)
-		}
 		for _, t := range commands {
 			c.SkipCommands[t] = true
 		}
@@ -66,9 +63,6 @@ func SkipCommands(commands ...types.CommandType) Option {
 // This option is useful when you are only interested in some specific events.
 func SkipTargetEventCodes(codes ...types.MessageType) Option {
 	return func(c *types.Config) {
-		if c.SkipTargetEventCodes == nil {
-			c.SkipTargetEventCodes = make(map[types.MessageType]bool)
-		}
 		for _, code := range codes {
 			c.SkipTargetEventCodes[code] = true
 		}

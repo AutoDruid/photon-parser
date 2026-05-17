@@ -76,7 +76,7 @@ func loadCapturesB(path string, b *testing.B) []json.RawMessage {
 
 func TestParseVersion18OnDataset1(t *testing.T) {
 
-	parser := photon.NewV18()
+	parser := photon.NewParserV18()
 
 	frames := loadCaptures("./tests/dataset/v18/1.json", t)
 
@@ -111,7 +111,7 @@ func TestParseVersion18OnDataset1(t *testing.T) {
 
 func TestParseVersion18OnDataset2(t *testing.T) {
 
-	parser := photon.NewV18()
+	parser := photon.NewParserV18()
 
 	frames := loadCaptures("./tests/dataset/v18/2.json", t)
 
@@ -145,7 +145,7 @@ func TestParseVersion18OnDataset2(t *testing.T) {
 
 func TestParseVersion18OnDataset3(t *testing.T) {
 
-	parser := photon.NewV18()
+	parser := photon.NewParserV18()
 
 	frames := loadCaptures("./tests/dataset/v18/3.json", t)
 
@@ -179,7 +179,7 @@ func TestParseVersion18OnDataset3(t *testing.T) {
 
 func TestParseVersion18OnDataset3WithoutUnknownPayloads(t *testing.T) {
 
-	parser := photon.NewV18(photon.SkipUnknownPayloads(true))
+	parser := photon.NewParserV18(photon.SkipUnknownPayloads(true))
 
 	frames := loadCaptures("./tests/dataset/v18/3.json", t)
 
@@ -220,7 +220,7 @@ func TestParseVersion18OnDataset3WithoutUnknownPayloads(t *testing.T) {
 
 func TestParseVersion18OnDataset3WithoutCommands(t *testing.T) {
 
-	parser := photon.NewV18(photon.SkipCommands(photon.SendReliableCommand))
+	parser := photon.NewParserV18(photon.SkipCommands(photon.SendReliableCommand))
 
 	frames := loadCaptures("./tests/dataset/v18/3.json", t)
 
@@ -261,7 +261,7 @@ func TestParseVersion18OnDataset3WithoutCommands(t *testing.T) {
 
 func TestParseVersion18OnDataset3WithoutParameters(t *testing.T) {
 
-	parser := photon.NewV18(photon.SkipParameterParsing(true))
+	parser := photon.NewParserV18(photon.SkipParameterParsing(true))
 
 	frames := loadCaptures("./tests/dataset/v18/3.json", t)
 
@@ -309,7 +309,7 @@ func TestParseVersion18OnDataset3WithoutParameters(t *testing.T) {
 
 func TestParseVersion18OnDataset3WithoutEvents(t *testing.T) {
 
-	parser := photon.NewV18(photon.SkipTargetEventCodes(photon.OperationRequest, photon.OperationResponse))
+	parser := photon.NewParserV18(photon.SkipTargetEventCodes(photon.OperationRequest, photon.OperationResponse))
 
 	frames := loadCaptures("./tests/dataset/v18/3.json", t)
 
@@ -362,7 +362,7 @@ func TestParseVersion18OnDataset3WithoutEvents(t *testing.T) {
 }
 
 func TestParserOnASinglePacketVersion18(t *testing.T) {
-	parser := photon.NewV18()
+	parser := photon.NewParserV18()
 	frames := loadCaptures("./tests/dataset/v18/2.json", t)
 
 	payload, _, err := rowToPayload(frames[181])
@@ -382,7 +382,7 @@ func TestParserOnASinglePacketVersion18(t *testing.T) {
 }
 
 func BenchmarkParserOn343PacketsVersion18(b *testing.B) {
-	parser := photon.NewV18()
+	parser := photon.NewParserV18()
 	frames := loadCapturesB("./tests/dataset/v18/1.json", b)
 
 	var totalBytes int64
@@ -416,7 +416,7 @@ func BenchmarkParserOn343PacketsVersion18(b *testing.B) {
 }
 
 func BenchmarkParserOn343PacketsVersion18WithoutUnknownPayloads(b *testing.B) {
-	parser := photon.NewV18(photon.SkipUnknownPayloads(true))
+	parser := photon.NewParserV18(photon.SkipUnknownPayloads(true))
 	frames := loadCapturesB("./tests/dataset/v18/1.json", b)
 
 	var totalBytes int64
@@ -450,7 +450,7 @@ func BenchmarkParserOn343PacketsVersion18WithoutUnknownPayloads(b *testing.B) {
 }
 
 func BenchmarkParserOn343PacketsVersion18WithoutParameters(b *testing.B) {
-	parser := photon.NewV18(photon.SkipParameterParsing(true))
+	parser := photon.NewParserV18(photon.SkipParameterParsing(true))
 	frames := loadCapturesB("./tests/dataset/v18/1.json", b)
 
 	var totalBytes int64
@@ -484,7 +484,7 @@ func BenchmarkParserOn343PacketsVersion18WithoutParameters(b *testing.B) {
 }
 
 func BenchmarkParserOnASinglePacketVersion18(b *testing.B) {
-	parser := photon.NewV18()
+	parser := photon.NewParserV18()
 	frames := loadCapturesB("./tests/dataset/v18/1.json", b)
 
 	payload, _, err := rowToPayload(frames[200])
@@ -525,7 +525,7 @@ func BenchmarkParserOnASinglePacketVersion18Parallel(b *testing.B) {
 	b.ResetTimer()
 
 	b.RunParallel(func(pb *testing.PB) {
-		parser := photon.NewV18()
+		parser := photon.NewParserV18()
 		session := photon.Session[v18.Parameter]{}
 
 		for pb.Next() {
